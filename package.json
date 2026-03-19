@@ -1,0 +1,42 @@
+{
+  "name": "agent-task-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for orchestrating multi-agent tasks with various patterns",
+  "main": "src/index.js",
+  "bin": {
+    "agent-task": "./bin/agent-task.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/",
+    "format": "prettier --write src/**/*.js",
+    "dev": "nodemon --watch src bin/agent-task.js"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "orchestration",
+    "cli",
+    "multi-agent",
+    "task-automation"
+  ],
+  "author": "Robert Song",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "js-yaml": "^4.1.0",
+    "uuid": "^9.0.0",
+    "cli-table3": "^0.6.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

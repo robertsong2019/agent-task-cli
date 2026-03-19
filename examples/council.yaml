@@ -1,0 +1,15 @@
+name: "Ethical AI Decision"
+pattern: "council"
+experts:
+  - name: "skeptic"
+    role: "Challenge assumptions and identify risks"
+  - name: "ethicist"
+    role: "Evaluate ethical implications"
+  - name: "strategist"
+    role: "Provide strategic perspective"
+  - name: "technologist"
+    role: "Assess technical feasibility"
+task: "Should we deploy autonomous AI agents in customer service?"
+rounds: 3
+convergence:
+  strategy: "consensus"

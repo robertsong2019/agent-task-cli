@@ -1,0 +1,19 @@
+name: "Research AI Agents"
+pattern: "work-crew"
+agents:
+  - name: "technical-researcher"
+    role: "Research technical aspects"
+    focus: "architecture, algorithms, implementation"
+  - name: "business-analyst"
+    role: "Analyze business impact"
+    focus: "market, adoption, ROI"
+  - name: "security-expert"
+    role: "Evaluate security risks"
+    focus: "vulnerabilities, best practices"
+  - name: "competitor-analyst"
+    role: "Compare with competitors"
+    focus: "alternatives, differentiation"
+task: "Research the current state of AI Agent technology and its impact on software development"
+convergence:
+  strategy: "consensus"
+  threshold: 0.7

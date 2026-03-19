@@ -1,0 +1,12 @@
+name: "Mixed Task"
+pattern: "auto-routing"
+router:
+  confidence_threshold: 0.85
+agents:
+  - name: "coder"
+    skills: ["programming", "debugging", "refactoring"]
+  - name: "researcher"
+    skills: ["research", "analysis", "summarization"]
+  - name: "writer"
+    skills: ["documentation", "blog", "tutorial"]
+task: "Research best practices for AI Agent memory systems and create a tutorial"

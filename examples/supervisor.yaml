@@ -1,0 +1,13 @@
+name: "Build Web Application"
+pattern: "supervisor"
+supervisor:
+  name: "project-manager"
+  strategy: "adaptive"
+workers:
+  - name: "frontend-developer"
+    skills: ["programming", "debugging"]
+  - name: "backend-developer"
+    skills: ["programming", "refactoring"]
+  - name: "test-engineer"
+    skills: ["debugging", "analysis"]
+task: "Build a RESTful API with user authentication and data validation"
