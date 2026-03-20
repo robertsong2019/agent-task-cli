@@ -6,6 +6,8 @@ const CouncilPattern = require('./patterns/council');
 const AutoRoutingPattern = require('./patterns/auto-routing');
 const { BaseAgent } = require('./agents/base-agent');
 const { MockAgent } = require('./agents/mock-agent');
+const { LLMAgent } = require('./agents/llm-agent');
+const { AgentFactory } = require('./agents/agent-factory');
 const { Logger } = require('./utils/logger');
 const { Storage } = require('./utils/storage');
 
@@ -21,7 +23,9 @@ module.exports = {
   },
   agents: {
     BaseAgent,
-    MockAgent
+    MockAgent,
+    LLMAgent,
+    AgentFactory
   },
   utils: {
     Logger,

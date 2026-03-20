@@ -1,4 +1,4 @@
-const { MockAgent } = require('../agents/mock-agent');
+const { AgentFactory } = require('../agents/agent-factory');
 
 class PipelinePattern {
   constructor(config, options = {}) {
@@ -9,11 +9,11 @@ class PipelinePattern {
 
   initializeAgents() {
     this.agents = this.config.stages.map(stage =>
-      new MockAgent({
+      AgentFactory.createAgent({
         name: stage.agent,
         role: `${stage.name} specialist`,
-        delay: this.options.verbose ? 1500 : 1000
-      })
+        ...stage
+      }, this.options)
     );
     return this.agents;
   }

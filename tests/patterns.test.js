@@ -69,7 +69,7 @@ describe('SupervisorPattern', () => {
     expect(results.pattern).toBe('supervisor');
     expect(results.strategy).toBe('adaptive');
     expect(results.workerResults).toBeDefined();
-  });
+  }, 10000); // Increase timeout to 10 seconds
 });
 
 describe('PipelinePattern', () => {

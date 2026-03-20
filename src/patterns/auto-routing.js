@@ -1,4 +1,4 @@
-const { MockAgent } = require('../agents/mock-agent');
+const { AgentFactory } = require('../agents/agent-factory');
 
 class AutoRoutingPattern {
   constructor(config, options = {}) {
@@ -10,10 +10,7 @@ class AutoRoutingPattern {
 
   initializeAgents() {
     this.agents = this.config.agents.map(agentConfig =>
-      new MockAgent({
-        ...agentConfig,
-        delay: this.options.verbose ? 1500 : 1000
-      })
+      AgentFactory.createAgent(agentConfig, this.options)
     );
     return this.agents;
   }

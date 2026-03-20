@@ -7,6 +7,19 @@ describe('Orchestrator', () => {
     orchestrator = new Orchestrator();
   });
 
+  afterEach(async () => {
+    // Clean up active tasks
+    if (orchestrator && orchestrator.activeTasks) {
+      for (const [taskId, task] of orchestrator.activeTasks) {
+        task.removeAllListeners();
+        task.cancel();
+      }
+      orchestrator.activeTasks.clear();
+    }
+    // Give time for async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+  });
+
   test('should create orchestrator instance', () => {
     expect(orchestrator).toBeDefined();
     expect(orchestrator.patterns).toBeDefined();
@@ -37,6 +50,9 @@ describe('Orchestrator', () => {
     expect(task.id).toBeDefined();
     expect(task.status).toBe('pending');
     expect(task.config).toBe(config);
+    
+    // Clean up task
+    task.removeAllListeners();
   });
 
   test('should cancel running task', async () => {
@@ -54,5 +70,8 @@ describe('Orchestrator', () => {
     
     expect(cancelledTask).toBeDefined();
     expect(cancelledTask.cancelled).toBe(true);
+    
+    // Clean up task
+    task.removeAllListeners();
   });
 });

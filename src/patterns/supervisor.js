@@ -1,4 +1,4 @@
-const { MockAgent } = require('../agents/mock-agent');
+const { AgentFactory } = require('../agents/agent-factory');
 
 class SupervisorPattern {
   constructor(config, options = {}) {
@@ -10,18 +10,15 @@ class SupervisorPattern {
 
   initializeAgents() {
     // Create supervisor
-    this.supervisor = new MockAgent({
+    this.supervisor = AgentFactory.createAgent({
       name: this.config.supervisor.name || 'supervisor',
       role: 'Task decomposition and coordination',
-      delay: this.options.verbose ? 2000 : 1500
-    });
+      ...this.config.supervisor
+    }, this.options);
 
     // Create workers
     this.workers = this.config.workers.map(workerConfig =>
-      new MockAgent({
-        ...workerConfig,
-        delay: this.options.verbose ? 1500 : 1000
-      })
+      AgentFactory.createAgent(workerConfig, this.options)
     );
 
     return [this.supervisor, ...this.workers];
@@ -66,7 +63,7 @@ class SupervisorPattern {
     };
   }
 
-  decomposeTask(task, strategy) {
+  decomposeTask(task, _strategy) {
     // Simplified task decomposition
     const subtasks = [
       { description: `Research phase for: ${task}`, type: 'research' },

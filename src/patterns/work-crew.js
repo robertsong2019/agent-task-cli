@@ -1,4 +1,4 @@
-const { MockAgent } = require('../agents/mock-agent');
+const { AgentFactory } = require('../agents/agent-factory');
 
 class WorkCrewPattern {
   constructor(config, options = {}) {
@@ -8,12 +8,7 @@ class WorkCrewPattern {
   }
 
   initializeAgents() {
-    this.agents = this.config.agents.map(agentConfig => 
-      new MockAgent({
-        ...agentConfig,
-        delay: this.options.verbose ? 1500 : 1000
-      })
-    );
+    this.agents = AgentFactory.createAgents(this.config.agents, this.options);
     return this.agents;
   }
 
@@ -52,15 +47,15 @@ class WorkCrewPattern {
     const strategy = this.config.convergence?.strategy || 'merge';
     
     switch (strategy) {
-      case 'consensus':
-        return this.consensusConvergence(results);
+    case 'consensus':
+      return this.consensusConvergence(results);
       
-      case 'best-of':
-        return this.bestOfConvergence(results);
+    case 'best-of':
+      return this.bestOfConvergence(results);
       
-      case 'merge':
-      default:
-        return this.mergeConvergence(results);
+    case 'merge':
+    default:
+      return this.mergeConvergence(results);
     }
   }
 

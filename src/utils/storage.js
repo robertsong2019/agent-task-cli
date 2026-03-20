@@ -5,6 +5,23 @@ class Storage {
   constructor(dataDir = './data') {
     this.dataDir = dataDir;
     this.tasksFile = path.join(dataDir, 'tasks.json');
+    this.mutex = Promise.resolve();
+  }
+
+  // Mutex lock for atomic operations
+  async withLock(fn) {
+    const currentMutex = this.mutex;
+    let release;
+    this.mutex = new Promise(resolve => {
+      release = resolve;
+    });
+    
+    try {
+      await currentMutex;
+      return await fn();
+    } finally {
+      release();
+    }
   }
 
   async ensureDataDir() {
@@ -16,19 +33,32 @@ class Storage {
   }
 
   async loadTasks() {
-    await this.ensureDataDir();
-    try {
-      const data = await fs.readFile(this.tasksFile, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
-      if (error.code === 'ENOENT') return {};
-      throw error;
-    }
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        // Handle empty file case
+        if (!data || data.trim() === '') {
+          return {};
+        }
+        return JSON.parse(data);
+      } catch (error) {
+        if (error.code === 'ENOENT') return {};
+        // Handle malformed JSON by returning empty object
+        if (error instanceof SyntaxError) {
+          console.warn('Warning: Malformed JSON in tasks file, starting fresh');
+          return {};
+        }
+        throw error;
+      }
+    });
   }
 
   async saveTasks(tasks) {
-    await this.ensureDataDir();
-    await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+    });
   }
 
   async saveTask(taskId, taskData) {

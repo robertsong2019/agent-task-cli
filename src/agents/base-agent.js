@@ -11,7 +11,7 @@ class BaseAgent {
     this.output = null;
   }
 
-  async execute(task) {
+  async execute(_task) {
     throw new Error('execute() must be implemented by subclass');
   }
 

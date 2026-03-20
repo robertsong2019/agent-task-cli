@@ -29,9 +29,15 @@ class Orchestrator {
     this.activeTasks.set(taskId, task);
     await this.storage.saveTask(taskId, task.toJSON());
     
-    // Execute asynchronously
-    task.execute().catch(error => {
-      this.logger.error(`Task ${taskId} failed:`, error);
+    // Execute asynchronously with proper error handling
+    setImmediate(() => {
+      task.execute().catch(error => {
+        this.logger.error(`Task ${taskId} failed:`, error);
+        // Ensure task is cleaned up on error
+        if (this.activeTasks.has(taskId)) {
+          this.activeTasks.delete(taskId);
+        }
+      });
     });
 
     return task;

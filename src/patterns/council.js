@@ -1,4 +1,4 @@
-const { MockAgent } = require('../agents/mock-agent');
+const { AgentFactory } = require('../agents/agent-factory');
 
 class CouncilPattern {
   constructor(config, options = {}) {
@@ -9,11 +9,11 @@ class CouncilPattern {
 
   initializeAgents() {
     this.agents = this.config.experts.map(expert =>
-      new MockAgent({
+      AgentFactory.createAgent({
         name: expert.name,
         role: expert.role,
-        delay: this.options.verbose ? 1500 : 1000
-      })
+        ...expert
+      }, this.options)
     );
     return this.agents;
   }
@@ -86,15 +86,15 @@ class CouncilPattern {
     const perspectives = finalRound.perspectives;
     
     switch (strategy) {
-      case 'consensus':
-        return this.consensusDecision(perspectives);
+    case 'consensus':
+      return this.consensusDecision(perspectives);
       
-      case 'vote':
-        return this.voteDecision(perspectives);
+    case 'vote':
+      return this.voteDecision(perspectives);
       
-      case 'average':
-      default:
-        return this.averageDecision(perspectives);
+    case 'average':
+    default:
+      return this.averageDecision(perspectives);
     }
   }
 
