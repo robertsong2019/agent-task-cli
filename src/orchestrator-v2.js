@@ -177,7 +177,7 @@ class Orchestrator {
    */
   async shutdown() {
     // Cancel all active tasks
-    for (const [taskId, task] of this.activeTasks) {
+    for (const [_taskId, task] of this.activeTasks) {
       task.cancel();
       task.removeAllListeners();
     }

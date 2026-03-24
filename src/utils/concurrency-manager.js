@@ -45,7 +45,7 @@ class ConcurrencyManager {
   /**
    * Run a task with proper tracking
    */
-  async _runTask(fn, taskId) {
+  async _runTask(fn, _taskId) {
     this.activeCount++;
     this.stats.totalExecuted++;
     this.stats.peakConcurrency = Math.max(
