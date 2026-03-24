@@ -1,13 +1,15 @@
 const { v4: uuidv4 } = require('uuid');
+const { EventEmitter } = require('events');
 
-class BaseAgent {
+class BaseAgent extends EventEmitter {
   constructor(config) {
+    super();
     this.id = uuidv4();
     this.name = config.name;
     this.role = config.role;
     this.focus = config.focus || null;
     this.skills = config.skills || [];
-    this.status = 'pending';
+    this.status = 'idle';
     this.output = null;
   }
 

@@ -62,10 +62,30 @@ class Storage {
   }
 
   async saveTask(taskId, taskData) {
-    const tasks = await this.loadTasks();
-    tasks[taskId] = taskData;
-    await this.saveTasks(tasks);
-    return taskData;
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      
+      // Read current tasks
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') {
+          tasks = JSON.parse(data);
+        }
+      } catch (error) {
+        if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) {
+          throw error;
+        }
+      }
+      
+      // Update task
+      tasks[taskId] = taskData;
+      
+      // Write back
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      
+      return taskData;
+    });
   }
 
   async getTask(taskId) {

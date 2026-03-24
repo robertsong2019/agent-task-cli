@@ -8,6 +8,7 @@ class MockAgent extends BaseAgent {
 
   async execute(task) {
     this.status = 'running';
+    this.emit('progress', { status: 'running', task });
     
     // Simulate work with delay
     await new Promise(resolve => setTimeout(resolve, this.delay));
@@ -15,6 +16,7 @@ class MockAgent extends BaseAgent {
     // Generate mock output based on role
     this.output = this.generateMockOutput(task);
     this.status = 'completed';
+    this.emit('progress', { status: 'completed', output: this.output });
     
     return this.output;
   }

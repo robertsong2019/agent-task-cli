@@ -77,9 +77,12 @@ class AutoRoutingPattern {
         };
       });
       
-      const bestMatch = specialtyScores.reduce((prev, current) => 
-        current.score > prev.score ? current : prev
-      );
+      // Handle empty specialtyScores array
+      const bestMatch = specialtyScores.length > 0 
+        ? specialtyScores.reduce((prev, current) => 
+            current.score > prev.score ? current : prev
+          )
+        : { specialty: 'general', score: 0 };
       
       return {
         agent: agent.name,
