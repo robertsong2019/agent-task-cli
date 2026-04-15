@@ -2,6 +2,14 @@
 
 A powerful CLI tool for orchestrating multi-agent tasks with different patterns (Work Crew, Supervisor, Pipeline, Council, Auto-Routing).
 
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Tutorial](docs/TUTORIAL.md) | Step-by-step guide from zero to running |
+| [API Reference](docs/API_REFERENCE.md) | Full method signatures and config schema |
+| [Architecture](docs/ARCHITECTURE.md) | Design principles and data flow |
+
 ## Features
 
 - 🎯 **Multiple Orchestration Patterns**: Work Crew, Supervisor, Pipeline, Council, Auto-Routing

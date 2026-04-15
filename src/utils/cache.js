@@ -171,6 +171,62 @@ class Cache {
   }
 
   /**
+   * Get multiple values at once
+   * @param {string[]} keys - Cache keys
+   * @returns {object} Key-value map (missing keys omitted)
+   */
+  mget(keys) {
+    const result = {};
+    for (const key of keys) {
+      const value = this.get(key);
+      if (value !== undefined) {
+        result[key] = value;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Set multiple values at once
+   * @param {object} entries - Key-value pairs to set
+   * @param {number} ttl - TTL in milliseconds
+   */
+  mset(entries, ttl = this.defaultTTL) {
+    for (const [key, value] of Object.entries(entries)) {
+      this.set(key, value, ttl);
+    }
+  }
+
+  /**
+   * Delete multiple keys at once
+   * @param {string[]} keys - Cache keys
+   * @returns {number} Number of keys actually deleted
+   */
+  mdelete(keys) {
+    let deleted = 0;
+    for (const key of keys) {
+      if (this.delete(key)) deleted++;
+    }
+    return deleted;
+  }
+
+  /**
+   * Invalidate all keys matching a prefix
+   * @param {string} prefix - Key prefix
+   * @returns {number} Number of keys invalidated
+   */
+  invalidateByPrefix(prefix) {
+    let count = 0;
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(prefix)) {
+        this.delete(key);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /**
    * Destroy cache and cleanup interval
    */
   destroy() {

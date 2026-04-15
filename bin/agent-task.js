@@ -208,6 +208,101 @@ program
     }
   });
 
+// Stats command
+program
+  .command('stats')
+  .description('Show task statistics')
+  .option('--pattern <pattern>', 'Filter by pattern')
+  .option('--days <days>', 'Only show tasks from last N days', parseInt)
+  .action(async (options) => {
+    try {
+      const tasks = await storage.listTasks();
+      
+      let filteredTasks = tasks;
+      
+      if (options.pattern) {
+        filteredTasks = filteredTasks.filter(t => t.pattern === options.pattern);
+      }
+      
+      if (options.days) {
+        const cutoff = Date.now() - (options.days * 24 * 60 * 60 * 1000);
+        filteredTasks = filteredTasks.filter(t => new Date(t.createdAt).getTime() >= cutoff);
+      }
+
+      if (filteredTasks.length === 0) {
+        console.log(chalk.yellow('No tasks found matching criteria.'));
+        return;
+      }
+
+      // Calculate statistics
+      const stats = {
+        total: filteredTasks.length,
+        byStatus: {},
+        byPattern: {},
+        avgDuration: 0,
+        totalAgents: 0
+      };
+
+      let totalDuration = 0;
+      let tasksWithDuration = 0;
+
+      filteredTasks.forEach(task => {
+        // By status
+        stats.byStatus[task.status] = (stats.byStatus[task.status] || 0) + 1;
+        
+        // By pattern
+        stats.byPattern[task.pattern] = (stats.byPattern[task.pattern] || 0) + 1;
+        
+        // Agent count
+        stats.totalAgents += task.agents ? task.agents.length : 0;
+        
+        // Duration (if completed)
+        if (task.status === 'completed' && task.createdAt) {
+          const created = new Date(task.createdAt).getTime();
+          const now = Date.now();
+          totalDuration += (now - created);
+          tasksWithDuration++;
+        }
+      });
+
+      stats.avgDuration = tasksWithDuration > 0 
+        ? Math.round(totalDuration / tasksWithDuration / 1000) 
+        : 0;
+
+      // Display statistics
+      console.log(chalk.blue.bold('\n📊 Task Statistics\n'));
+      console.log(chalk.gray('─'.repeat(50)));
+      
+      console.log(`${chalk.bold('Total Tasks:')} ${stats.total}`);
+      console.log(`${chalk.bold('Total Agents Used:')} ${stats.totalAgents}`);
+      console.log(`${chalk.bold('Avg Completion Time:')} ${stats.avgDuration}s`);
+      
+      console.log(chalk.bold('\nBy Status:'));
+      Object.entries(stats.byStatus)
+        .sort(([, a], [, b]) => b - a)
+        .forEach(([status, count]) => {
+          const color = status === 'completed' ? chalk.green :
+                       status === 'failed' ? chalk.red :
+                       status === 'running' ? chalk.yellow : chalk.gray;
+          const bar = '█'.repeat(Math.floor(count / stats.total * 20));
+          console.log(`  ${color(status.padEnd(10))} ${bar} ${count}`);
+        });
+
+      console.log(chalk.bold('\nBy Pattern:'));
+      Object.entries(stats.byPattern)
+        .sort(([, a], [, b]) => b - a)
+        .forEach(([pattern, count]) => {
+          const bar = '█'.repeat(Math.floor(count / stats.total * 20));
+          console.log(`  ${pattern.padEnd(15)} ${bar} ${count}`);
+        });
+
+      console.log(chalk.gray('\n' + '─'.repeat(50)));
+    } catch (error) {
+      console.error(chalk.red('Error:'), error.message);
+      process.exit(1);
+    }
+  });
+
 // Patterns command
 program
   .command('patterns')

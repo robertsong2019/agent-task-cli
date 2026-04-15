@@ -45,12 +45,12 @@ describe('Orchestrator', () => {
       task: 'Test task'
     };
 
-    const task = await orchestrator.run(config);
+    const task = await orchestrator.run(config, { wait: true });
     expect(task).toBeDefined();
     expect(task.id).toBeDefined();
-    expect(task.status).toBe('pending');
+    expect(task.status).toBe('completed'); // Should be completed after waiting
     expect(task.config).toBe(config);
-    
+
     // Clean up task
     task.removeAllListeners();
   });

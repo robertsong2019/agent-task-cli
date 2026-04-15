@@ -29,16 +29,30 @@ class Orchestrator {
     this.activeTasks.set(taskId, task);
     await this.storage.saveTask(taskId, task.toJSON());
     
-    // Execute asynchronously with proper error handling
-    setImmediate(() => {
-      task.execute().catch(error => {
-        this.logger.error(`Task ${taskId} failed:`, error);
-        // Ensure task is cleaned up on error
-        if (this.activeTasks.has(taskId)) {
-          this.activeTasks.delete(taskId);
-        }
-      });
+    // Execute task
+    const executePromise = task.execute().catch(error => {
+      this.logger.error(`Task ${taskId} failed:`, error);
+      // Ensure task is cleaned up on error
+      if (this.activeTasks.has(taskId)) {
+        this.activeTasks.delete(taskId);
+      }
+      // Error is already emitted on the task; don't re-throw to avoid unhandled rejection
     });
+
+    // If wait option is true, await execution
+    if (options.wait) {
+      await executePromise;
+      this.activeTasks.delete(taskId);
+    } else {
+      // Execute asynchronously for non-blocking behavior
+      setImmediate(() => {
+        executePromise.finally(() => {
+          if (this.activeTasks.has(taskId)) {
+            this.activeTasks.delete(taskId);
+          }
+        });
+      });
+    }
 
     return task;
   }

@@ -9,15 +9,20 @@ class MockAgent extends BaseAgent {
   async execute(task) {
     this.status = 'running';
     this.emit('progress', { status: 'running', task });
-    
+
+    // Check for fast mode (for testing)
+    // Use forceDelay option to bypass fast mode
+    const useFastMode = process.env.NODE_ENV === 'test' && !this.forceDelay;
+    const actualDelay = useFastMode ? 10 : this.delay;
+
     // Simulate work with delay
-    await new Promise(resolve => setTimeout(resolve, this.delay));
-    
+    await new Promise(resolve => setTimeout(resolve, actualDelay));
+
     // Generate mock output based on role
     this.output = this.generateMockOutput(task);
     this.status = 'completed';
     this.emit('progress', { status: 'completed', output: this.output });
-    
+
     return this.output;
   }
 

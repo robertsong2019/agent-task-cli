@@ -10,10 +10,15 @@ const { LLMAgent } = require('./agents/llm-agent');
 const { AgentFactory } = require('./agents/agent-factory');
 const { Logger } = require('./utils/logger');
 const { Storage } = require('./utils/storage');
+const { EventBus, globalBus } = require('./utils/event-bus');
+const { TaskChain } = require('./task-chain');
 
 module.exports = {
   Orchestrator,
   Task,
+  TaskChain,
+  EventBus,
+  globalBus,
   patterns: {
     WorkCrewPattern,
     SupervisorPattern,
@@ -29,6 +34,7 @@ module.exports = {
   },
   utils: {
     Logger,
-    Storage
+    Storage,
+    EventBus
   }
 };
