@@ -30,6 +30,8 @@ class TaskChain {
     };
     this._eventBus = options.eventBus || globalBus;
     this._stepCallbacks = [];
+    this._aborted = false;
+    this._pendingRejects = new Set();
   }
 
   /**
@@ -89,6 +91,7 @@ class TaskChain {
    */
   async execute() {
     this.status = 'running';
+    this._aborted = false;
     this._eventBus.emit('chain:started', { chainId: this.id, steps: this.stepOrder });
 
     try {
@@ -155,6 +158,9 @@ class TaskChain {
 
     // Keep executing until all steps are done or we can't progress
     while (completed.size + failed.size < this.steps.size) {
+      if (this._aborted) {
+        throw new Error('Chain aborted');
+      }
       // Find steps ready to execute
       const ready = [];
       for (const [name, step] of graph) {
@@ -228,8 +234,9 @@ class TaskChain {
       
       // Wait for completion
       await new Promise((resolve, reject) => {
-        task.on('complete', resolve);
-        task.on('error', reject);
+        this._pendingRejects.add(reject);
+        task.on('complete', () => { this._pendingRejects.delete(reject); resolve(); });
+        task.on('error', (err) => { this._pendingRejects.delete(reject); reject(err); });
       });
 
       step.result = task.results;
@@ -329,6 +336,30 @@ class TaskChain {
     }
 
     throw lastError;
+  }
+
+  /**
+   * Abort a running chain. Pending and running steps are marked as 'aborted'.
+   * @returns {boolean} true if abort was triggered, false if chain not running
+   */
+  abort() {
+    if (this.status !== 'running') return false;
+    this._aborted = true;
+    // Mark pending/running steps as aborted
+    for (const step of this.steps.values()) {
+      if (step.status === 'pending' || step.status === 'running') {
+        step.status = 'aborted';
+        step.error = 'Chain aborted';
+      }
+    }
+    this.status = 'aborted';
+    this._eventBus.emit('chain:aborted', { chainId: this.id });
+    // Reject any pending step promises so execute() unblocks
+    for (const reject of this._pendingRejects) {
+      reject(new Error('Chain aborted'));
+    }
+    this._pendingRejects.clear();
+    return true;
   }
 
   /**

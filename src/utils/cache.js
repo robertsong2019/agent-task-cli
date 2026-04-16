@@ -227,6 +227,36 @@ class Cache {
   }
 
   /**
+   * Dump all non-expired cache entries as a serializable object.
+   * @returns {object[]} Array of { key, value, ttlRemaining }
+   */
+  dump() {
+    const now = Date.now();
+    const entries = [];
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      entries.push({
+        key,
+        value: entry.value,
+        ttlRemaining: entry.expiresAt ? Math.max(0, entry.expiresAt - now) : null
+      });
+    }
+    return entries;
+  }
+
+  /**
+   * Restore cache entries from a dump.
+   * @param {object[]} entries - Array of { key, value, ttlRemaining }
+   */
+  restore(entries) {
+    if (!Array.isArray(entries)) throw new Error('restore requires an array');
+    for (const { key, value, ttlRemaining } of entries) {
+      const ttl = ttlRemaining != null ? ttlRemaining : this.defaultTTL;
+      this.set(key, value, ttl);
+    }
+  }
+
+  /**
    * Destroy cache and cleanup interval
    */
   destroy() {
