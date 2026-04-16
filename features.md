@@ -20,7 +20,7 @@
 - [x] TaskChain: `retry(stepName, maxRetries)` — retry failed steps — **F3** ✅ 2026-04-14
 - [x] TaskChain: `onStepComplete(callback)` — progress hooks — **F5** ✅ 2026-04-15
 - [x] TaskChain: `toJSON()` serialization (fromJSON pending) — **F6** ✅ 2026-04-15
-- [ ] TaskChain: `abort()` — cancel running chain
+- [x] TaskChain: `abort()` — cancel running chain — **F7** ✅ 2026-04-16
 
 ### Orchestrator
 - [ ] Orchestrator: task timeout support
@@ -30,4 +30,4 @@
 ### Observability
 - [ ] EventBus: `onBatch(channels[], handler)` — subscribe to multiple channels
 - [ ] Logger: structured JSON output mode
-- [ ] Cache: `dump()` / `restore()` for persistence across restarts
+- [x] Cache: `dump()` / `restore()` for persistence across restarts — **F8** ✅ 2026-04-16
