@@ -28,6 +28,6 @@
 - [ ] Orchestrator: middleware/plugin hooks for pre/post execution
 
 ### Observability
-- [ ] EventBus: `onBatch(channels[], handler)` — subscribe to multiple channels
-- [ ] Logger: structured JSON output mode
+- [ ] EventBus: `onBatch(channels[], handler)` — subscribe to multiple channels — **F9** ✅ 2026-04-17
+- [ ] Logger: structured JSON output mode — **F10** ✅ 2026-04-17
 - [x] Cache: `dump()` / `restore()` for persistence across restarts — **F8** ✅ 2026-04-16

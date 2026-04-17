@@ -65,6 +65,17 @@ class EventBus {
   }
 
   /**
+   * Subscribe to multiple channels at once.
+   * @param {string[]} channels - Array of event channels
+   * @param {function} handler - Event handler (receives event)
+   * @returns {function} Unsubscribe function (removes from all channels)
+   */
+  onBatch(channels, handler) {
+    const unsubs = channels.map(ch => this.on(ch, handler));
+    return () => unsubs.forEach(unsub => unsub());
+  }
+
+  /**
    * Subscribe to events matching a pattern (e.g., 'task:*')
    * @param {string} pattern - Glob-like pattern
    * @param {function} handler - Event handler
