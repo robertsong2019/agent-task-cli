@@ -39,9 +39,22 @@ class Orchestrator {
       // Error is already emitted on the task; don't re-throw to avoid unhandled rejection
     });
 
-    // If wait option is true, await execution
+    // If wait option is true, await execution (with optional timeout)
     if (options.wait) {
-      await executePromise;
+      if (options.timeout && options.timeout > 0) {
+        await Promise.race([
+          executePromise,
+          new Promise((_, reject) => {
+            const timer = setTimeout(() => {
+              task.cancel();
+              reject(new Error(`Task ${taskId} timed out after ${options.timeout}ms`));
+            }, options.timeout);
+            executePromise.finally(() => clearTimeout(timer));
+          })
+        ]);
+      } else {
+        await executePromise;
+      }
       this.activeTasks.delete(taskId);
     } else {
       // Execute asynchronously for non-blocking behavior

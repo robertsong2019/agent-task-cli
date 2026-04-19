@@ -2,3 +2,4 @@ timestamp	commit	metric	value	status	description
 2026-04-14T14:06	-	test_pass_rate	221/221 (100%)	keep	F1: Cache batch ops (mget/mset/mdelete/invalidateByPrefix) + F3: TaskChain.retry()
 2026-04-15T22:00	5d7e097	test_pass_rate	229/229 (100%)	keep	F4: EventBus.emitAfter, F5: TaskChain.onStepComplete, F6: TaskChain.toJSON
 2026-04-16T22:00	793a222	test_pass_rate	238/238 (100%)	keep	F7: TaskChain.abort() + F8: Cache dump()/restore() — 9 new tests
+2026-04-17T22:08:22+08:00	10552d0	test_pass_rate	247/247	keep	F9: EventBus.onBatch() + F10: Logger JSON mode — 9 new tests (238→247)
