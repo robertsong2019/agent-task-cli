@@ -20,11 +20,47 @@ class Orchestrator {
       'auto-routing': AutoRoutingPattern
     };
     this.activeTasks = new Map();
+    this.middleware = [];
+  }
+
+  /**
+   * Register middleware: { pre(taskConfig) → modifiedConfig|undefined, post(task, result) → modifiedResult|undefined }
+   */
+  use(mw) {
+    if (typeof mw !== 'object' || (!mw.pre && !mw.post)) {
+      throw new Error('Middleware must have pre and/or post hook');
+    }
+    this.middleware.push(mw);
+    return this;
+  }
+
+  async _runPreHooks(config) {
+    let cfg = config;
+    for (const mw of this.middleware) {
+      if (mw.pre) {
+        const result = await mw.pre(cfg);
+        if (result !== undefined) cfg = result;
+      }
+    }
+    return cfg;
+  }
+
+  async _runPostHooks(task, result) {
+    let res = result;
+    for (const mw of this.middleware) {
+      if (mw.post) {
+        const modified = await mw.post(task, res);
+        if (modified !== undefined) res = modified;
+      }
+    }
+    return res;
   }
 
   async run(config, options = {}) {
+    // Run pre-hooks — may modify config
+    const finalConfig = await this._runPreHooks(config);
     const taskId = uuidv4();
-    const task = new Task(taskId, config, this, options);
+    const task = new Task(taskId, finalConfig, this, options);
     
     this.activeTasks.set(taskId, task);
     await this.storage.saveTask(taskId, task.toJSON());
@@ -154,6 +190,9 @@ class Task extends EventEmitter {
       } else {
         this.status = 'completed';
       }
+      
+      // Run post-hooks — may modify results
+      this.results = await this.orchestrator._runPostHooks(this, this.results);
       
       await this.orchestrator.storage.updateTask(this.id, {
         status: this.status,

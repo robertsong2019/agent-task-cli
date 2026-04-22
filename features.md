@@ -23,8 +23,8 @@
 - [x] TaskChain: `abort()` — cancel running chain — **F7** ✅ 2026-04-16
 
 ### Orchestrator
-- [ ] Orchestrator: task timeout support
-- [ ] Orchestrator: task priority queue
+- [x] Orchestrator: task timeout support — **F11** ✅ 2026-04-19
+- [x] Orchestrator: task priority queue (PriorityQueue util) — **F12** ✅ 2026-04-19
 - [ ] Orchestrator: middleware/plugin hooks for pre/post execution
 
 ### Observability
