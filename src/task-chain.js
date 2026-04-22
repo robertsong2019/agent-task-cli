@@ -389,6 +389,42 @@ class TaskChain {
   }
 
   /**
+   * Reconstruct a TaskChain from JSON (produced by toJSON()).
+   * Note: condition/transform functions are restored from their string representation.
+   * @param {object} json - Output from toJSON()
+   * @param {object} orchestrator - Orchestrator instance
+   * @param {object} options - Chain options
+   * @returns {TaskChain}
+   */
+  static fromJSON(json, orchestrator, options = {}) {
+    const chain = new TaskChain(orchestrator, options);
+    chain.id = json.id;
+    chain.status = json.status;
+    chain.results = json.results || {};
+
+    for (const step of json.steps) {
+      const condition = step.condition ? eval(`(${step.condition})`) : null;
+      const transform = step.transform ? eval(`(${step.transform})`) : null;
+
+      chain.add(step.name, step.taskConfig, {
+        dependsOn: step.dependsOn.join(','),
+        condition,
+        transform,
+      });
+
+      // Restore step-level state
+      const chainStep = chain.steps.get(step.name);
+      chainStep.status = step.status;
+      chainStep.startedAt = step.startedAt;
+      chainStep.completedAt = step.completedAt;
+      chainStep.error = step.error;
+      chainStep.result = step.result;
+    }
+
+    return chain;
+  }
+
+  /**
    * Fire step complete callbacks
    */
   _fireStepCallback(step) {

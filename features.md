@@ -25,7 +25,7 @@
 ### Orchestrator
 - [x] Orchestrator: task timeout support — **F11** ✅ 2026-04-19
 - [x] Orchestrator: task priority queue (PriorityQueue util) — **F12** ✅ 2026-04-19
-- [ ] Orchestrator: middleware/plugin hooks for pre/post execution
+- [x] Orchestrator: middleware/plugin hooks for pre/post execution — **F13** ✅ 2026-04-22
 
 ### Observability
 - [ ] EventBus: `onBatch(channels[], handler)` — subscribe to multiple channels — **F9** ✅ 2026-04-17
