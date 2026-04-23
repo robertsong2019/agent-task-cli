@@ -19,7 +19,7 @@
 ### TaskChain
 - [x] TaskChain: `retry(stepName, maxRetries)` — retry failed steps — **F3** ✅ 2026-04-14
 - [x] TaskChain: `onStepComplete(callback)` — progress hooks — **F5** ✅ 2026-04-15
-- [x] TaskChain: `toJSON()` serialization (fromJSON pending) — **F6** ✅ 2026-04-15
+- [x] TaskChain: `toJSON()` serialization + `fromJSON()` deserialization — **F6+F14** ✅ 2026-04-15/22
 - [x] TaskChain: `abort()` — cancel running chain — **F7** ✅ 2026-04-16
 
 ### Orchestrator

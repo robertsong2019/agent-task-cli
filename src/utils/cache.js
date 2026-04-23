@@ -257,6 +257,25 @@ class Cache {
   }
 
   /**
+   * Refresh TTL on an existing key without changing its value.
+   * @param {string} key - Cache key
+   * @param {number} [newTTL] - New TTL in ms (defaults to this.defaultTTL)
+   * @returns {boolean} true if key existed and was refreshed
+   */
+  touch(key, newTTL) {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return false;
+    }
+    const ttl = newTTL != null ? newTTL : this.defaultTTL;
+    entry.expiresAt = ttl ? Date.now() + ttl : null;
+    entry.lastAccessed = Date.now();
+    return true;
+  }
+
+  /**
    * Destroy cache and cleanup interval
    */
   destroy() {

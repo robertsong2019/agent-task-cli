@@ -172,6 +172,34 @@ class EventBus {
   }
 
   /**
+   * Emit multiple events to the same channel efficiently.
+   * Records a single summary entry in history.
+   * @param {string} channel - Event channel
+   * @param {Array} items - Array of data payloads
+   * @returns {number} Number of events emitted
+   */
+  emitBatch(channel, items = []) {
+    if (!Array.isArray(items) || items.length === 0) return 0;
+    const batchId = `${channel}:batch:${Date.now()}`;
+    let count = 0;
+    for (const data of items) {
+      const event = { channel, data, timestamp: Date.now(), id: `${channel}:${Date.now()}:${count}` };
+      this._emitter.emit(channel, event);
+      this._emitter.emit('*', event);
+      count++;
+    }
+    // Single history entry for the batch
+    if (this._history.length >= this._maxHistory) this._history.shift();
+    this._history.push({
+      channel,
+      data: { batchId, count },
+      timestamp: Date.now(),
+      id: batchId
+    });
+    return count;
+  }
+
+  /**
    * Clear all subscribers and history
    */
   reset() {
