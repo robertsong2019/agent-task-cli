@@ -31,3 +31,7 @@
 - [ ] EventBus: `onBatch(channels[], handler)` — subscribe to multiple channels — **F9** ✅ 2026-04-17
 - [ ] Logger: structured JSON output mode — **F10** ✅ 2026-04-17
 - [x] Cache: `dump()` / `restore()` for persistence across restarts — **F8** ✅ 2026-04-16
+
+### Utils (Round 3)
+- [x] Cache: `touch(key, newTTL?)` — refresh TTL without changing value — **F15** ✅ 2026-04-23
+- [x] EventBus: `emitBatch(channel, items[])` — emit multiple events with single history entry — **F16** ✅ 2026-04-23
