@@ -175,6 +175,14 @@ class Cache {
    * @param {string[]} keys - Cache keys
    * @returns {object} Key-value map (missing keys omitted)
    */
+  async getOrSet(key, factory, ttl = this.defaultTTL) {
+    const existing = this.get(key);
+    if (existing !== undefined) return existing;
+    const value = typeof factory === 'function' ? await factory() : factory;
+    this.set(key, value, ttl);
+    return value;
+  }
+
   mget(keys) {
     const result = {};
     for (const key of keys) {

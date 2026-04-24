@@ -33,6 +33,18 @@ class RetryHandler {
    * @param {Object} options - Execution options
    * @returns {Promise} - Result of the function
    */
+  async executeUntil(fn, { maxRetries = this.maxRetries, validate = (r) => !!r } = {}) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const result = await fn();
+      if (validate(result)) return result;
+      if (attempt < maxRetries) {
+        const delay = this.calculateDelay(attempt);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+    return null;
+  }
+
   async execute(fn, options = {}) {
     const maxRetries = options.maxRetries ?? this.maxRetries;
     let lastError;

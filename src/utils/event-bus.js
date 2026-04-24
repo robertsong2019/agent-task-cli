@@ -70,6 +70,14 @@ class EventBus {
    * @param {function} handler - Event handler (receives event)
    * @returns {function} Unsubscribe function (removes from all channels)
    */
+  once(channel, handler) {
+    const unsub = this.on(channel, (event) => {
+      unsub();
+      handler(event);
+    });
+    return unsub;
+  }
+
   onBatch(channels, handler) {
     const unsubs = channels.map(ch => this.on(ch, handler));
     return () => unsubs.forEach(unsub => unsub());
