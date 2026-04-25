@@ -124,6 +124,34 @@ class RetryHandler {
   }
 
   /**
+   * Convenience method: execute fn with exponential backoff.
+   * @param {Function} fn - Async function to execute
+   * @param {object} [options] - Options
+   * @param {number} [options.maxRetries] - Max retries (default: from constructor)
+   * @param {number} [options.baseDelay] - Base delay ms (default: from constructor)
+   * @param {Function} [options.onRetry] - Callback(attempt, error) before each retry
+   * @returns {Promise<*>} Result of fn()
+   */
+  async withBackoff(fn, options = {}) {
+    const maxRetries = options.maxRetries ?? this.maxRetries;
+    const baseDelay = options.baseDelay ?? this.baseDelay;
+    let lastError;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        if (attempt < maxRetries) {
+          const delay = Math.min(baseDelay * Math.pow(this.backoffFactor, attempt), this.maxDelay);
+          if (options.onRetry) options.onRetry(attempt + 1, error);
+          await this.sleep(delay);
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  /**
    * Get retry statistics
    */
   getStats() {

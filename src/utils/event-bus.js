@@ -101,17 +101,6 @@ class EventBus {
   }
 
   /**
-   * One-time subscription
-   * @param {string} channel 
-   * @param {function} handler 
-   * @returns {function} Unsubscribe function
-   */
-  once(channel, handler) {
-    this._emitter.once(channel, handler);
-    return () => this._emitter.off(channel, handler);
-  }
-
-  /**
    * Wait for an event (promise-based)
    * @param {string} channel 
    * @param {number} timeoutMs - Timeout in milliseconds
@@ -204,6 +193,23 @@ class EventBus {
       timestamp: Date.now(),
       id: batchId
     });
+    return count;
+  }
+
+  /**
+   * Remove all subscribers for a specific channel
+   * @param {string} channel - Channel to clear
+   * @returns {number} Number of subscribers removed
+   */
+  removeChannel(channel) {
+    const subs = this._subscribers.get(channel);
+    const count = subs ? subs.size : 0;
+    if (subs) {
+      for (const handler of subs) {
+        this._emitter.off(channel, handler);
+      }
+      this._subscribers.delete(channel);
+    }
     return count;
   }
 

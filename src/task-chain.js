@@ -35,6 +35,27 @@ class TaskChain {
   }
 
   /**
+   * Tap into a step's lifecycle without modifying it.
+   * The callback fires after the step completes (success or fail).
+   * Unlike onStepComplete (global), this targets a specific step.
+   * @param {string} stepName - Step to observe
+   * @param {function} callback - (stepInfo) => void
+   * @returns {TaskChain} this
+   */
+  tap(stepName, callback) {
+    if (!this.steps.has(stepName)) {
+      throw new Error(`Unknown step: ${stepName}`);
+    }
+    if (typeof callback !== 'function') {
+      throw new Error('tap requires a function argument');
+    }
+    if (!this._tapCallbacks) this._tapCallbacks = new Map();
+    if (!this._tapCallbacks.has(stepName)) this._tapCallbacks.set(stepName, []);
+    this._tapCallbacks.get(stepName).push(callback);
+    return this;
+  }
+
+  /**
    * Register a progress callback, called after each step completes (success or fail).
    * @param {function} callback - (stepInfo) => void
    * @returns {TaskChain} this
@@ -431,6 +452,15 @@ class TaskChain {
     const info = { name: step.name, status: step.status, result: step.result, error: step.error };
     for (const cb of this._stepCallbacks) {
       try { cb(info); } catch (_) { /* ignore callback errors */ }
+    }
+    // Fire tap callbacks for this specific step
+    if (this._tapCallbacks) {
+      const taps = this._tapCallbacks.get(step.name);
+      if (taps) {
+        for (const cb of taps) {
+          try { cb(info); } catch (_) { /* ignore callback errors */ }
+        }
+      }
     }
   }
 }

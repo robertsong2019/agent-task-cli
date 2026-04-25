@@ -284,6 +284,26 @@ class Cache {
   }
 
   /**
+   * Create a namespace-scoped view of this cache.
+   * All keys are auto-prefixed with `prefix:`.
+   * Shares the same underlying cache store.
+   * @param {string} prefix - Namespace prefix
+   * @returns {object} Scoped cache interface { get, set, has, delete, clear, keys, size }
+   */
+  withNamespace(prefix) {
+    const pfx = (key) => `${prefix}:${key}`;
+    return {
+      get: (key) => this.get(pfx(key)),
+      set: (key, value, ttl) => this.set(pfx(key), value, ttl),
+      has: (key) => this.has(pfx(key)),
+      delete: (key) => this.delete(pfx(key)),
+      clear: () => this.invalidateByPrefix(prefix + ':'),
+      keys: () => this.keys().filter(k => k.startsWith(prefix + ':')).map(k => k.slice(prefix.length + 1)),
+      size: () => this.keys().filter(k => k.startsWith(prefix + ':')).length
+    };
+  }
+
+  /**
    * Destroy cache and cleanup interval
    */
   destroy() {
