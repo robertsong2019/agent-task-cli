@@ -3,6 +3,7 @@ const { Cache } = require('../src/utils/cache');
 describe('F18: Cache.getOrSet()', () => {
   let cache;
   beforeEach(() => { cache = new Cache({ defaultTTL: 1000 }); });
+  afterEach(() => { cache.destroy(); });
 
   test('returns cached value when key exists', async () => {
     cache.set('k', 'v');
