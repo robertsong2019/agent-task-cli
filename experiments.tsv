@@ -7,3 +7,4 @@ timestamp	commit	metric	value	status	description
 2026-04-22T22:15	216609c	test_pass_rate	271/271	keep	F14: TaskChain.fromJSON() deserialization — 5 new tests
 2026-04-23T22:00	55ada9c	test_pass_rate	282/282	keep	F15: Cache.touch() + F16: EventBus.emitBatch() — 11 new tests (271→282)
 2026-04-25T21:00	8ce4702	test_pass_rate	320/320 (100%)	keep	F20: Cache.withNamespace + F21: TaskChain.tap + F22: RetryHandler.withBackoff + F23: EventBus.removeChannel (295→320, +25 tests)
+2026-04-26T22:05:34+08:00	5695402	test_pass_rate	100%	keep	F24-F26: EventBus.waitFor, Cache.has, ConcurrencyManager.executeWithTimeout

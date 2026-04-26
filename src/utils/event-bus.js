@@ -214,6 +214,29 @@ class EventBus {
   }
 
   /**
+   * Wait for the next event on a channel (promise-based)
+   * @param {string} channel - Channel to listen on
+   * @param {number} [timeout] - Max ms to wait
+   * @returns {Promise<object>} - Event data
+   */
+  waitFor(channel, timeout) {
+    return new Promise((resolve, reject) => {
+      let timer;
+      const handler = (data) => {
+        if (timer) clearTimeout(timer);
+        resolve(data);
+      };
+      const unsub = this.on(channel, handler);
+      if (timeout) {
+        timer = setTimeout(() => {
+          unsub();
+          reject(new Error(`waitFor('${channel}') timed out after ${timeout}ms`));
+        }, timeout);
+      }
+    });
+  }
+
+  /**
    * Clear all subscribers and history
    */
   reset() {

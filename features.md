@@ -42,3 +42,6 @@
 - [x] TaskChain: `tap(stepName, callback)` — observe specific step lifecycle — **F21** ✅ 2026-04-25
 - [x] RetryHandler: `withBackoff(fn, opts)` — exponential backoff convenience method — **F22** ✅ 2026-04-25
 - [x] EventBus: `removeChannel(channel)` — remove all subscribers for a channel — **F23** ✅ 2026-04-25
+- [x] EventBus: `waitFor(channel, timeout?)` — promise-based wait for next event — **F24** ✅ 2026-04-26
+- [x] Cache: `has(key)` — check existence without affecting stats — **F25** ✅ 2026-04-26
+- [x] ConcurrencyManager: `executeWithTimeout(fn, ms, taskId?)` — execute with per-task timeout — **F26** ✅ 2026-04-26

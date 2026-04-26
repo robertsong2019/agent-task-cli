@@ -112,6 +112,28 @@ class ConcurrencyManager {
   }
 
   /**
+   * Execute a function with concurrency control and per-task timeout
+   * @param {Function} fn - Async function to execute
+   * @param {number} ms - Timeout in milliseconds
+   * @param {string} [taskId] - Optional task identifier
+   * @returns {Promise}
+   */
+  async executeWithTimeout(fn, ms, taskId = null) {
+    return this.execute(async () => {
+      let timer;
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Task ${taskId || 'anonymous'} timed out after ${ms}ms`)), ms);
+      });
+      try {
+        const result = await Promise.race([fn(), timeout]);
+        return result;
+      } finally {
+        clearTimeout(timer);
+      }
+    }, taskId);
+  }
+
+  /**
    * Wait for all active tasks to complete
    */
   async drain() {

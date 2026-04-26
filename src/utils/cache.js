@@ -47,6 +47,21 @@ class Cache {
   }
 
   /**
+   * Check if a key exists in cache without affecting stats
+   * @param {string} key
+   * @returns {boolean}
+   */
+  has(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Set a value in cache
    * @param {string} key - Cache key
    * @param {*} value - Value to cache
