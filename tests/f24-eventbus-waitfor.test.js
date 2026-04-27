@@ -12,7 +12,7 @@ describe('F24: EventBus waitFor', () => {
   });
 
   test('rejects on timeout', async () => {
-    await expect(bus.waitFor('slow', 50)).rejects.toThrow(/timed out/);
+    await expect(bus.waitFor('slow', 50)).rejects.toThrow(/Timeout waiting/);
   });
 
   test('resolves before timeout', async () => {

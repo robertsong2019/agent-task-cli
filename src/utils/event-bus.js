@@ -106,6 +106,10 @@ class EventBus {
    * @param {number} timeoutMs - Timeout in milliseconds
    * @returns {Promise<object>} The event data
    */
+  /**
+   * Wait for a specific event with optional timeout
+   * Uses `once` for cleaner subscription semantics.
+   */
   waitFor(channel, timeoutMs = 30000) {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -211,29 +215,6 @@ class EventBus {
       this._subscribers.delete(channel);
     }
     return count;
-  }
-
-  /**
-   * Wait for the next event on a channel (promise-based)
-   * @param {string} channel - Channel to listen on
-   * @param {number} [timeout] - Max ms to wait
-   * @returns {Promise<object>} - Event data
-   */
-  waitFor(channel, timeout) {
-    return new Promise((resolve, reject) => {
-      let timer;
-      const handler = (data) => {
-        if (timer) clearTimeout(timer);
-        resolve(data);
-      };
-      const unsub = this.on(channel, handler);
-      if (timeout) {
-        timer = setTimeout(() => {
-          unsub();
-          reject(new Error(`waitFor('${channel}') timed out after ${timeout}ms`));
-        }, timeout);
-      }
-    });
   }
 
   /**

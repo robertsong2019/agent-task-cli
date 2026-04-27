@@ -90,7 +90,7 @@ describe('EventBus', () => {
     });
 
     test('should timeout if event not emitted', async () => {
-      await expect(bus.waitFor('never-happens', 50))
+      await expect(bus.waitFor('never-happens', 200))
         .rejects.toThrow('Timeout waiting for event: never-happens');
     });
   });
