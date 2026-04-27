@@ -88,6 +88,14 @@ class ConcurrencyManager {
   }
 
   /**
+   * Get the number of pending tasks in the queue.
+   * @returns {number}
+   */
+  get queueSize() {
+    return this.queue.length;
+  }
+
+  /**
    * Get current status
    */
   getStatus() {

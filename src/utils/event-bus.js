@@ -227,6 +227,14 @@ class EventBus {
   }
 
   /**
+   * Get all active channel names.
+   * @returns {string[]}
+   */
+  channelNames() {
+    return [...this._subscribers.keys()];
+  }
+
+  /**
    * Get bus stats
    * @returns {object}
    */

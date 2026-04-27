@@ -319,6 +319,24 @@ class Cache {
   }
 
   /**
+   * Delete all keys matching a glob-like pattern.
+   * Supports `*` as wildcard.
+   * @param {string} pattern - Glob pattern (e.g., 'user:*:profile')
+   * @returns {number} Number of keys deleted
+   */
+  deleteByPattern(pattern) {
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+    let count = 0;
+    for (const key of [...this.cache.keys()]) {
+      if (regex.test(key)) {
+        this.delete(key);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /**
    * Destroy cache and cleanup interval
    */
   destroy() {
