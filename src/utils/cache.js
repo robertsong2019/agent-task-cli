@@ -327,6 +327,28 @@ class Cache {
     }
     this.clear();
   }
+
+  /**
+   * Reset hit/miss/eviction statistics counters to zero.
+   * @returns {void}
+   */
+  resetStats() {
+    this.stats = { hits: 0, misses: 0, evictions: 0, size: this.cache.size };
+  }
+
+  /**
+   * Return all non-expired entries with full metadata.
+   * @returns {Array<{key: string, value: *, createdAt: number, lastAccessed: number, expiresAt: number|null}>}
+   */
+  entries() {
+    const now = Date.now();
+    const result = [];
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      result.push({ key, value: entry.value, createdAt: entry.createdAt, lastAccessed: entry.lastAccessed, expiresAt: entry.expiresAt });
+    }
+    return result;
+  }
 }
 
 /**

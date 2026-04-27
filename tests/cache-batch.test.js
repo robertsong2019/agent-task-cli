@@ -76,4 +76,51 @@ describe('Cache batch operations', () => {
       expect(cache.size()).toBe(1);
     });
   });
+
+  describe('resetStats', () => {
+    test('resets hit/miss/eviction counters to zero', () => {
+      cache.set('x', 1);
+      cache.get('x'); // hit
+      cache.get('missing'); // miss
+      const before = cache.getStats();
+      expect(before.hits).toBeGreaterThanOrEqual(1);
+      expect(before.misses).toBeGreaterThanOrEqual(1);
+      cache.resetStats();
+      const after = cache.getStats();
+      expect(after.hits).toBe(0);
+      expect(after.misses).toBe(0);
+      expect(after.evictions).toBe(0);
+      expect(after.size).toBe(cache.size());
+    });
+  });
+
+  describe('entries', () => {
+    test('returns all non-expired entries with metadata', () => {
+      cache.set('a', 1);
+      cache.set('b', 'hello', 60000);
+      const entries = cache.entries();
+      expect(entries.length).toBe(2);
+      const a = entries.find(e => e.key === 'a');
+      expect(a.value).toBe(1);
+      expect(a.createdAt).toBeTruthy();
+      expect(a.lastAccessed).toBeTruthy();
+      expect(a.expiresAt).toBeTruthy(); // default TTL
+      const b = entries.find(e => e.key === 'b');
+      expect(b.value).toBe('hello');
+    });
+
+    test('excludes expired entries', () => {
+      cache.set('expired', 'val', 1);
+      return new Promise(resolve => setTimeout(() => {
+        const entries = cache.entries();
+        expect(entries.find(e => e.key === 'expired')).toBeUndefined();
+        resolve();
+      }, 10));
+    });
+
+    test('returns empty array for empty cache', () => {
+      cache.clear();
+      expect(cache.entries()).toEqual([]);
+    });
+  });
 });
