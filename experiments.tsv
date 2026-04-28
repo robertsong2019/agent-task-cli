@@ -10,3 +10,4 @@ timestamp	commit	metric	value	status	description
 2026-04-26T22:05:34+08:00	5695402	test_pass_rate	100%	keep	F24-F26: EventBus.waitFor, Cache.has, ConcurrencyManager.executeWithTimeout
 2026-04-27T19:20:28+08:00	487b968	test_pass_rate	331/331(100%)	keep	fix EventBus.waitFor duplicate definition — consolidate to single impl with once(). Dedupe 19 lines, fix error message mismatch. 0 new tests but fixed 1 failing test.
 2026-04-27T22:07:14+08:00	a1364a1	test_pass_rate	344/344 (100%)	keep	F27-F29: EventBus.channelNames, Cache.deleteByPattern, ConcurrencyManager.queueSize (335→344, +9 tests)
+2026-04-28T19:30	dd50333	test_count	359/359 (100%)	keep	StreamManager test coverage — 15 new tests (344→359). createStream, append, subscribe/unsubscribe, complete, error, destroy, maxBufferSize, iterate, sse, streamAgentOutput (execute/executeStream/error).

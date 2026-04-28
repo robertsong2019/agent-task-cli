@@ -4,10 +4,20 @@ class Logger {
     this.levels = { error: 0, warn: 1, info: 2, debug: 3 };
     this.jsonMode = options.json || false;
     this.context = options.context || {};
+    this._historySize = options.historySize || 0;
+    this._history = [];
   }
 
   _write(level, message, ...args) {
     if (this.levels[level] > this.levels[this.level]) return;
+
+    // Capture history if enabled
+    if (this._historySize > 0) {
+      this._history.push({ level, message, timestamp: new Date().toISOString() });
+      if (this._history.length > this._historySize) {
+        this._history.splice(0, this._history.length - this._historySize);
+      }
+    }
 
     if (this.jsonMode) {
       const entry = {
@@ -29,6 +39,20 @@ class Logger {
   warn(message, ...args) { this._write('warn', message, ...args); }
   info(message, ...args) { this._write('info', message, ...args); }
   debug(message, ...args) { this._write('debug', message, ...args); }
+
+  /** Get captured log history (only if historySize > 0) */
+  getHistory(options = {}) {
+    let entries = this._history;
+    if (options.level) {
+      entries = entries.filter(e => e.level === options.level);
+    }
+    return [...entries];
+  }
+
+  /** Clear log history */
+  clearHistory() {
+    this._history = [];
+  }
 
   /** Create a child logger with extra context merged into JSON output */
   child(context) {

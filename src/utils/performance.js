@@ -158,6 +158,44 @@ class PerformanceManager {
   }
 
   /**
+   * Get cached value by key (without args). Returns undefined if not found or expired.
+   */
+  getCached(key) {
+    for (const [k, entry] of this.cache) {
+      if (k.startsWith(key + ':')) {
+        if (Date.now() - entry.timestamp < this.options.cacheTTL) {
+          return entry.data;
+        }
+        this.cache.delete(k);
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Remove cached entries matching key prefix
+   */
+  invalidateCache(key) {
+    for (const k of this.cache.keys()) {
+      if (k.startsWith(key + ':')) {
+        this.cache.delete(k);
+      }
+    }
+  }
+
+  /**
+   * Remove all cached entries whose key starts with prefix
+   */
+  invalidateCacheByPrefix(prefix) {
+    for (const k of this.cache.keys()) {
+      if (k.startsWith(prefix)) {
+        this.cache.delete(k);
+      }
+    }
+  }
+
+  /**
    * Clear cache and reset metrics
    */
   reset() {

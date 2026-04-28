@@ -121,6 +121,16 @@ class Storage {
     delete tasks[taskId];
     await this.saveTasks(tasks);
   }
+
+  /** Count tasks, optionally filtered by status */
+  async countTasks(status = null) {
+    const tasks = await this.loadTasks();
+    const values = Object.values(tasks);
+    if (status) {
+      return values.filter(t => t.status === status).length;
+    }
+    return values.length;
+  }
 }
 
 module.exports = { Storage };
