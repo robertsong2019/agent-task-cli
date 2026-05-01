@@ -384,6 +384,49 @@ class TaskChain {
   }
 
   /**
+   * Get overall progress: completed/total steps.
+   * @returns {{ total: number, completed: number, failed: number, pending: number, skipped: number, percent: number }}
+   */
+  get progress() {
+    let completed = 0, failed = 0, pending = 0, skipped = 0;
+    for (const name of this.stepOrder) {
+      const step = this.steps.get(name);
+      if (step.status === 'completed') completed++;
+      else if (step.status === 'failed') failed++;
+      else if (step.status === 'skipped') skipped++;
+      else pending++;
+    }
+    const total = this.stepOrder.length;
+    return {
+      total,
+      completed,
+      failed,
+      pending,
+      skipped,
+      percent: total === 0 ? 0 : Math.round(((completed + skipped) / total) * 100),
+    };
+  }
+
+  /**
+   * Retry all failed steps in sequence.
+   * @param {{ resetPending?: boolean }} opts - If resetPending, also retry pending steps
+   * @returns {Promise<{ retried: string[], results: object }>} Names of retried steps
+   */
+  async retryAll(opts = {}) {
+    const retried = [];
+    for (const name of this.stepOrder) {
+      const step = this.steps.get(name);
+      if (step.status === 'failed' || (opts.resetPending && step.status === 'pending')) {
+        step.status = 'pending';
+        step.error = null;
+        await this.retry(name);
+        retried.push(name);
+      }
+    }
+    return { retried, results: this.results };
+  }
+
+  /**
    * Export chain as JSON (serializable definition)
    */
   toJSON() {
