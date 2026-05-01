@@ -12,3 +12,4 @@ timestamp	commit	metric	value	status	description
 2026-04-27T22:07:14+08:00	a1364a1	test_pass_rate	344/344 (100%)	keep	F27-F29: EventBus.channelNames, Cache.deleteByPattern, ConcurrencyManager.queueSize (335→344, +9 tests)
 2026-04-28T19:30	dd50333	test_count	359/359 (100%)	keep	StreamManager test coverage — 15 new tests (344→359). createStream, append, subscribe/unsubscribe, complete, error, destroy, maxBufferSize, iterate, sse, streamAgentOutput (execute/executeStream/error).
 2026-04-28T22:30	37c0568	test_count	375/375 (100%)	keep	F30-F32: Logger.getHistory(historySize+levelFilter), Storage.countTasks(status?), PerformanceManager(getCached/invalidateCache/invalidateCacheByPrefix) — 16 new tests
+2026-05-01T19:45	e77fcbf	test_count	380/380 (100%)	keep	F33: TaskChain.progress getter + retryAll(opts) — 5 new tests (375→380). progress reports total/completed/failed/pending/skipped/percent. retryAll retries all failed steps with optional resetPending.
