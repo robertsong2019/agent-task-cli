@@ -164,6 +164,46 @@ class RetryHandler {
   markSuccessfulRetry() {
     this.stats.successfulRetries++;
   }
+  /**
+   * Circuit breaker pattern: track failures and short-circuit when threshold is reached.
+   * @param {Function} fn - Async function to execute
+   * @param {object} [opts]
+   * @param {number} [opts.failureThreshold=5] - Failures before opening circuit
+   * @param {number} [opts.resetTimeoutMs=30000] - Time before trying again (half-open)
+   * @returns {Promise<*>} Result of fn()
+   */
+  async withCircuitBreaker(fn, opts = {}) {
+    if (!this._circuitBreaker) {
+      this._circuitBreaker = { failures: 0, state: 'closed', openedAt: 0 };
+    }
+    const cb = this._circuitBreaker;
+    const failureThreshold = opts.failureThreshold ?? 5;
+    const resetTimeoutMs = opts.resetTimeoutMs ?? 30000;
+
+    // Check if circuit should half-open
+    if (cb.state === 'open' && Date.now() - cb.openedAt >= resetTimeoutMs) {
+      cb.state = 'half-open';
+    }
+
+    if (cb.state === 'open') {
+      throw new Error('Circuit breaker is open');
+    }
+
+    try {
+      const result = await fn();
+      // Success: reset
+      cb.failures = 0;
+      cb.state = 'closed';
+      return result;
+    } catch (error) {
+      cb.failures++;
+      if (cb.failures >= failureThreshold) {
+        cb.state = 'open';
+        cb.openedAt = Date.now();
+      }
+      throw error;
+    }
+  }
 }
 
 module.exports = { RetryHandler };

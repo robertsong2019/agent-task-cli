@@ -78,6 +78,32 @@ class EventBus {
     return unsub;
   }
 
+  /**
+   * Add a handler to the FRONT of the subscriber list for a channel.
+   * It will be called before any handlers added via `on()`.
+   * @param {string} channel - Event channel
+   * @param {function} handler - Event handler
+   * @returns {function} Unsubscribe function
+   */
+  prependListener(channel, handler) {
+    // Use EventEmitter.prependListener for correct ordering
+    this._emitter.prependListener(channel, handler);
+
+    if (!this._subscribers.has(channel)) {
+      this._subscribers.set(channel, new Set());
+    }
+    this._subscribers.get(channel).add(handler);
+
+    return () => {
+      this._emitter.off(channel, handler);
+      const subs = this._subscribers.get(channel);
+      if (subs) {
+        subs.delete(handler);
+        if (subs.size === 0) this._subscribers.delete(channel);
+      }
+    };
+  }
+
   onBatch(channels, handler) {
     const unsubs = channels.map(ch => this.on(ch, handler));
     return () => unsubs.forEach(unsub => unsub());

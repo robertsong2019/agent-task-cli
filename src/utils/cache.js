@@ -250,6 +250,19 @@ class Cache {
   }
 
   /**
+   * Atomically get a value and delete it from cache (pop).
+   * @param {string} key - Cache key
+   * @returns {*} - Cached value or undefined
+   */
+  getAndDelete(key) {
+    const value = this.get(key);
+    if (value !== undefined) {
+      this.delete(key);
+    }
+    return value;
+  }
+
+  /**
    * Dump all non-expired cache entries as a serializable object.
    * @returns {object[]} Array of { key, value, ttlRemaining }
    */

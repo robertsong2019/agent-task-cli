@@ -32,6 +32,11 @@
 - [ ] Logger: structured JSON output mode — **F10** ✅ 2026-04-17
 - [x] Cache: `dump()` / `restore()` for persistence across restarts — **F8** ✅ 2026-04-16
 
+### Utils (Round 4)
+- [x] EventBus: `prependListener(channel, handler)` — add handler to front of subscriber list — **F34** ✅ 2026-05-01
+- [x] Cache: `getAndDelete(key)` — atomic pop (get + delete) — **F35** ✅ 2026-05-01
+- [x] RetryHandler: `withCircuitBreaker(fn, opts)` — circuit breaker pattern — **F36** ✅ 2026-05-01
+
 ### Utils (Round 3)
 - [x] Cache: `touch(key, newTTL?)` — refresh TTL without changing value — **F15** ✅ 2026-04-23
 - [x] EventBus: `emitBatch(channel, items[])` — emit multiple events with single history entry — **F16** ✅ 2026-04-23
