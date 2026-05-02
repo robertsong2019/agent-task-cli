@@ -53,3 +53,8 @@
 - [x] EventBus: `channelNames()` — list all active channel names — **F27** ✅ 2026-04-27
 - [x] Cache: `deleteByPattern(pattern)` — delete keys matching glob pattern — **F28** ✅ 2026-04-27
 - [x] ConcurrencyManager: `queueSize` getter — expose pending task count — **F29** ✅ 2026-04-27
+
+### Utils (Round 5)
+- [x] Cache: `values()` — return all non-expired values — **F38** ✅ 2026-05-02
+- [x] TaskChain: `hasStep(name)` — check if step exists — **F39** ✅ 2026-05-02
+- [x] EventBus: `clearHistory()` — clear history buffer, return count — **F40** ✅ 2026-05-02
