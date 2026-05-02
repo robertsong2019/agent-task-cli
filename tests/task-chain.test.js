@@ -317,4 +317,62 @@ describe('TaskChain', () => {
       return expect(chain.execute()).rejects.toThrow('Unknown step referenced');
     });
   });
+
+  describe('step_count', () => {
+    test('returns 0 for empty chain', () => {
+      const chain = new TaskChain(orchestrator, { eventBus });
+      expect(chain.step_count).toBe(0);
+    });
+
+    test('returns correct count after adding steps', () => {
+      const chain = new TaskChain(orchestrator, { eventBus });
+      chain.add('a', { name: 't1' });
+      chain.add('b', { name: 't2' });
+      expect(chain.step_count).toBe(2);
+    });
+  });
+
+  describe('insert_step', () => {
+    test('inserts at beginning', () => {
+      const chain = new TaskChain(orchestrator, { eventBus });
+      chain.add('b', { name: 't2' });
+      chain.insert_step(0, 'a', { name: 't1' });
+      expect(chain.stepOrder).toEqual(['a', 'b']);
+      expect(chain.step_count).toBe(2);
+    });
+
+    test('inserts at end', () => {
+      const chain = new TaskChain(orchestrator, { eventBus });
+      chain.add('a', { name: 't1' });
+      chain.insert_step(1, 'c', { name: 't3' });
+      expect(chain.stepOrder).toEqual(['a', 'c']);
+    });
+
+    test('rejects duplicate name', () => {
+      const chain = new TaskChain(orchestrator, { eventBus });
+      chain.add('a', { name: 't1' });
+      expect(() => chain.insert_step(0, 'a', { name: 't2' })).toThrow('already exists');
+    });
+
+    test('rejects invalid index', () => {
+      const chain = new TaskChain(orchestrator, { eventBus });
+      expect(() => chain.insert_step(5, 'x', {})).toThrow('Invalid index');
+    });
+  });
+
+  describe('remove_step', () => {
+    test('removes step and cleans up deps', () => {
+      const chain = new TaskChain(orchestrator, { eventBus });
+      chain.add('a', { name: 't1' });
+      chain.add('b', { name: 't2' }, { dependsOn: 'a' });
+      expect(chain.remove_step('a')).toBe(true);
+      expect(chain.stepOrder).toEqual(['b']);
+      expect(chain.steps.get('b').dependsOn).toEqual([]);
+    });
+
+    test('returns false for missing step', () => {
+      const chain = new TaskChain(orchestrator, { eventBus });
+      expect(chain.remove_step('nonexistent')).toBe(false);
+    });
+  });
 });

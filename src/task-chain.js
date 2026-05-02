@@ -427,6 +427,59 @@ class TaskChain {
   }
 
   /**
+   * Number of steps in the chain.
+   */
+  get step_count() {
+    return this.stepOrder.length;
+  }
+
+  /**
+   * Insert a step at a specific index.
+   * @param {number} index - 0-based position
+   * @param {string} name - Step name
+   * @param {object} taskConfig - Task config
+   * @param {object} stepOptions - Step options (same as add())
+   * @returns {TaskChain} this
+   */
+  insert_step(index, name, taskConfig, stepOptions = {}) {
+    if (this.steps.has(name)) throw new Error(`Step "${name}" already exists`);
+    if (index < 0 || index > this.stepOrder.length) throw new Error(`Invalid index: ${index}`);
+
+    const dependsOn = Array.isArray(stepOptions.dependsOn)
+      ? stepOptions.dependsOn
+      : stepOptions.dependsOn
+        ? stepOptions.dependsOn.split(',').map(s => s.trim())
+        : [];
+
+    this.steps.set(name, {
+      name, taskConfig, dependsOn,
+      condition: stepOptions.condition || null,
+      transform: stepOptions.transform || null,
+      status: 'pending', result: null, error: null,
+      startedAt: null, completedAt: null
+    });
+    this.stepOrder.splice(index, 0, name);
+    return this;
+  }
+
+  /**
+   * Remove a step by name. Also removes it from other steps' dependsOn lists.
+   * @param {string} name - Step to remove
+   * @returns {boolean} true if found and removed
+   */
+  remove_step(name) {
+    if (!this.steps.has(name)) return false;
+    this.steps.delete(name);
+    this.stepOrder = this.stepOrder.filter(n => n !== name);
+    // Clean up dependency references
+    for (const step of this.steps.values()) {
+      step.dependsOn = step.dependsOn.filter(d => d !== name);
+    }
+    delete this.results[name];
+    return true;
+  }
+
+  /**
    * Export chain as JSON (serializable definition)
    */
   toJSON() {
