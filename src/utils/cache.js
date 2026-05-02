@@ -350,6 +350,20 @@ class Cache {
   }
 
   /**
+   * Return all non-expired values from cache.
+   * @returns {Array}
+   */
+  values() {
+    const now = Date.now();
+    const result = [];
+    for (const [, entry] of this.cache.entries()) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      result.push(entry.value);
+    }
+    return result;
+  }
+
+  /**
    * Destroy cache and cleanup interval
    */
   destroy() {

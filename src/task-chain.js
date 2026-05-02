@@ -291,6 +291,15 @@ class TaskChain {
   /**
    * Get chain status
    */
+  /**
+   * Check if a step exists in the chain.
+   * @param {string} name - Step name
+   * @returns {boolean}
+   */
+  hasStep(name) {
+    return this.steps.has(name);
+  }
+
   getStatus() {
     return {
       id: this.id,

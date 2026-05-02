@@ -231,6 +231,16 @@ class EventBus {
    * @param {string} channel - Channel to clear
    * @returns {number} Number of subscribers removed
    */
+  /**
+   * Clear the event history buffer.
+   * @returns {number} Number of history entries cleared
+   */
+  clearHistory() {
+    const count = this._history.length;
+    this._history = [];
+    return count;
+  }
+
   removeChannel(channel) {
     const subs = this._subscribers.get(channel);
     const count = subs ? subs.size : 0;
