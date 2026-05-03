@@ -58,3 +58,8 @@
 - [x] Cache: `values()` — return all non-expired values — **F38** ✅ 2026-05-02
 - [x] TaskChain: `hasStep(name)` — check if step exists — **F39** ✅ 2026-05-02
 - [x] EventBus: `clearHistory()` — clear history buffer, return count — **F40** ✅ 2026-05-02
+
+### Utils (Round 6)
+- [x] Storage: `clear()` — delete all tasks, return count — **F46** ✅ 2026-05-03
+- [x] RetryHandler: `resetCircuitBreaker()` + `getCircuitBreakerState()` — CB state management — **F47** ✅ 2026-05-03
+- [x] ConcurrencyManager: `cancelQueued(taskId)` — cancel specific queued task — **F48** ✅ 2026-05-03
