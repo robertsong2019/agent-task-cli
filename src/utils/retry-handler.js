@@ -151,6 +151,21 @@ class RetryHandler {
     throw lastError;
   }
 
+  /** Reset the circuit breaker to closed state. */
+  resetCircuitBreaker() {
+    if (this._circuitBreaker) {
+      this._circuitBreaker.failures = 0;
+      this._circuitBreaker.state = 'closed';
+      this._circuitBreaker.openedAt = 0;
+    }
+  }
+
+  /** Get current circuit breaker state. Returns 'uninitialized' if never used. */
+  getCircuitBreakerState() {
+    if (!this._circuitBreaker) return 'uninitialized';
+    return this._circuitBreaker.state;
+  }
+
   /**
    * Get retry statistics
    */

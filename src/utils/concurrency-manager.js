@@ -150,6 +150,15 @@ class ConcurrencyManager {
     }
   }
 
+  /** Cancel a queued task by taskId. Returns true if found and cancelled. */
+  cancelQueued(taskId) {
+    const idx = this.queue.findIndex(item => item.taskId === taskId);
+    if (idx === -1) return false;
+    const [item] = this.queue.splice(idx, 1);
+    item.reject(new Error(`Task ${taskId} cancelled`));
+    return true;
+  }
+
   /**
    * Update max concurrent limit
    */

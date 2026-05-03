@@ -122,6 +122,14 @@ class Storage {
     await this.saveTasks(tasks);
   }
 
+  /** Clear all tasks — deletes the tasks file. Returns number of tasks removed. */
+  async clear() {
+    const tasks = await this.loadTasks();
+    const count = Object.keys(tasks).length;
+    await this.saveTasks({});
+    return count;
+  }
+
   /** Count tasks, optionally filtered by status */
   async countTasks(status = null) {
     const tasks = await this.loadTasks();
