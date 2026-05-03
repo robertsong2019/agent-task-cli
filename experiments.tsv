@@ -16,3 +16,5 @@ timestamp	commit	metric	value	status	description
 2026-05-01T22:05	d38e7d7	test_count	392/392 (100%)	keep	F34-F36: EventBus.prependListener, Cache.getAndDelete, RetryHandler.withCircuitBreaker — 12 new tests (380→392)
 2026-05-02T19:15	c4f88d0	test_count	416/416 (100%)	keep	F37: TaskChain step_count getter + insert_step/remove_step — 11 new chain manipulation tests
 2026-05-02T22:10	98b9494	test_count	425/425 (100%)	keep	F38-F40: Cache.values(), TaskChain.hasStep(), EventBus.clearHistory() — 9 new tests (416→425)
+2026-05-03T21:00	e2d4d61	test_count	445/445 (100%)	keep	F41-F42: CouncilPattern + PipelinePattern tests — 20 new tests covering convergence strategies, failure handling, validation gates, multi-round discussion
+2026-05-03T21:15	ddcfa99	test_count	465/465 (100%)	keep	F43-F45: SupervisorPattern (parallel/sequential/adaptive strategies) + WorkCrewPattern (merge/bestOf/consensus convergence) + AutoRoutingPattern (keyword-based routing, confidence thresholds) — 20 new tests
