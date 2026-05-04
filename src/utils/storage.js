@@ -130,6 +130,12 @@ class Storage {
     return count;
   }
 
+  /** Find tasks by arbitrary metadata field */
+  async findByMetadata(key, value) {
+    const tasks = await this.loadTasks();
+    return Object.values(tasks).filter(t => t[key] === value);
+  }
+
   /** Count tasks, optionally filtered by status */
   async countTasks(status = null) {
     const tasks = await this.loadTasks();

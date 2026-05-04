@@ -84,6 +84,21 @@ class Cache {
     this.stats.size = this.cache.size;
   }
 
+  /** Set with absolute expiry timestamp instead of relative TTL */
+  setWithExpiry(key, value, expiresAt) {
+    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+      this.evictLRU();
+    }
+    const entry = {
+      value,
+      createdAt: Date.now(),
+      lastAccessed: Date.now(),
+      expiresAt: expiresAt || null
+    };
+    this.cache.set(key, entry);
+    this.stats.size = this.cache.size;
+  }
+
   /**
    * Check if key exists in cache
    */

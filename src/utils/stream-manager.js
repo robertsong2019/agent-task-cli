@@ -122,6 +122,24 @@ class StreamManager extends EventEmitter {
   }
 
   /**
+   * Get stream statistics
+   */
+  getStreamStats(taskId) {
+    const stream = this.streams.get(taskId);
+    if (!stream) return null;
+    const duration = (stream.completedAt || Date.now()) - stream.startedAt;
+    return {
+      taskId: stream.id,
+      chunkCount: stream.chunks.length,
+      bufferLength: stream.buffer.length,
+      duration,
+      throughput: duration > 0 ? (stream.buffer.length / (duration / 1000)).toFixed(2) : '0',
+      completed: stream.completed,
+      error: stream.error
+    };
+  }
+
+  /**
    * Get the full buffered content
    */
   getBuffer(taskId) {
