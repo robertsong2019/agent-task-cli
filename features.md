@@ -63,3 +63,8 @@
 - [x] Storage: `clear()` — delete all tasks, return count — **F46** ✅ 2026-05-03
 - [x] RetryHandler: `resetCircuitBreaker()` + `getCircuitBreakerState()` — CB state management — **F47** ✅ 2026-05-03
 - [x] ConcurrencyManager: `cancelQueued(taskId)` — cancel specific queued task — **F48** ✅ 2026-05-03
+
+### Utils (Round 7)
+- [x] Storage: `findByMetadata(key, value)` — find tasks by arbitrary field — **F49** ✅ 2026-05-04
+- [x] StreamManager: `getStreamStats(taskId)` — stream stats (duration, chunks, throughput) — **F50** ✅ 2026-05-04
+- [x] Cache: `setWithExpiry(key, value, expiresAt)` — set with absolute expiry timestamp — **F51** ✅ 2026-05-04
