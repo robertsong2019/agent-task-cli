@@ -263,6 +263,37 @@ class EventBus {
   }
 
   /**
+   * Get subscriber count for a specific channel.
+   * @param {string} channel
+   * @returns {number}
+   */
+  subscriberCount(channel) {
+    const subs = this._subscribers.get(channel);
+    return subs ? subs.size : 0;
+  }
+
+  /**
+   * Wait for an event matching a glob pattern (promise-based).
+   * @param {string} pattern - Glob pattern (e.g., 'task:*')
+   * @param {number} timeoutMs - Timeout in milliseconds (default 30s)
+   * @returns {Promise<object>} The matched event
+   */
+  waitForPattern(pattern, timeoutMs = 30000) {
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        unsub();
+        reject(new Error(`Timeout waiting for pattern: ${pattern}`));
+      }, timeoutMs);
+      const unsub = this.onPattern(pattern, (event) => {
+        clearTimeout(timer);
+        unsub();
+        resolve(event);
+      });
+    });
+  }
+
+  /**
    * Get all active channel names.
    * @returns {string[]}
    */

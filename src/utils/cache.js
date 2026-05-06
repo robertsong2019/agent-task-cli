@@ -365,6 +365,21 @@ class Cache {
   }
 
   /**
+   * Find cache keys matching a predicate function.
+   * @param {function} predicate - (key, value) => boolean
+   * @returns {string[]} Matching keys
+   */
+  findKeys(predicate) {
+    const now = Date.now();
+    const result = [];
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      if (predicate(key, entry.value)) result.push(key);
+    }
+    return result;
+  }
+
+  /**
    * Return all non-expired values from cache.
    * @returns {Array}
    */

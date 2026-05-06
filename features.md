@@ -68,3 +68,8 @@
 - [x] Storage: `findByMetadata(key, value)` — find tasks by arbitrary field — **F49** ✅ 2026-05-04
 - [x] StreamManager: `getStreamStats(taskId)` — stream stats (duration, chunks, throughput) — **F50** ✅ 2026-05-04
 - [x] Cache: `setWithExpiry(key, value, expiresAt)` — set with absolute expiry timestamp — **F51** ✅ 2026-05-04
+
+### Utils (Round 8)
+- [x] EventBus: `subscriberCount(channel)` — count subscribers for a channel — **F52** ✅ 2026-05-06
+- [x] Cache: `findKeys(predicate)` — find keys by predicate function — **F53** ✅ 2026-05-06
+- [x] EventBus: `waitForPattern(pattern, timeout?)` — promise-based wait for pattern-matched event — **F54** ✅ 2026-05-06
