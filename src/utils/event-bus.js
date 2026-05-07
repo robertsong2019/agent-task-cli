@@ -37,6 +37,21 @@ class EventBus {
   }
 
   /**
+   * Emit only if predicate returns true. Returns whether emitted.
+   * @param {string} channel
+   * @param {*} data
+   * @param {function} predicate - (channel, data) => boolean
+   * @returns {boolean}
+   */
+  emitIf(channel, data, predicate) {
+    if (predicate(channel, data)) {
+      this.emit(channel, data);
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Subscribe to events on a channel
    * @param {string} channel - Event channel or '*' for all events
    * @param {function} handler - Event handler

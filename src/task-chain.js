@@ -300,6 +300,13 @@ class TaskChain {
     return this.steps.has(name);
   }
 
+  /** Return ordered list of step names.
+   * @returns {string[]}
+   */
+  stepNames() {
+    return this.stepOrder.slice();
+  }
+
   getStatus() {
     return {
       id: this.id,

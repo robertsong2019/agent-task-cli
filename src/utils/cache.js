@@ -424,6 +424,24 @@ class Cache {
     }
     return result;
   }
+
+  /**
+   * Rename a key, preserving its value and TTL.
+   * @param {string} oldKey
+   * @param {string} newKey
+   * @returns {boolean} true if renamed, false if oldKey not found/expired
+   */
+  rename(oldKey, newKey) {
+    const entry = this.cache.get(oldKey);
+    if (!entry) return false;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(oldKey);
+      return false;
+    }
+    this.cache.delete(oldKey);
+    this.cache.set(newKey, entry);
+    return true;
+  }
 }
 
 /**
