@@ -136,6 +136,15 @@ class Storage {
     return Object.values(tasks).filter(t => t[key] === value);
   }
 
+  /** Update a single field on a task without replacing the entire object. */
+  async updateField(taskId, field, value) {
+    const tasks = await this.loadTasks();
+    if (!tasks[taskId]) return null;
+    tasks[taskId][field] = value;
+    await this.saveTasks(tasks);
+    return tasks[taskId];
+  }
+
   /** Count tasks, optionally filtered by status */
   async countTasks(status = null) {
     const tasks = await this.loadTasks();

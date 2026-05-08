@@ -78,3 +78,8 @@
 - [x] Cache: `rename(oldKey, newKey)` — rename key preserving value and TTL — **F55** ✅ 2026-05-07
 - [x] EventBus: `emitIf(channel, data, predicate)` — conditional emission — **F56** ✅ 2026-05-07
 - [x] TaskChain: `stepNames()` — ordered step name list — **F57** ✅ 2026-05-07
+
+### Utils (Round 10)
+- [x] Cache: `forEach(callback)` — iterate all non-expired entries — **F58** ✅ 2026-05-08
+- [x] Storage: `updateField(id, field, value)` — update single field without full replace — **F59** ✅ 2026-05-08
+- [x] Cache: `getMany(keys)` — batch get returning Map of found entries — **F60** ✅ 2026-05-08

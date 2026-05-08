@@ -426,6 +426,33 @@ class Cache {
   }
 
   /**
+   * Iterate all non-expired entries.
+   * @param {(value: *, key: string, cache: Cache) => void} callback
+   * @returns {void}
+   */
+  forEach(callback) {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      callback(entry.value, key, this);
+    }
+  }
+
+  /**
+   * Batch get multiple keys, returning a Map of found entries.
+   * @param {string[]} keys
+   * @returns {Map<string, *>}
+   */
+  getMany(keys) {
+    const result = new Map();
+    for (const key of keys) {
+      const val = this.get(key);
+      if (val !== undefined) result.set(key, val);
+    }
+    return result;
+  }
+
+  /**
    * Rename a key, preserving its value and TTL.
    * @param {string} oldKey
    * @param {string} newKey
