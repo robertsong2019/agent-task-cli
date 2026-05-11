@@ -79,6 +79,11 @@
 - [x] EventBus: `emitIf(channel, data, predicate)` — conditional emission — **F56** ✅ 2026-05-07
 - [x] TaskChain: `stepNames()` — ordered step name list — **F57** ✅ 2026-05-07
 
+### Utils (Round 11)
+- [x] Cache: `nonExpiredSize` getter — count of non-expired entries — **F61** ✅ 2026-05-11
+- [x] Storage: `findRecent(count)` — most recently updated tasks — **F62** ✅ 2026-05-11
+- [x] EventBus: `peek(channel)` — return last event for channel — **F63** ✅ 2026-05-11
+
 ### Utils (Round 10)
 - [x] Cache: `forEach(callback)` — iterate all non-expired entries — **F58** ✅ 2026-05-08
 - [x] Storage: `updateField(id, field, value)` — update single field without full replace — **F59** ✅ 2026-05-08
