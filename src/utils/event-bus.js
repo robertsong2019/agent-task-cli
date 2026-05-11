@@ -317,6 +317,18 @@ class EventBus {
   }
 
   /**
+   * Return the last emitted event for a given channel, or null.
+   * @param {string} channel
+   * @returns {object|null}
+   */
+  peek(channel) {
+    for (let i = this._history.length - 1; i >= 0; i--) {
+      if (this._history[i].channel === channel) return this._history[i];
+    }
+    return null;
+  }
+
+  /**
    * Get bus stats
    * @returns {object}
    */

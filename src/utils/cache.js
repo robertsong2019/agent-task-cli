@@ -469,6 +469,16 @@ class Cache {
     this.cache.set(newKey, entry);
     return true;
   }
+
+  /** Return count of non-expired entries. */
+  get nonExpiredSize() {
+    const now = Date.now();
+    let count = 0;
+    for (const entry of this.cache.values()) {
+      if (!entry.expiresAt || entry.expiresAt > now) count++;
+    }
+    return count;
+  }
 }
 
 /**

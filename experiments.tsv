@@ -22,3 +22,4 @@ timestamp	commit	metric	value	status	description
 2026-05-04T22:08	7c80ba1	test_count	487/487 (100%)	keep	F49-F51: Storage.findByMetadata, StreamManager.getStreamStats, Cache.setWithExpiry — 12 new tests (475→487)
 2026-05-06T22:06:12+08:00	8ba2aba	test_pass_rate	100% (11/11)	keep	F52-F54: subscriberCount, findKeys, waitForPattern
 2026-05-07T22:00	e671546	test_count	507/507 (100%)	keep	F55-F57: Cache.rename, EventBus.emitIf, TaskChain.stepNames — 9 new tests (487→507)
+2026-05-08T22:10	d68b22d	test_pass_rate	9/9	keep	F58 Cache.forEach + F59 Storage.updateField + F60 Cache.getMany

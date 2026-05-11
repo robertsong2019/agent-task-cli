@@ -154,6 +154,15 @@ class Storage {
     }
     return values.length;
   }
+
+  /** Return the N most recently updated tasks (by updatedAt desc). */
+  async findRecent(count = 10) {
+    const tasks = await this.loadTasks();
+    return Object.entries(tasks)
+      .map(([id, t]) => ({ id, ...t }))
+      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+      .slice(0, count);
+  }
 }
 
 module.exports = { Storage };
