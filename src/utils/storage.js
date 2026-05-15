@@ -93,6 +93,16 @@ class Storage {
     return tasks[taskId] || null;
   }
 
+  /**
+   * Check if a task exists without loading its full data.
+   * @param {string} taskId
+   * @returns {Promise<boolean>}
+   */
+  async exists(taskId) {
+    const tasks = await this.loadTasks();
+    return taskId in tasks;
+  }
+
   async updateTask(taskId, updates) {
     const tasks = await this.loadTasks();
     if (tasks[taskId]) {

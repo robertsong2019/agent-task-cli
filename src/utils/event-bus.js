@@ -329,6 +329,43 @@ class EventBus {
   }
 
   /**
+   * Emit an event and wait for all async handlers to resolve.
+   * Sync handlers are called normally; async handlers (returning Promises) are awaited.
+   * @param {string} channel - Event channel
+   * @param {object} data - Event payload
+   * @returns {Promise<{event: object, results: Array}>} Event and handler results
+   */
+  async emitAsync(channel, data = {}) {
+    const event = {
+      channel,
+      data,
+      timestamp: Date.now(),
+      id: `${channel}:${Date.now()}`
+    };
+
+    if (this._history.length >= this._maxHistory) this._history.shift();
+    this._history.push(event);
+
+    // Collect handler results from both channel-specific and wildcard listeners
+    const listeners = [
+      ...this._emitter.listeners(channel),
+      ...this._emitter.listeners('*')
+    ];
+
+    const results = await Promise.all(
+      listeners.map(fn => {
+        try {
+          return fn(event);
+        } catch (err) {
+          return undefined;
+        }
+      })
+    );
+
+    return { event, results };
+  }
+
+  /**
    * Get bus stats
    * @returns {object}
    */

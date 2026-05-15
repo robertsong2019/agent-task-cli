@@ -300,6 +300,15 @@ class TaskChain {
     return this.steps.has(name);
   }
 
+  /**
+   * Get the result of a specific step by name.
+   * @param {string} name - Step name
+   * @returns {*|undefined} Step result or undefined if not executed/doesn't exist
+   */
+  stepResult(name) {
+    return this.results[name];
+  }
+
   /** Return ordered list of step names.
    * @returns {string[]}
    */
