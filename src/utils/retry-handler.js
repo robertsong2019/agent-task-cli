@@ -219,6 +219,28 @@ class RetryHandler {
       throw error;
     }
   }
+
+  /** Execute fn with retries, returning {ok, result, error, attempts} without throwing. */
+  async try(fn, options = {}) {
+    const maxRetries = options.maxRetries ?? this.maxRetries;
+    let attempts = 0;
+    let lastError;
+    while (attempts <= maxRetries) {
+      attempts++;
+      try {
+        const result = await fn();
+        return { ok: true, result, attempts };
+      } catch (error) {
+        lastError = error;
+        if (attempts <= maxRetries && this.isRetryable(error)) {
+          await this.sleep(this.calculateDelay(attempts - 1));
+        } else if (!this.isRetryable(error)) {
+          break; // non-retryable, stop immediately
+        }
+      }
+    }
+    return { ok: false, error: lastError, attempts };
+  }
 }
 
 module.exports = { RetryHandler };

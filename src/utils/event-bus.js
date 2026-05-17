@@ -119,6 +119,11 @@ class EventBus {
     };
   }
 
+  /** Subscribe to ALL events (global listener via '*' channel). */
+  onAny(handler) {
+    return this.on('*', handler);
+  }
+
   onBatch(channels, handler) {
     const unsubs = channels.map(ch => this.on(ch, handler));
     return () => unsubs.forEach(unsub => unsub());

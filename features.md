@@ -84,6 +84,11 @@
 - [x] Storage: `findRecent(count)` — most recently updated tasks — **F62** ✅ 2026-05-11
 - [x] EventBus: `peek(channel)` — return last event for channel — **F63** ✅ 2026-05-11
 
+### Utils (Round 12)
+- [x] EventBus: `emitAsync(channel, data)` — async emit that awaits all handlers — **F64** ✅ 2026-05-15
+- [x] TaskChain: `stepResult(name)` — get specific step result by name — **F65** ✅ 2026-05-15
+- [x] Storage: `exists(id)` — check task existence without loading — **F66** ✅ 2026-05-15
+
 ### Utils (Round 10)
 - [x] Cache: `forEach(callback)` — iterate all non-expired entries — **F58** ✅ 2026-05-08
 - [x] Storage: `updateField(id, field, value)` — update single field without full replace — **F59** ✅ 2026-05-08

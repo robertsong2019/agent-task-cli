@@ -165,6 +165,14 @@ class Storage {
     return values.length;
   }
 
+  /** Filter tasks by arbitrary predicate function. */
+  async filter(predicate) {
+    const tasks = await this.loadTasks();
+    return Object.entries(tasks)
+      .map(([id, t]) => ({ id, ...t }))
+      .filter(predicate);
+  }
+
   /** Return the N most recently updated tasks (by updatedAt desc). */
   async findRecent(count = 10) {
     const tasks = await this.loadTasks();

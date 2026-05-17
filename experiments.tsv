@@ -24,3 +24,4 @@ timestamp	commit	metric	value	status	description
 2026-05-07T22:00	e671546	test_count	507/507 (100%)	keep	F55-F57: Cache.rename, EventBus.emitIf, TaskChain.stepNames — 9 new tests (487→507)
 2026-05-08T22:10	d68b22d	test_pass_rate	9/9	keep	F58 Cache.forEach + F59 Storage.updateField + F60 Cache.getMany
 2026-05-11T22:10	af72516	test_count	526/526 (100%)	keep	F61-F63: Cache.nonExpiredSize, Storage.findRecent, EventBus.peek — 10 new tests
+2026-05-15T22:10	8cf76c9	test_count	538/538 (100%)	keep	F64-F66: EventBus.emitAsync, TaskChain.stepResult, Storage.exists — 12 new tests (526→538)
