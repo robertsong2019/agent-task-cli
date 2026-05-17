@@ -89,6 +89,11 @@
 - [x] TaskChain: `stepResult(name)` — get specific step result by name — **F65** ✅ 2026-05-15
 - [x] Storage: `exists(id)` — check task existence without loading — **F66** ✅ 2026-05-15
 
+### Utils (Round 13)
+- [x] Storage: `filter(predicate)` — filter tasks by arbitrary predicate function — **F67** ✅ 2026-05-17
+- [x] EventBus: `onAny(handler)` — subscribe to all events (global listener) — **F68** ✅ 2026-05-17
+- [x] RetryHandler: `try(fn, opts)` — execute with retries returning {ok,result,error,attempts} without throwing — **F69** ✅ 2026-05-17
+
 ### Utils (Round 10)
 - [x] Cache: `forEach(callback)` — iterate all non-expired entries — **F58** ✅ 2026-05-08
 - [x] Storage: `updateField(id, field, value)` — update single field without full replace — **F59** ✅ 2026-05-08
