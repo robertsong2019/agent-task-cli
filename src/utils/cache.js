@@ -470,6 +470,19 @@ class Cache {
     return true;
   }
 
+  /**
+   * Set only if key does not exist (NX pattern). Returns true if set, false if key existed.
+   * @param {string} key
+   * @param {*} value
+   * @param {number} [ttl]
+   * @returns {boolean}
+   */
+  setNX(key, value, ttl = this.defaultTTL) {
+    if (this.has(key)) return false;
+    this.set(key, value, ttl);
+    return true;
+  }
+
   /** Return count of non-expired entries. */
   get nonExpiredSize() {
     const now = Date.now();

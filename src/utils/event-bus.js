@@ -371,6 +371,24 @@ class EventBus {
   }
 
   /**
+   * Create a throttled emit function for a channel.
+   * Ensures at most one emission per `intervalMs`, dropping intermediate calls.
+   * @param {string} channel - Event channel
+   * @param {number} intervalMs - Minimum interval between emissions in ms
+   * @returns {function} Throttled emit function `(data) => boolean`
+   */
+  throttle(channel, intervalMs) {
+    let lastEmit = 0;
+    return (data) => {
+      const now = Date.now();
+      if (now - lastEmit < intervalMs) return false;
+      lastEmit = now;
+      this.emit(channel, data);
+      return true;
+    };
+  }
+
+  /**
    * Get bus stats
    * @returns {object}
    */

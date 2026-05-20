@@ -181,6 +181,33 @@ class Storage {
       .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
       .slice(0, count);
   }
+
+  /**
+   * Batch update multiple tasks atomically.
+   * @param {Array<{id: string, updates: object}>} batch - Array of {id, updates}
+   * @returns {Array<object>} Updated task data for found tasks (missing ids skipped)
+   */
+  async batchUpdate(batch) {
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') tasks = JSON.parse(data);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      const results = [];
+      for (const { id, updates } of batch) {
+        if (tasks[id]) {
+          tasks[id] = { ...tasks[id], ...updates, updatedAt: new Date().toISOString() };
+          results.push({ id, ...tasks[id] });
+        }
+      }
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      return results;
+    });
+  }
 }
 
 module.exports = { Storage };
