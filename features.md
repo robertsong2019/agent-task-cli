@@ -89,6 +89,11 @@
 - [x] TaskChain: `stepResult(name)` — get specific step result by name — **F65** ✅ 2026-05-15
 - [x] Storage: `exists(id)` — check task existence without loading — **F66** ✅ 2026-05-15
 
+### Utils (Round 14)
+- [x] Cache: `setNX(key, value, ttl?)` — set only if not exists (NX pattern) — **F70** ✅ 2026-05-20
+- [x] EventBus: `throttle(channel, intervalMs)` — rate-limited emit wrapper — **F71** ✅ 2026-05-20
+- [x] Storage: `batchUpdate(batch[])` — update multiple tasks atomically — **F72** ✅ 2026-05-20
+
 ### Utils (Round 13)
 - [x] Storage: `filter(predicate)` — filter tasks by arbitrary predicate function — **F67** ✅ 2026-05-17
 - [x] EventBus: `onAny(handler)` — subscribe to all events (global listener) — **F68** ✅ 2026-05-17
