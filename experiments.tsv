@@ -27,3 +27,4 @@ timestamp	commit	metric	value	status	description
 2026-05-15T22:10	8cf76c9	test_count	538/538 (100%)	keep	F64-F66: EventBus.emitAsync, TaskChain.stepResult, Storage.exists — 12 new tests (526→538)
 2026-05-17T22:11:50+08:00	7375c93	test_count	549/549 (100%)	keep	F67-F69: Storage.filter, EventBus.onAny, RetryHandler.try — 11 new tests (538→549)
 2026-05-20T22:00	106c26a	test_pass_rate	100%	keep	F70-F72: Cache.setNX, EventBus.throttle, Storage.batchUpdate
+2026-05-21T22:10	4fa211e	test_pass_rate	14/14 (100%)	keep	F73-F75: Cache.incr, Storage.findByStatus, EventBus.off — 14 new tests

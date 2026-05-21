@@ -99,6 +99,11 @@
 - [x] EventBus: `onAny(handler)` — subscribe to all events (global listener) — **F68** ✅ 2026-05-17
 - [x] RetryHandler: `try(fn, opts)` — execute with retries returning {ok,result,error,attempts} without throwing — **F69** ✅ 2026-05-17
 
+### Utils (Round 15)
+- [x] Cache: `incr(key, delta?)` — atomic increment for numeric values — **F73** ✅ 2026-05-21
+- [x] Storage: `findByStatus(status)` — find all tasks with given status — **F74** ✅ 2026-05-21
+- [x] EventBus: `off(channel, handler)` — unsubscribe specific handler — **F75** ✅ 2026-05-21
+
 ### Utils (Round 10)
 - [x] Cache: `forEach(callback)` — iterate all non-expired entries — **F58** ✅ 2026-05-08
 - [x] Storage: `updateField(id, field, value)` — update single field without full replace — **F59** ✅ 2026-05-08

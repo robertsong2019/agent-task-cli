@@ -399,6 +399,15 @@ class EventBus {
       subscriberCount: [...this._subscribers.values()].reduce((sum, s) => sum + s.size, 0)
     };
   }
+  /** F75: Unsubscribe a specific handler from a channel. Returns true if removed. */
+  off(channel, handler) {
+    const subs = this._subscribers.get(channel);
+    if (!subs) return false;
+    const deleted = subs.delete(handler);
+    if (deleted) this._emitter.off(channel, handler);
+    if (subs.size === 0) this._subscribers.delete(channel);
+    return deleted;
+  }
 }
 
 // Singleton instance

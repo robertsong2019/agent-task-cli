@@ -208,6 +208,14 @@ class Storage {
       return results;
     });
   }
+
+  /** F74: Find all tasks with given status. */
+  async findByStatus(status) {
+    const tasks = await this.loadTasks();
+    return Object.entries(tasks)
+      .filter(([, t]) => t.status === status)
+      .map(([id, t]) => ({ id, ...t }));
+  }
 }
 
 module.exports = { Storage };

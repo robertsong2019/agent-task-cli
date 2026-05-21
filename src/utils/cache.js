@@ -492,6 +492,21 @@ class Cache {
     }
     return count;
   }
+
+  /** F73: Atomic increment for numeric cached values */
+  incr(key, delta = 1) {
+    const current = this.get(key);
+    if (current === undefined) {
+      this.set(key, delta);
+      return delta;
+    }
+    if (typeof current !== 'number') {
+      throw new TypeError(`Cache.incr: value at '${key}' is not a number`);
+    }
+    const newVal = current + delta;
+    this.set(key, newVal);
+    return newVal;
+  }
 }
 
 /**
