@@ -399,6 +399,26 @@ class EventBus {
       subscriberCount: [...this._subscribers.values()].reduce((sum, s) => sum + s.size, 0)
     };
   }
+  /** F77: Emit event and wait for all async handlers to complete. Returns handler results. */
+  async emitAndWait(channel, data, timeoutMs) {
+    const subs = this._subscribers.get(channel);
+    if (!subs || subs.size === 0) return [];
+    const promises = [...subs].map(handler => {
+      const result = handler(data);
+      return Promise.resolve(result);
+    });
+    if (timeoutMs) {
+      const results = await Promise.all(promises.map(p =>
+        Promise.race([
+          p,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Handler timeout')), timeoutMs))
+        ])
+      ));
+      return results;
+    }
+    return Promise.all(promises);
+  }
+
   /** F75: Unsubscribe a specific handler from a channel. Returns true if removed. */
   off(channel, handler) {
     const subs = this._subscribers.get(channel);

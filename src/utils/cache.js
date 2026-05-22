@@ -507,6 +507,11 @@ class Cache {
     this.set(key, newVal);
     return newVal;
   }
+
+  /** F76: Atomic decrement for numeric values. */
+  decr(key, delta = 1) {
+    return this.incr(key, -delta);
+  }
 }
 
 /**

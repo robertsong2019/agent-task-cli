@@ -104,6 +104,11 @@
 - [x] Storage: `findByStatus(status)` — find all tasks with given status — **F74** ✅ 2026-05-21
 - [x] EventBus: `off(channel, handler)` — unsubscribe specific handler — **F75** ✅ 2026-05-21
 
+### Utils (Round 16)
+- [x] Cache: `decr(key, delta?)` — atomic decrement for numeric values — **F76** ✅ 2026-05-22
+- [x] EventBus: `emitAndWait(channel, data, timeout?)` — emit and wait for all handlers to complete — **F77** ✅ 2026-05-22
+- [x] Storage: `deleteByStatus(status)` — delete all tasks with given status, return count — **F78** ✅ 2026-05-22
+
 ### Utils (Round 10)
 - [x] Cache: `forEach(callback)` — iterate all non-expired entries — **F58** ✅ 2026-05-08
 - [x] Storage: `updateField(id, field, value)` — update single field without full replace — **F59** ✅ 2026-05-08
