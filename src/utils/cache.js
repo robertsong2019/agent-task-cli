@@ -512,6 +512,13 @@ class Cache {
   decr(key, delta = 1) {
     return this.incr(key, -delta);
   }
+
+  /** F79: Swap — set new value and return old value (undefined if key didn't exist). */
+  swap(key, value, ttl = this.defaultTTL) {
+    const old = this.get(key);
+    this.set(key, value, ttl);
+    return old;
+  }
 }
 
 /**

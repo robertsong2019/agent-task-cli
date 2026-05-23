@@ -236,6 +236,15 @@ class Storage {
       return count;
     });
   }
+
+  /** F81: Get task or create with defaults if not found. Returns the task. */
+  async getOrCreate(id, defaults = {}) {
+    const existing = await this.getTask(id);
+    if (existing) return existing;
+    const task = { ...defaults, id };
+    await this.saveTask(id, task);
+    return task;
+  }
 }
 
 module.exports = { Storage };

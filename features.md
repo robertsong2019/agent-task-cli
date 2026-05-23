@@ -109,6 +109,11 @@
 - [x] EventBus: `emitAndWait(channel, data, timeout?)` — emit and wait for all handlers to complete — **F77** ✅ 2026-05-22
 - [x] Storage: `deleteByStatus(status)` — delete all tasks with given status, return count — **F78** ✅ 2026-05-22
 
+### Utils (Round 17)
+- [x] Cache: `swap(key, value, ttl?)` — set new value and return old value — **F79** ✅ 2026-05-23
+- [x] EventBus: `pipe(source, targetBus, targetChannel?)` — forward events between buses — **F80** ✅ 2026-05-23
+- [x] Storage: `getOrCreate(id, defaults)` — get task or create with defaults — **F81** ✅ 2026-05-23
+
 ### Utils (Round 10)
 - [x] Cache: `forEach(callback)` — iterate all non-expired entries — **F58** ✅ 2026-05-08
 - [x] Storage: `updateField(id, field, value)` — update single field without full replace — **F59** ✅ 2026-05-08

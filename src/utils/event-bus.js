@@ -428,6 +428,14 @@ class EventBus {
     if (subs.size === 0) this._subscribers.delete(channel);
     return deleted;
   }
+
+  /** F80: Pipe — forward events from one channel to another EventBus. Returns unsubscribe fn. */
+  pipe(sourceChannel, targetBus, targetChannel) {
+    const dest = targetChannel || sourceChannel;
+    const handler = (evt) => targetBus.emit(dest, evt.data);
+    this.on(sourceChannel, handler);
+    return () => this.off(sourceChannel, handler);
+  }
 }
 
 // Singleton instance
