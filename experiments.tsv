@@ -30,3 +30,4 @@ timestamp	commit	metric	value	status	description
 2026-05-21T22:10	0be07ba	test_pass_rate	14/14 (100%)	keep	F73-F75: Cache.incr, Storage.findByStatus, EventBus.off — 14 new tests
 2026-05-22T22:00	f76-f78	test_pass_rate	11/11	keep	Round 16: Cache.decr (F76), EventBus.emitAndWait (F77), Storage.deleteByStatus (F78)
 2026-05-23T22:00	f70-fix+f79-f81	test_pass_rate	9/9 (100%)	keep	Round 17: Cache.swap (F79), EventBus.pipe (F80), Storage.getOrCreate (F81) — 9 new tests. Also fixed f70-f72 test format.
+2026-05-29T22:15:24+08:00	21e68f1-f82-f84	test_count	10/10 (100%)	keep	Round 18: Cache.keys (F82), Storage.countByStatus (F83), EventBus.emitDebounced (F84) — 10 new tests

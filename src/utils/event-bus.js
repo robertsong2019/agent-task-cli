@@ -429,6 +429,24 @@ class EventBus {
     return deleted;
   }
 
+  /** F84: Debounced emit — coalesce rapid emits, only fire last one after delay. Returns cancel fn. */
+  emitDebounced(channel, data, delayMs = 100) {
+    if (!this._debounceTimers) this._debounceTimers = new Map();
+    const key = channel;
+    if (this._debounceTimers.has(key)) {
+      clearTimeout(this._debounceTimers.get(key));
+    }
+    const timer = setTimeout(() => {
+      this._debounceTimers.delete(key);
+      this.emit(channel, data);
+    }, delayMs);
+    this._debounceTimers.set(key, timer);
+    return () => {
+      clearTimeout(timer);
+      this._debounceTimers.delete(key);
+    };
+  }
+
   /** F80: Pipe — forward events from one channel to another EventBus. Returns unsubscribe fn. */
   pipe(sourceChannel, targetBus, targetChannel) {
     const dest = targetChannel || sourceChannel;

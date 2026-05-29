@@ -245,6 +245,17 @@ class Storage {
     await this.saveTask(id, task);
     return task;
   }
+
+  /** F83: Count tasks grouped by status. Returns {status: count}. */
+  async countByStatus() {
+    const tasks = await this.listTasks();
+    const counts = {};
+    for (const task of tasks) {
+      const s = task.status || 'unknown';
+      counts[s] = (counts[s] || 0) + 1;
+    }
+    return counts;
+  }
 }
 
 module.exports = { Storage };

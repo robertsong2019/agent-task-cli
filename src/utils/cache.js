@@ -379,6 +379,19 @@ class Cache {
     return result;
   }
 
+  /** F82: Return all non-expired keys from cache.
+   * @returns {string[]}
+   */
+  keys() {
+    const now = Date.now();
+    const result = [];
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      result.push(key);
+    }
+    return result;
+  }
+
   /**
    * Return all non-expired values from cache.
    * @returns {Array}
