@@ -620,3 +620,4 @@ describe('Storage', () => {
     expect(allTasks.length).toBe(10);
   });
 });
+

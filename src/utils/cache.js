@@ -547,6 +547,18 @@ class Cache {
     this.set(key, value, ttl);
     return old;
   }
+
+  /** F88: toPairs() — return all non-expired entries as [[key, value], ...] (lightweight alternative to entries() metadata). */
+  toPairs() {
+    const result = [];
+    const now = Date.now();
+    for (const [k, entry] of this.cache) {
+      if (!entry.expiresAt || entry.expiresAt > now) {
+        result.push([k, entry.value]);
+      }
+    }
+    return result;
+  }
 }
 
 /**

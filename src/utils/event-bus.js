@@ -468,6 +468,32 @@ class EventBus {
     this.on(sourceChannel, handler);
     return () => this.off(sourceChannel, handler);
   }
+
+  /** F89: removeAllListeners(channel?) — remove all listeners for a channel, or all channels if omitted. Returns count removed. */
+  removeAllListeners(channel) {
+    if (channel !== undefined) {
+      const subs = this._subscribers.get(channel);
+      if (!subs) return 0;
+      const count = subs.size;
+      if (this._emitter) {
+        for (const h of subs) this._emitter.off(channel, h);
+      }
+      subs.clear();
+      this._subscribers.delete(channel);
+      return count;
+    }
+    // Remove all
+    let total = 0;
+    for (const [ch, subs] of this._subscribers) {
+      total += subs.size;
+      if (this._emitter) {
+        for (const h of subs) this._emitter.off(ch, h);
+      }
+      subs.clear();
+    }
+    this._subscribers.clear();
+    return total;
+  }
 }
 
 // Singleton instance

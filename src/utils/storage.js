@@ -256,6 +256,12 @@ class Storage {
     }
     return counts;
   }
+
+  /** F90: map(fn) — transform each task with fn(task), return array of results. */
+  async map(fn) {
+    const tasks = await this.listTasks();
+    return tasks.map(fn);
+  }
 }
 
 module.exports = { Storage };
