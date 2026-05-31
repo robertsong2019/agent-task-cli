@@ -316,6 +316,24 @@ class TaskChain {
     return this.stepOrder.slice();
   }
 
+  /** Return names of steps that completed successfully.
+   * @returns {string[]}
+   */
+  getCompletedSteps() {
+    return [...this.steps.values()]
+      .filter(s => s.status === 'completed')
+      .map(s => s.name);
+  }
+
+  /** Return names of steps that failed.
+   * @returns {string[]}
+   */
+  getFailedSteps() {
+    return [...this.steps.values()]
+      .filter(s => s.status === 'failed')
+      .map(s => s.name);
+  }
+
   getStatus() {
     return {
       id: this.id,
