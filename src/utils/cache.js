@@ -13,10 +13,24 @@ class Cache {
       size: 0
     };
     
-    // Start cleanup interval
+    // Start cleanup interval (unref so it doesn't block process exit)
     this.cleanupInterval = setInterval(() => {
       this.cleanup();
-    }, 60000); // Clean every minute
+    }, 60000);
+    if (this.cleanupInterval.unref) {
+      this.cleanupInterval.unref();
+    }
+  }
+
+  /**
+   * Stop the cleanup interval and release resources.
+   */
+  destroy() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.cache.clear();
   }
 
   /**
@@ -412,6 +426,7 @@ class Cache {
   destroy() {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
     }
     this.clear();
   }
