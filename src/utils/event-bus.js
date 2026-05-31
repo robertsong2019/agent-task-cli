@@ -147,6 +147,20 @@ class EventBus {
   }
 
   /**
+   * Subscribe to events matching a wildcard pattern, auto-unsubscribe after first match.
+   * @param {string} pattern - Wildcard pattern (e.g. 'task:*')
+   * @param {function} handler - Event handler
+   * @returns {function} Unsubscribe function (cancel before first match)
+   */
+  oncePattern(pattern, handler) {
+    const unsub = this.onPattern(pattern, (event) => {
+      unsub();
+      handler(event);
+    });
+    return unsub;
+  }
+
+  /**
    * Wait for an event (promise-based)
    * @param {string} channel 
    * @param {number} timeoutMs - Timeout in milliseconds
