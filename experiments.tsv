@@ -34,3 +34,4 @@ timestamp	commit	metric	value	status	description
 2026-05-31T21:00	2fed36c	test_pass_rate	609/609 (100%)	keep	F85: Cache.destroy() fix + unref interval + 4 tests
 2026-05-31T21:10	3c9ac61	test_pass_rate	614/614 (100%)	keep	F86: TaskChain.getCompletedSteps/getFailedSteps + 5 tests
 2026-05-31T21:20	4e5ece7	test_pass_rate	618/618 (100%)	keep	F87: EventBus.oncePattern() + 4 tests
+2026-05-31T22:10	a020af1	test_pass_rate	8/8 (1002026-05-31T22:10	a020af1	test_pass_rate	8/8 (100%25)	keep	Round 19: Cache.toPairs (F88), EventBus.removeAllListeners (F89), Storage.map (F90) - 8 new tests

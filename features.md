@@ -123,3 +123,8 @@
 - [x] Cache: `forEach(callback)` — iterate all non-expired entries — **F58** ✅ 2026-05-08
 - [x] Storage: `updateField(id, field, value)` — update single field without full replace — **F59** ✅ 2026-05-08
 - [x] Cache: `getMany(keys)` — batch get returning Map of found entries — **F60** ✅ 2026-05-08
+
+### Utils (Round 19)
+- [x] Cache: `toPairs()` — lightweight [key, value] pairs (vs entries() metadata) — **F88** ✅ 2026-05-31
+- [x] EventBus: `removeAllListeners(channel?)` — remove all or channel-specific listeners — **F89** ✅ 2026-05-31
+- [x] Storage: `map(fn)` — transform all tasks with mapper function — **F90** ✅ 2026-05-31
