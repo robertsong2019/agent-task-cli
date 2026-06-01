@@ -494,6 +494,21 @@ class EventBus {
     this._subscribers.clear();
     return total;
   }
+
+  /** F92: onceAsync(event, timeout) — promise-based once() that resolves with [args], rejects on timeout. */
+  onceAsync(event, timeout = 5000) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.off(event, handler);
+        reject(new Error(`onceAsync timeout for event "${event}"`));
+      }, timeout);
+      const handler = (...args) => {
+        clearTimeout(timer);
+        resolve(args);
+      };
+      this.on(event, handler);
+    });
+  }
 }
 
 // Singleton instance

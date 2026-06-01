@@ -548,6 +548,39 @@ class Cache {
     return old;
   }
 
+  /** F91: shrink(maxSize) — evict oldest non-expired entries to shrink cache to maxSize, return count of evicted entries. */
+  shrink(maxSize) {
+    if (typeof maxSize !== 'number' || maxSize < 0) throw new Error('maxSize must be a non-negative number');
+    const now = Date.now();
+    const entries = [];
+    for (const [k, entry] of this.cache) {
+      if (!entry.expiresAt || entry.expiresAt > now) {
+        entries.push({ key: k, createdAt: entry.createdAt || 0 });
+      }
+    }
+    if (entries.length <= maxSize) return 0;
+    entries.sort((a, b) => a.createdAt - b.createdAt);
+    const toEvict = entries.slice(0, entries.length - maxSize);
+    for (const { key } of toEvict) {
+      this.cache.delete(key);
+      this.stats.evictions++;
+    }
+    return toEvict.length;
+  }
+
+  /** F93: Cache.compact() — remove all expired entries, return count removed. */
+  compact() {
+    const now = Date.now();
+    let removed = 0;
+    for (const [k, entry] of this.cache) {
+      if (entry.expiresAt && entry.expiresAt <= now) {
+        this.cache.delete(k);
+        removed++;
+      }
+    }
+    return removed;
+  }
+
   /** F88: toPairs() — return all non-expired entries as [[key, value], ...] (lightweight alternative to entries() metadata). */
   toPairs() {
     const result = [];
