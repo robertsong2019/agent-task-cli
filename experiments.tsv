@@ -35,3 +35,4 @@ timestamp	commit	metric	value	status	description
 2026-05-31T21:10	3c9ac61	test_pass_rate	614/614 (100%)	keep	F86: TaskChain.getCompletedSteps/getFailedSteps + 5 tests
 2026-05-31T21:20	4e5ece7	test_pass_rate	618/618 (100%)	keep	F87: EventBus.oncePattern() + 4 tests
 2026-05-31T22:10	a020af1	test_pass_rate	8/8 (1002026-05-31T22:10	a020af1	test_pass_rate	8/8 (100%25)	keep	Round 19: Cache.toPairs (F88), EventBus.removeAllListeners (F89), Storage.map (F90) - 8 new tests
+2026-06-01T19:00	b17b14a	test_count	637/637 (100%)	keep	Round 20: Cache.shrink (F91), EventBus.onceAsync (F92), Cache.compact (F93) — 11 new tests (626→637)
