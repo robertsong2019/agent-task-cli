@@ -19,6 +19,14 @@ class EventBus {
    * @param {object} data - Event payload
    */
   emit(channel, data = {}) {
+    // Run interceptors if any
+    if (this._interceptors && this._interceptors.has(channel)) {
+      for (const fn of this._interceptors.get(channel)) {
+        const result = fn(data);
+        if (result === false) return; // interceptor blocked
+        if (result !== undefined) data = result;
+      }
+    }
     const event = {
       channel,
       data,
@@ -494,6 +502,23 @@ class EventBus {
     this._subscribers.clear();
     return total;
   }
+
+  /** F94: intercept(channel, fn) — add interceptor called before subscribers; fn(data) => data|false. Return removeFn. */
+  intercept(channel, fn) {
+    if (!this._interceptors) this._interceptors = new Map();
+    if (!this._interceptors.has(channel)) this._interceptors.set(channel, []);
+    const list = this._interceptors.get(channel);
+    list.push(fn);
+    return () => {
+      const idx = list.indexOf(fn);
+      if (idx !== -1) list.splice(idx, 1);
+    };
+  }
+
+  // Override emit to run interceptors
+  _emitOriginal = EventBus.prototype.emit;
+
+  // Patch emit to support interceptors (done in constructor below via _patchEmit)
 
   /** F92: onceAsync(event, timeout) — promise-based once() that resolves with [args], rejects on timeout. */
   onceAsync(event, timeout = 5000) {

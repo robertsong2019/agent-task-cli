@@ -592,7 +592,18 @@ class Cache {
     }
     return result;
   }
+
+  /** F95: getSet(key, factory, ttl?) — always call factory to get fresh value, set it, return it (forced refresh). */
+  async getSet(key, factory, ttl) {
+    const value = await factory(key);
+    this.set(key, value, ttl);
+    return value;
+  }
 }
+
+/**
+ * Generate cache key from task configuration
+ */
 
 /**
  * Generate cache key from task configuration

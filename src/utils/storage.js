@@ -262,6 +262,19 @@ class Storage {
     const tasks = await this.listTasks();
     return tasks.map(fn);
   }
+  /** F96: transaction(fn) — run fn(this) atomically; if fn throws, restore original file state. Returns fn result. */
+  async transaction(fn) {
+    let originalData = '{}';
+    try {
+      const data = await fs.readFile(this.tasksFile, 'utf8').catch(() => '{}');
+      originalData = data;
+      const result = await fn(this);
+      return result;
+    } catch (err) {
+      await fs.writeFile(this.tasksFile, originalData).catch(() => {});
+      throw err;
+    }
+  }
 }
 
 module.exports = { Storage };
