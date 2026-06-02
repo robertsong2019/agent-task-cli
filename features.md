@@ -128,3 +128,8 @@
 - [x] Cache: `toPairs()` — lightweight [key, value] pairs (vs entries() metadata) — **F88** ✅ 2026-05-31
 - [x] EventBus: `removeAllListeners(channel?)` — remove all or channel-specific listeners — **F89** ✅ 2026-05-31
 - [x] Storage: `map(fn)` — transform all tasks with mapper function — **F90** ✅ 2026-05-31
+
+### Utils (Round 21)
+- [x] EventBus: `intercept(channel, fn)` — interceptor to modify/filter events before subscribers — **F94** ✅ 2026-06-01
+- [x] Cache: `getSet(key, factory, ttl?)` — forced refresh, always call factory — **F95** ✅ 2026-06-01
+- [x] Storage: `transaction(fn)` — atomic operations with rollback on failure — **F96** ✅ 2026-06-01

@@ -173,6 +173,16 @@ class Storage {
       .filter(predicate);
   }
 
+  /** F98: first(predicate) — find first task matching predicate. */
+  async first(predicate) {
+    const tasks = await this.loadTasks();
+    for (const [id, t] of Object.entries(tasks)) {
+      const task = { id, ...t };
+      if (predicate(task)) return task;
+    }
+    return null;
+  }
+
   /** Return the N most recently updated tasks (by updatedAt desc). */
   async findRecent(count = 10) {
     const tasks = await this.loadTasks();

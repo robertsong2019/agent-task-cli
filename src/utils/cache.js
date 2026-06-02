@@ -581,6 +581,18 @@ class Cache {
     return removed;
   }
 
+  /** F97: expire(key, ttl) — set new TTL on an existing key. Returns true if key existed and was updated. */
+  expire(key, ttl) {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return false;
+    }
+    entry.expiresAt = ttl ? Date.now() + ttl : null;
+    return true;
+  }
+
   /** F88: toPairs() — return all non-expired entries as [[key, value], ...] (lightweight alternative to entries() metadata). */
   toPairs() {
     const result = [];

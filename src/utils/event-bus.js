@@ -421,6 +421,19 @@ class EventBus {
       subscriberCount: [...this._subscribers.values()].reduce((sum, s) => sum + s.size, 0)
     };
   }
+  /** F99: channelStats() — per-channel subscriber count + event count from history. */
+  channelStats() {
+    const stats = {};
+    for (const [ch, subs] of this._subscribers) {
+      stats[ch] = { subscribers: subs.size, events: 0 };
+    }
+    for (const evt of this._history) {
+      if (!stats[evt.channel]) stats[evt.channel] = { subscribers: 0, events: 0 };
+      stats[evt.channel].events++;
+    }
+    return stats;
+  }
+
   /** F77: Emit event and wait for all async handlers to complete. Returns handler results. */
   async emitAndWait(channel, data, timeoutMs) {
     const subs = this._subscribers.get(channel);
