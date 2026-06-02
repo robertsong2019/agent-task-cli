@@ -133,3 +133,8 @@
 - [x] EventBus: `intercept(channel, fn)` — interceptor to modify/filter events before subscribers — **F94** ✅ 2026-06-01
 - [x] Cache: `getSet(key, factory, ttl?)` — forced refresh, always call factory — **F95** ✅ 2026-06-01
 - [x] Storage: `transaction(fn)` — atomic operations with rollback on failure — **F96** ✅ 2026-06-01
+
+### Utils (Round 22)
+- [x] Cache: `expire(key, ttl)` — set new TTL on existing key — **F97** ✅ 2026-06-02
+- [x] Storage: `first(predicate)` — find first matching task — **F98** ✅ 2026-06-02
+- [x] EventBus: `channelStats()` — per-channel subscriber + event counts — **F99** ✅ 2026-06-02
