@@ -134,6 +134,11 @@
 - [x] Cache: `getSet(key, factory, ttl?)` — forced refresh, always call factory — **F95** ✅ 2026-06-01
 - [x] Storage: `transaction(fn)` — atomic operations with rollback on failure — **F96** ✅ 2026-06-01
 
+### Utils (Round 23)
+- [x] Cache: `merge(key, obj, ttl?)` — shallow-merge into existing object value — **F100** ✅ 2026-06-03
+- [x] Storage: `ids()` — return all task IDs — **F101** ✅ 2026-06-03
+- [x] EventBus: `relay(source, targetBus, filter?)` — filtered event forwarding — **F102** ✅ 2026-06-03
+
 ### Utils (Round 22)
 - [x] Cache: `expire(key, ttl)` — set new TTL on existing key — **F97** ✅ 2026-06-02
 - [x] Storage: `first(predicate)` — find first matching task — **F98** ✅ 2026-06-02
