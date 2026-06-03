@@ -272,6 +272,12 @@ class Storage {
     const tasks = await this.listTasks();
     return tasks.map(fn);
   }
+  /** F101: ids() — return all task IDs. */
+  async ids() {
+    const tasks = await this.loadTasks();
+    return Object.keys(tasks);
+  }
+
   /** F96: transaction(fn) — run fn(this) atomically; if fn throws, restore original file state. Returns fn result. */
   async transaction(fn) {
     let originalData = '{}';

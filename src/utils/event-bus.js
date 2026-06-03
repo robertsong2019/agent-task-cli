@@ -547,6 +547,16 @@ class EventBus {
       this.on(event, handler);
     });
   }
+  /** F102: relay(source, targetBus, filter?) — forward events matching filter predicate to target bus. Returns unsubscribe fn. */
+  relay(source, targetBus, filter) {
+    const handler = (event) => {
+      if (!filter || filter(event.data)) {
+        targetBus.emit(source, event.data);
+      }
+    };
+    this._emitter.on(source, handler);
+    return () => this._emitter.off(source, handler);
+  }
 }
 
 // Singleton instance

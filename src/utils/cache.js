@@ -605,6 +605,20 @@ class Cache {
     return result;
   }
 
+  /** F100: merge(key, obj, ttl?) — shallow-merge obj into existing cached value (must be an object). Returns true if merged, false if key missing/value not object. */
+  merge(key, obj, ttl) {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return false;
+    }
+    if (typeof entry.value !== 'object' || entry.value === null || Array.isArray(entry.value)) return false;
+    Object.assign(entry.value, obj);
+    if (ttl !== undefined) entry.expiresAt = ttl ? Date.now() + ttl : null;
+    return true;
+  }
+
   /** F95: getSet(key, factory, ttl?) — always call factory to get fresh value, set it, return it (forced refresh). */
   async getSet(key, factory, ttl) {
     const value = await factory(key);
