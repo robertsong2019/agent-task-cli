@@ -38,3 +38,4 @@ timestamp	commit	metric	value	status	description
 2026-06-01T19:00	b17b14a	test_count	637/637 (100%)	keep	Round 20: Cache.shrink (F91), EventBus.onceAsync (F92), Cache.compact (F93) — 11 new tests (626→637)
 2026-06-01T22:00	a418e22	test_count	644/644 (100%)	keep	Round 21: EventBus.intercept (F94), Cache.getSet (F95), Storage.transaction (F96) — 7 new tests
 2026-06-03T22:09:30+08:00	8b3f38a	test_count	666/666 (100%)	keep	Round 23: Cache.merge (F100), Storage.ids (F101), EventBus.relay (F102) — 11 new tests (655→666)
+2026-06-04T22:10	711d1ae	test_count	682/682 (100%)	keep	Round 24: Cache.type (F103), EventBus.eventNames (F104), Storage.bulkDelete (F105) — 16 new tests (666→682)

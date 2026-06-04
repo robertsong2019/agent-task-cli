@@ -139,6 +139,11 @@
 - [x] Storage: `ids()` — return all task IDs — **F101** ✅ 2026-06-03
 - [x] EventBus: `relay(source, targetBus, filter?)` — filtered event forwarding — **F102** ✅ 2026-06-03
 
+### Utils (Round 24)
+- [x] Cache: `type(key)` — return JS type string of cached value — **F103** ✅ 2026-06-04
+- [x] EventBus: `eventNames()` — unique channel names from history — **F104** ✅ 2026-06-04
+- [x] Storage: `bulkDelete(ids[])` — batch delete multiple tasks — **F105** ✅ 2026-06-04
+
 ### Utils (Round 22)
 - [x] Cache: `expire(key, ttl)` — set new TTL on existing key — **F97** ✅ 2026-06-02
 - [x] Storage: `first(predicate)` — find first matching task — **F98** ✅ 2026-06-02
