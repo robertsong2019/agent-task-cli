@@ -625,6 +625,20 @@ class Cache {
     this.set(key, value, ttl);
     return value;
   }
+
+  /** F103: type(key) — return JS type string of cached value ('string', 'number', 'boolean', 'object', 'array', 'null', 'undefined'). Returns 'undefined' if key missing/expired. */
+  type(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return 'undefined';
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return 'undefined';
+    }
+    const v = entry.value;
+    if (v === null) return 'null';
+    if (Array.isArray(v)) return 'array';
+    return typeof v;
+  }
 }
 
 /**

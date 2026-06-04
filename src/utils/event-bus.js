@@ -557,6 +557,12 @@ class EventBus {
     this._emitter.on(source, handler);
     return () => this._emitter.off(source, handler);
   }
+
+  /** F104: eventNames() — return array of unique channel names that have at least one event in history. */
+  eventNames() {
+    if (!this._history || this._history.length === 0) return [];
+    return [...new Set(this._history.map(e => e.channel))];
+  }
 }
 
 // Singleton instance

@@ -291,6 +291,26 @@ class Storage {
       throw err;
     }
   }
+
+  /** F105: bulkDelete(ids[]) — delete multiple tasks by ID in one write. Returns count of actually deleted tasks. */
+  async bulkDelete(ids) {
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') tasks = JSON.parse(data);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      let count = 0;
+      for (const id of ids) {
+        if (tasks[id]) { delete tasks[id]; count++; }
+      }
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      return count;
+    });
+  }
 }
 
 module.exports = { Storage };
