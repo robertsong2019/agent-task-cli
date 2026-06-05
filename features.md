@@ -148,3 +148,8 @@
 - [x] Cache: `expire(key, ttl)` — set new TTL on existing key — **F97** ✅ 2026-06-02
 - [x] Storage: `first(predicate)` — find first matching task — **F98** ✅ 2026-06-02
 - [x] EventBus: `channelStats()` — per-channel subscriber + event counts — **F99** ✅ 2026-06-02
+
+### Utils (Round 25)
+- [x] Cache: `random()` — get a random non-expired entry — **F106** ✅ 2026-06-05
+- [x] Storage: `groupBy(field)` — group tasks by field value — **F107** ✅ 2026-06-05
+- [x] EventBus: `race(channels[], timeout?)` — Promise.race across channels — **F108** ✅ 2026-06-05

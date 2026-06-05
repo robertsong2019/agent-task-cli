@@ -626,6 +626,20 @@ class Cache {
     return value;
   }
 
+
+  /** F106: random() — return a random non-expired entry as { key, value }, or null if cache is empty.
+   */
+  random() {
+    const keys = [];
+    for (const [key, entry] of this.cache) {
+      if (!entry.expiresAt || Date.now() <= entry.expiresAt) {
+        keys.push(key);
+      }
+    }
+    if (keys.length === 0) return null;
+    const pickedKey = keys[Math.floor(Math.random() * keys.length)];
+    return { key: pickedKey, value: this.cache.get(pickedKey).value };
+  }
   /** F103: type(key) — return JS type string of cached value ('string', 'number', 'boolean', 'object', 'array', 'null', 'undefined'). Returns 'undefined' if key missing/expired. */
   type(key) {
     const entry = this.cache.get(key);

@@ -558,6 +558,35 @@ class EventBus {
     return () => this._emitter.off(source, handler);
   }
 
+
+  /** F108: race(channels[], timeout?) — Promise.race across multiple channels. Resolves with { channel, data }. Rejects on timeout.
+   */
+  race(channels, timeout = 5000) {
+    return new Promise((resolve, reject) => {
+      const timers = [];
+      const handlers = [];
+      const cleanup = () => {
+        timers.forEach(t => clearTimeout(t));
+        handlers.forEach(({ ch, fn }) => this._emitter.off(ch, fn));
+      };
+      if (timeout > 0) {
+        const timer = setTimeout(() => {
+          cleanup();
+          reject(new Error('race timeout waiting for channels: ' + channels.join(', ')));
+        }, timeout);
+        timers.push(timer);
+      }
+      for (const ch of channels) {
+        const fn = (event) => {
+          cleanup();
+          resolve({ channel: ch, data: event.data });
+        };
+        handlers.push({ ch, fn });
+        this._emitter.on(ch, fn);
+      }
+    });
+  }
+
   /** F104: eventNames() — return array of unique channel names that have at least one event in history. */
   eventNames() {
     if (!this._history || this._history.length === 0) return [];

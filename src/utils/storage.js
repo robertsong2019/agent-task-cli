@@ -292,6 +292,21 @@ class Storage {
     }
   }
 
+
+  /** F107: groupBy(field) — group all tasks by a field value. Returns { [fieldValue]: task[] }.
+   */
+  async groupBy(field) {
+    const tasks = await this.loadTasks();
+    const result = {};
+    for (const id in tasks) {
+      const task = tasks[id];
+      const key = task[field];
+      const groupKey = key === undefined || key === null ? 'null' : String(key);
+      if (!result[groupKey]) result[groupKey] = [];
+      result[groupKey].push(task);
+    }
+    return result;
+  }
   /** F105: bulkDelete(ids[]) — delete multiple tasks by ID in one write. Returns count of actually deleted tasks. */
   async bulkDelete(ids) {
     return this.withLock(async () => {
