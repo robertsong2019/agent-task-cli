@@ -592,6 +592,39 @@ class EventBus {
     if (!this._history || this._history.length === 0) return [];
     return [...new Set(this._history.map(e => e.channel))];
   }
+
+  /** F111: emitMany(events) — batch emit [{ channel, data }, ...] across multiple channels with a single consolidated history entry. Returns count emitted. */
+  emitMany(events) {
+    if (!Array.isArray(events)) throw new Error('emitMany: events must be an array');
+    let count = 0;
+    const batchEvent = {
+      channel: '__batch__',
+      data: { count: events.length, channels: [] },
+      timestamp: Date.now(),
+      id: `__batch__:${Date.now()}`
+    };
+    for (const { channel, data = {} } of events) {
+      if (!channel || typeof channel !== 'string') continue;
+      let effectiveData = data;
+      let blocked = false;
+      if (this._interceptors && this._interceptors.has(channel)) {
+        for (const fn of this._interceptors.get(channel)) {
+          const result = fn(effectiveData);
+          if (result === false) { blocked = true; break; }
+          if (result !== undefined) effectiveData = result;
+        }
+      }
+      if (blocked) continue;
+      const event = { channel, data: effectiveData, timestamp: Date.now(), id: `${channel}:${Date.now()}` };
+      this._emitter.emit(channel, event);
+      this._emitter.emit('*', event);
+      batchEvent.data.channels.push(channel);
+      count++;
+    }
+    if (this._history.length >= this._maxHistory) this._history.shift();
+    this._history.push(batchEvent);
+    return count;
+  }
 }
 
 // Singleton instance

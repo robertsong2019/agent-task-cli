@@ -153,3 +153,8 @@
 - [x] Cache: `random()` — get a random non-expired entry — **F106** ✅ 2026-06-05
 - [x] Storage: `groupBy(field)` — group tasks by field value — **F107** ✅ 2026-06-05
 - [x] EventBus: `race(channels[], timeout?)` — Promise.race across channels — **F108** ✅ 2026-06-05
+
+### Utils (Round 26)
+- [x] Cache: `expireAt(key, timestamp)` — set absolute expiry timestamp — **F109** ✅ 2026-06-06
+- [x] Storage: `sum(field)` — sum a numeric field across all tasks — **F110** ✅ 2026-06-06
+- [x] EventBus: `emitMany(events[])` — batch emit across multiple channels with single history entry — **F111** ✅ 2026-06-06

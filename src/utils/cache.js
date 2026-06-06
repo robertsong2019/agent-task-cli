@@ -593,6 +593,21 @@ class Cache {
     return true;
   }
 
+  /** F109: expireAt(key, timestamp) — set absolute expiry timestamp (ms since epoch). Returns true if key existed and was updated. */
+  expireAt(key, timestamp) {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return false;
+    }
+    if (typeof timestamp !== 'number' || isNaN(timestamp) || timestamp <= 0) {
+      throw new Error('expireAt: timestamp must be a positive number (ms since epoch)');
+    }
+    entry.expiresAt = timestamp;
+    return true;
+  }
+
   /** F88: toPairs() — return all non-expired entries as [[key, value], ...] (lightweight alternative to entries() metadata). */
   toPairs() {
     const result = [];

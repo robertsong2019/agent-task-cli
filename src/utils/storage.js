@@ -293,6 +293,17 @@ class Storage {
   }
 
 
+  /** F110: sum(field) — sum a numeric field across all tasks. Non-numeric values are skipped (treated as 0). Returns 0 if no tasks or field missing. */
+  async sum(field) {
+    const tasks = await this.loadTasks();
+    let total = 0;
+    for (const id in tasks) {
+      const val = tasks[id][field];
+      if (typeof val === 'number' && !isNaN(val)) total += val;
+    }
+    return total;
+  }
+
   /** F107: groupBy(field) — group all tasks by a field value. Returns { [fieldValue]: task[] }.
    */
   async groupBy(field) {
