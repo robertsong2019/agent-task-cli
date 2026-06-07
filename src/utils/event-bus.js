@@ -587,7 +587,21 @@ class EventBus {
     });
   }
 
-  /** F104: eventNames() — return array of unique channel names that have at least one event in history. */
+  /** F114: sample(channel, intervalMs, handler) — subscribe to a channel but only fire at most once per interval window (first event wins, rest are dropped until window resets). Returns unsubscribe function. */
+  sample(channel, intervalMs, handler) {
+    let lastFired = 0;
+    const wrapper = (event) => {
+      const now = Date.now();
+      if (now - lastFired >= intervalMs) {
+        lastFired = now;
+        handler(event);
+      }
+    };
+    this.on(channel, wrapper);
+    return () => this.off(channel, wrapper);
+  }
+
+  /** F104: eventNames()() — return array of unique channel names that have at least one event in history. */
   eventNames() {
     if (!this._history || this._history.length === 0) return [];
     return [...new Set(this._history.map(e => e.channel))];

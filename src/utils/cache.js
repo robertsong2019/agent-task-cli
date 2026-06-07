@@ -655,6 +655,24 @@ class Cache {
     const pickedKey = keys[Math.floor(Math.random() * keys.length)];
     return { key: pickedKey, value: this.cache.get(pickedKey).value };
   }
+  /** F112: getWithMeta(key) — return { value, createdAt, accessedAt, expiresAt, ttlRemaining } or null if missing/expired. */
+  getWithMeta(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return null;
+    }
+    const now = Date.now();
+    return {
+      value: entry.value,
+      createdAt: entry.createdAt || null,
+      accessedAt: entry.lastAccessed || null,
+      expiresAt: entry.expiresAt || null,
+      ttlRemaining: entry.expiresAt ? entry.expiresAt - now : null,
+    };
+  }
+
   /** F103: type(key) — return JS type string of cached value ('string', 'number', 'boolean', 'object', 'array', 'null', 'undefined'). Returns 'undefined' if key missing/expired. */
   type(key) {
     const entry = this.cache.get(key);

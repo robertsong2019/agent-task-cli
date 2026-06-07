@@ -318,6 +318,18 @@ class Storage {
     }
     return result;
   }
+  /** F113: pluck(field) — extract values for a single field across all tasks. Returns array of values (skips tasks where field is undefined). */
+  async pluck(field) {
+    const tasks = await this.loadTasks();
+    const values = [];
+    for (const id in tasks) {
+      if (tasks[id][field] !== undefined) {
+        values.push(tasks[id][field]);
+      }
+    }
+    return values;
+  }
+
   /** F105: bulkDelete(ids[]) — delete multiple tasks by ID in one write. Returns count of actually deleted tasks. */
   async bulkDelete(ids) {
     return this.withLock(async () => {

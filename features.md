@@ -158,3 +158,8 @@
 - [x] Cache: `expireAt(key, timestamp)` — set absolute expiry timestamp — **F109** ✅ 2026-06-06
 - [x] Storage: `sum(field)` — sum a numeric field across all tasks — **F110** ✅ 2026-06-06
 - [x] EventBus: `emitMany(events[])` — batch emit across multiple channels with single history entry — **F111** ✅ 2026-06-06
+
+### Utils (Round 27)
+- [x] Cache: `getWithMeta(key)` — return value + full metadata (createdAt, accessedAt, expiresAt, ttlRemaining) — **F112** ✅ 2026-06-07
+- [x] Storage: `pluck(field)` — extract single field values across all tasks — **F113** ✅ 2026-06-07
+- [x] EventBus: `sample(channel, intervalMs, handler)` — rate-limited subscription (first event per window) — **F114** ✅ 2026-06-07
