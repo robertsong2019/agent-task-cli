@@ -28,8 +28,8 @@
 - [x] Orchestrator: middleware/plugin hooks for pre/post execution — **F13** ✅ 2026-04-22
 
 ### Observability
-- [ ] EventBus: `onBatch(channels[], handler)` — subscribe to multiple channels — **F9** ✅ 2026-04-17
-- [ ] Logger: structured JSON output mode — **F10** ✅ 2026-04-17
+- [x] EventBus: `onBatch(channels[], handler)` — subscribe to multiple channels — **F9** ✅ 2026-04-17
+- [x] Logger: structured JSON output mode — **F10** ✅ 2026-04-17
 - [x] Cache: `dump()` / `restore()` for persistence across restarts — **F8** ✅ 2026-04-16
 
 ### Utils (Round 4)
@@ -158,6 +158,11 @@
 - [x] Cache: `expireAt(key, timestamp)` — set absolute expiry timestamp — **F109** ✅ 2026-06-06
 - [x] Storage: `sum(field)` — sum a numeric field across all tasks — **F110** ✅ 2026-06-06
 - [x] EventBus: `emitMany(events[])` — batch emit across multiple channels with single history entry — **F111** ✅ 2026-06-06
+
+### Utils (Round 28)
+- [x] Cache: `watch(key, callback)` — reactive watch on key changes (set/delete), returns unwatch fn — **F115** ✅ 2026-06-08
+- [x] Storage: `min(field)` / `max(field)` — min/max of numeric field — **F116+F117** ✅ 2026-06-08
+- [x] EventBus: `last(channel, n?)` — get last N events from history for a channel — **F118** ✅ 2026-06-08
 
 ### Utils (Round 27)
 - [x] Cache: `getWithMeta(key)` — return value + full metadata (createdAt, accessedAt, expiresAt, ttlRemaining) — **F112** ✅ 2026-06-07
