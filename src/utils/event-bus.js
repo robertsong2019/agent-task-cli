@@ -639,6 +639,12 @@ class EventBus {
     this._history.push(batchEvent);
     return count;
   }
+
+  /** F118: last(channel, n?) — return last N events from history for a specific channel. Defaults to 1. */
+  last(channel, n = 1) {
+    const filtered = this._history.filter(e => e.channel === channel);
+    return filtered.slice(-n);
+  }
 }
 
 // Singleton instance

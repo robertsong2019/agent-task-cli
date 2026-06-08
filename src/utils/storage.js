@@ -349,6 +349,20 @@ class Storage {
       return count;
     });
   }
+
+  /** F116: min(field) — return minimum value of a numeric field across all tasks. Returns null if no tasks. */
+  async min(field) {
+    const tasks = await this.loadTasks();
+    const vals = Object.values(tasks).map(t => t[field]).filter(v => typeof v === 'number');
+    return vals.length ? Math.min(...vals) : null;
+  }
+
+  /** F117: max(field) — return maximum value of a numeric field across all tasks. Returns null if no tasks. */
+  async max(field) {
+    const tasks = await this.loadTasks();
+    const vals = Object.values(tasks).map(t => t[field]).filter(v => typeof v === 'number');
+    return vals.length ? Math.max(...vals) : null;
+  }
 }
 
 module.exports = { Storage };

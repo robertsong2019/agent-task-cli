@@ -96,6 +96,7 @@ class Cache {
     
     this.cache.set(key, entry);
     this.stats.size = this.cache.size;
+    this._notifyWatchers(key, 'set', value);
   }
 
   /** Set with absolute expiry timestamp instead of relative TTL */
@@ -132,9 +133,11 @@ class Cache {
    * Delete a key from cache
    */
   delete(key) {
+    const entry = this.cache.get(key);
     const deleted = this.cache.delete(key);
     if (deleted) {
       this.stats.size = this.cache.size;
+      this._notifyWatchers(key, 'delete', entry ? entry.value : undefined);
     }
     return deleted;
   }
@@ -685,6 +688,31 @@ class Cache {
     if (v === null) return 'null';
     if (Array.isArray(v)) return 'array';
     return typeof v;
+  }
+
+  /** F115: watch(key, callback) — watch a key for changes. Callback receives {key, event, value} where event is 'set'|'delete'|'expire'. Returns unwatch function. */
+  watch(key, callback) {
+    if (!this._watchers) this._watchers = new Map();
+    if (!this._watchers.has(key)) this._watchers.set(key, new Set());
+    this._watchers.get(key).add(callback);
+    return () => {
+      const watchers = this._watchers.get(key);
+      if (watchers) {
+        watchers.delete(callback);
+        if (watchers.size === 0) this._watchers.delete(key);
+      }
+    };
+  }
+
+  /** Internal: notify watchers for a key */
+  _notifyWatchers(key, event, value) {
+    if (!this._watchers) return;
+    const watchers = this._watchers.get(key);
+    if (watchers) {
+      for (const cb of watchers) {
+        try { cb({ key, event, value }); } catch {}
+      }
+    }
   }
 }
 
