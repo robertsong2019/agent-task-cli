@@ -645,6 +645,23 @@ class EventBus {
     const filtered = this._history.filter(e => e.channel === channel);
     return filtered.slice(-n);
   }
+  /** F119: waitUntil(channel, predicate, timeout?) — resolve when an event on channel passes predicate */
+  waitUntil(channel, predicate, timeout = 30000) {
+    return new Promise((resolve, reject) => {
+      let unsub;
+      const timer = setTimeout(() => {
+        unsub();
+        reject(new Error(`waitUntil timed out on channel "${channel}"`));
+      }, timeout);
+      unsub = this.on(channel, (event) => {
+        if (predicate(event.data)) {
+          clearTimeout(timer);
+          unsub();
+          resolve(event.data);
+        }
+      });
+    });
+  }
 }
 
 // Singleton instance

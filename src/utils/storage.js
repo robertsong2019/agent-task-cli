@@ -363,6 +363,12 @@ class Storage {
     const vals = Object.values(tasks).map(t => t[field]).filter(v => typeof v === 'number');
     return vals.length ? Math.max(...vals) : null;
   }
+
+  /** F120: reverse() — return all tasks in reverse insertion order */
+  async reverse() {
+    const tasks = await this.loadTasks();
+    return Object.values(tasks).reverse();
+  }
 }
 
 module.exports = { Storage };

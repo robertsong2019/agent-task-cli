@@ -714,6 +714,20 @@ class Cache {
       }
     }
   }
+
+  /** F119: shuffle() — return all non-expired values in random order */
+  shuffle() {
+    const entries = [];
+    const now = Date.now();
+    for (const [k, v] of this.cache) {
+      if (!v.expiresAt || v.expiresAt > now) entries.push({ key: k, value: v.value });
+    }
+    for (let i = entries.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [entries[i], entries[j]] = [entries[j], entries[i]];
+    }
+    return entries;
+  }
 }
 
 /**
