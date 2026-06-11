@@ -178,3 +178,8 @@
 - [x] Cache: `diff(otherCache)` — compare two caches, return {added, removed, changed} — **F122** ✅ 2026-06-11
 - [x] Storage: `sample(n)` — return N random tasks (Fisher-Yates) — **F123** ✅ 2026-06-11
 - [x] EventBus: `afterAll(channel, handler)` — post-emit hook after all subscribers fire — **F124** ✅ 2026-06-11
+
+### Utils (Round 31)
+- [x] Cache: `lock(key, fn)` — exclusive mutex per key, serializes concurrent access — **F125** ✅ 2026-06-11
+- [x] Storage: `distinct(field)` — return unique values for a field — **F126** ✅ 2026-06-11
+- [x] EventBus: `channels()` — list channels with active subscribers — **F127** ✅ 2026-06-11
