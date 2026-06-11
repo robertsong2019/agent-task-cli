@@ -728,6 +728,23 @@ class Cache {
     }
     return entries;
   }
+
+  /** F122: diff(otherCache) — compare this cache with another. Returns { added: keys in this not in other, removed: keys in other not in this, changed: keys in both but different values } */
+  diff(otherCache) {
+    const thisKeys = new Set(this.cache.keys());
+    const otherKeys = new Set(otherCache.cache.keys());
+    const added = [];
+    const removed = [];
+    const changed = [];
+    for (const k of thisKeys) {
+      if (!otherKeys.has(k)) added.push(k);
+      else if (JSON.stringify(this.cache.get(k)?.value) !== JSON.stringify(otherCache.cache.get(k)?.value)) changed.push(k);
+    }
+    for (const k of otherKeys) {
+      if (!thisKeys.has(k)) removed.push(k);
+    }
+    return { added, removed, changed };
+  }
 }
 
 /**

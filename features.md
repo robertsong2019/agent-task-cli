@@ -168,3 +168,8 @@
 - [x] Cache: `getWithMeta(key)` — return value + full metadata (createdAt, accessedAt, expiresAt, ttlRemaining) — **F112** ✅ 2026-06-07
 - [x] Storage: `pluck(field)` — extract single field values across all tasks — **F113** ✅ 2026-06-07
 - [x] EventBus: `sample(channel, intervalMs, handler)` — rate-limited subscription (first event per window) — **F114** ✅ 2026-06-07
+
+### Utils (Round 29)
+- [x] Cache: `shuffle()` — Fisher-Yates shuffle of all non-expired entries — **F119** ✅ 2026-06-09
+- [x] Storage: `reverse()` — return all tasks in reverse insertion order — **F120** ✅ 2026-06-09
+- [x] EventBus: `waitUntil(channel, predicate, timeout?)` — resolve when event passes predicate — **F121** ✅ 2026-06-09

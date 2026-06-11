@@ -42,6 +42,14 @@ class EventBus {
 
     this._emitter.emit(channel, event);
     this._emitter.emit('*', event); // Wildcard listener
+
+    // Fire afterAll hooks
+    if (this._afterAllHooks && this._afterAllHooks[channel]) {
+      const count = this._emitter.listenerCount(channel);
+      for (const hook of this._afterAllHooks[channel]) {
+        hook({ channel, data: event.data, subscriberCount: count });
+      }
+    }
   }
 
   /**
@@ -661,6 +669,16 @@ class EventBus {
         }
       });
     });
+  }
+
+  /** F124: afterAll(channel, handler) — register a post-emit hook that fires after all subscribers for a channel complete. Receives { channel, data, subscriberCount }. Returns unsubscribe function. */
+  afterAll(channel, handler) {
+    if (!this._afterAllHooks) this._afterAllHooks = {};
+    if (!this._afterAllHooks[channel]) this._afterAllHooks[channel] = [];
+    this._afterAllHooks[channel].push(handler);
+    return () => {
+      this._afterAllHooks[channel] = this._afterAllHooks[channel].filter(h => h !== handler);
+    };
   }
 }
 
