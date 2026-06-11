@@ -677,8 +677,18 @@ class EventBus {
     if (!this._afterAllHooks[channel]) this._afterAllHooks[channel] = [];
     this._afterAllHooks[channel].push(handler);
     return () => {
-      this._afterAllHooks[channel] = this._afterAllHooks[channel].filter(h => h !== handler);
+      if (this._afterAllHooks[channel]) this._afterAllHooks[channel] = this._afterAllHooks[channel].filter(h => h !== handler);
     };
+  }
+
+  /** F127: channels() — return array of channel names that have active subscribers */
+  channels() {
+    const names = new Set();
+    const events = this._emitter.eventNames();
+    for (const e of events) {
+      if (e !== '*' && this._emitter.listenerCount(e) > 0) names.add(e);
+    }
+    return [...names];
   }
 }
 

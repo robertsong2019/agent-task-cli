@@ -745,6 +745,22 @@ class Cache {
     }
     return { added, removed, changed };
   }
+
+  /** F125: Cache.lock(key, fn) — exclusive mutex on a key. Queue concurrent ops. Returns fn result. */
+  async lock(key, fn) {
+    if (!this._keyLocks) this._keyLocks = new Map();
+    const prev = this._keyLocks.get(key) || Promise.resolve();
+    let release;
+    const next = new Promise(r => { release = r; });
+    this._keyLocks.set(key, next);
+    await prev;
+    try {
+      return await fn();
+    } finally {
+      release();
+      if (this._keyLocks.get(key) === next) this._keyLocks.delete(key);
+    }
+  }
 }
 
 /**

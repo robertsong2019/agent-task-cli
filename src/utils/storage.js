@@ -380,6 +380,32 @@ class Storage {
     }
     return all.slice(0, Math.min(n, all.length));
   }
+
+  /** F126: distinct(field) — return unique values for a field across all tasks */
+  async distinct(field) {
+    const tasks = await this.loadTasks();
+    const vals = new Set();
+    for (const t of Object.values(tasks)) {
+      if (t[field] !== undefined) vals.add(t[field]);
+    }
+    return [...vals];
+  }
+
+  /** F125: lock(key, fn) — run fn with exclusive access to a key's value. Returns fn result. Other ops on that key queue. */
+  async lock(key, fn) {
+    if (!this._locks) this._locks = new Map();
+    const prev = this._locks.get(key) || Promise.resolve();
+    let release;
+    const next = new Promise(r => { release = r; });
+    this._locks.set(key, next);
+    await prev;
+    try {
+      return await fn();
+    } finally {
+      release();
+      if (this._locks.get(key) === next) this._locks.delete(key);
+    }
+  }
 }
 
 module.exports = { Storage };
