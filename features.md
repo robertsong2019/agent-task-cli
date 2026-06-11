@@ -173,3 +173,8 @@
 - [x] Cache: `shuffle()` — Fisher-Yates shuffle of all non-expired entries — **F119** ✅ 2026-06-09
 - [x] Storage: `reverse()` — return all tasks in reverse insertion order — **F120** ✅ 2026-06-09
 - [x] EventBus: `waitUntil(channel, predicate, timeout?)` — resolve when event passes predicate — **F121** ✅ 2026-06-09
+
+### Utils (Round 30)
+- [x] Cache: `diff(otherCache)` — compare two caches, return {added, removed, changed} — **F122** ✅ 2026-06-11
+- [x] Storage: `sample(n)` — return N random tasks (Fisher-Yates) — **F123** ✅ 2026-06-11
+- [x] EventBus: `afterAll(channel, handler)` — post-emit hook after all subscribers fire — **F124** ✅ 2026-06-11

@@ -44,3 +44,4 @@ timestamp	commit	metric	value	status	description
 2026-06-07T22:10	ba82a9c	test_count	741/741 (100%)	keep	Round 27: Cache.getWithMeta (F112), Storage.pluck (F113), EventBus.sample (F114) — 20 new tests (721→741). Zero regressions.
 2026-06-08T22:20:51+08:00	59be9e1	test_pass_rate	100%	keep	F115 Cache.watch + F116-F117 Storage min/max + F118 EventBus.last (11/11 tests pass)
 2026-06-09T22:00	ee4c1cf	test_pass_rate	100%	keep	Round 29: F119 Cache.shuffle, F120 Storage.reverse, F121 EventBus.waitUntil
+2026-06-11T22:37:12+08:00	fc330d0	test_count	773/773 (100%)	keep	Round 30: Cache.diff (F122), Storage.sample (F123), EventBus.afterAll (F124) — 12 new tests (761→773)
