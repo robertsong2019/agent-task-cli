@@ -761,6 +761,39 @@ class Cache {
       if (this._keyLocks.get(key) === next) this._keyLocks.delete(key);
     }
   }
+
+  /**
+   * Compute and cache a value with explicit TTL.
+   * If the key already holds a non-expired value, return it without calling fn.
+   * Otherwise call fn(), cache the result with the given TTL, and return it.
+   * @param {string} key - Cache key
+   * @param {function} fn - Value producer (sync or async)
+   * @param {number} ttl - TTL in seconds
+   * @returns {Promise<*>} The cached or freshly computed value
+   */
+  async withTTL(key, fn, ttl) {
+    const existing = this.get(key);
+    if (existing !== undefined) return existing;
+    const value = await fn();
+    this.set(key, value, ttl);
+    return value;
+  }
+
+  /**
+   * Return a plain-object snapshot of all non-expired entries.
+   * Shallow copy of { key: value } pairs — useful for serialization/debugging.
+   * @returns {Record<string, *>}
+   */
+  snapshot() {
+    const result = {};
+    const now = Date.now();
+    for (const [k, entry] of this.cache) {
+      if (entry.expiresAt === null || entry.expiresAt > now) {
+        result[k] = entry.value;
+      }
+    }
+    return result;
+  }
 }
 
 /**
