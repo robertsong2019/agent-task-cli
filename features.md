@@ -183,3 +183,7 @@
 - [x] Cache: `lock(key, fn)` — exclusive mutex per key, serializes concurrent access — **F125** ✅ 2026-06-11
 - [x] Storage: `distinct(field)` — return unique values for a field — **F126** ✅ 2026-06-11
 - [x] EventBus: `channels()` — list channels with active subscribers — **F127** ✅ 2026-06-11
+
+### Utils (Round 32)
+- [x] Cache: `withTTL(key, fn, ttl)` — compute & cache with explicit TTL, skip if cached — **F128** ✅ 2026-06-12
+- [x] Cache: `snapshot()` — plain-object of all non-expired entries for serialization — **F129** ✅ 2026-06-12

@@ -46,3 +46,4 @@ timestamp	commit	metric	value	status	description
 2026-06-09T22:00	ee4c1cf	test_pass_rate	100%	keep	Round 29: F119 Cache.shuffle, F120 Storage.reverse, F121 EventBus.waitUntil
 2026-06-11T22:37:12+08:00	fc330d0	test_count	773/773 (100%)	keep	Round 30: Cache.diff (F122), Storage.sample (F123), EventBus.afterAll (F124) — 12 new tests (761→773)
 2026-06-11T22:51:40+08:00	1863c14	test_count	783/783 (100%)	keep	Round 31: Cache.lock (F125), Storage.distinct (F126), EventBus.channels (F127) — 10 new tests (773→783)
+2026-06-12T22:20	68e36d5	test_pass_rate	10/10 (100%)	keep	F128 Cache.withTTL + F129 Cache.snapshot — 10 new tests. withTTL skips fn when cached, snapshot returns plain object.
