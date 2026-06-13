@@ -187,3 +187,8 @@
 ### Utils (Round 32)
 - [x] Cache: `withTTL(key, fn, ttl)` — compute & cache with explicit TTL, skip if cached — **F128** ✅ 2026-06-12
 - [x] Cache: `snapshot()` — plain-object of all non-expired entries for serialization — **F129** ✅ 2026-06-12
+
+### Utils (Round 33)
+- [x] Cache: `copy(srcKey, destKey, ttl?)` — copy value to new key with optional new TTL — **F130** ✅ 2026-06-13
+- [x] EventBus: `before(channel, handler)` — pre-emit hook, can cancel emission — **F131** ✅ 2026-06-13
+- [x] Storage: `avg(field)` — average of numeric field across all tasks — **F132** ✅ 2026-06-13
