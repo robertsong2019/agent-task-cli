@@ -19,6 +19,13 @@ class EventBus {
    * @param {object} data - Event payload
    */
   emit(channel, data = {}) {
+    // Run before hooks if any (can cancel emission by returning false)
+    if (this._beforeHooks && this._beforeHooks[channel]) {
+      for (const hook of this._beforeHooks[channel]) {
+        const result = hook(channel, data);
+        if (result === false) return; // before hook cancelled emission
+      }
+    }
     // Run interceptors if any
     if (this._interceptors && this._interceptors.has(channel)) {
       for (const fn of this._interceptors.get(channel)) {
@@ -678,6 +685,21 @@ class EventBus {
     this._afterAllHooks[channel].push(handler);
     return () => {
       if (this._afterAllHooks[channel]) this._afterAllHooks[channel] = this._afterAllHooks[channel].filter(h => h !== handler);
+    };
+  }
+
+  /** F131: before(channel, handler) — register a pre-emit hook that fires BEFORE any subscribers for the channel.
+   * Handler receives (channel, data) and can mutate data in-place or return false to cancel emission.
+   * Returns unsubscribe function.
+   */
+  before(channel, handler) {
+    if (!this._beforeHooks) this._beforeHooks = {};
+    if (!this._beforeHooks[channel]) this._beforeHooks[channel] = [];
+    this._beforeHooks[channel].push(handler);
+    return () => {
+      if (this._beforeHooks[channel]) {
+        this._beforeHooks[channel] = this._beforeHooks[channel].filter(h => h !== handler);
+      }
     };
   }
 

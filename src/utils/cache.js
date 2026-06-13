@@ -779,6 +779,38 @@ class Cache {
     return value;
   }
 
+  /** F130: copy(srcKey, destKey, ttl?) — copy value from srcKey to destKey with optional new TTL.
+   * If destKey already exists it is overwritten. Returns false if srcKey doesn't exist or is expired.
+   * If ttl not provided, inherits remaining TTL from source entry.
+   * @returns {boolean} success
+   */
+  copy(srcKey, destKey, ttl) {
+    const now = Date.now();
+    const entry = this.cache.get(srcKey);
+    if (!entry) return false;
+    if (entry.expiresAt !== null && entry.expiresAt <= now) {
+      this.cache.delete(srcKey);
+      this.stats.misses++;
+      return false;
+    }
+    let newExpiresAt;
+    if (ttl !== undefined) {
+      newExpiresAt = ttl === null ? null : now + ttl;
+    } else {
+      newExpiresAt = entry.expiresAt; // inherit remaining TTL
+    }
+    this.cache.set(destKey, {
+      value: entry.value,
+      createdAt: entry.createdAt,
+      accessedAt: now,
+      expiresAt: newExpiresAt,
+      ttl: newExpiresAt === null ? null : (newExpiresAt - now)
+    });
+    this.stats.sets++;
+    this._notifyWatchers(destKey, 'copy', entry.value);
+    return true;
+  }
+
   /**
    * Return a plain-object snapshot of all non-expired entries.
    * Shallow copy of { key: value } pairs — useful for serialization/debugging.

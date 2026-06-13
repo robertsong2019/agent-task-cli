@@ -304,8 +304,22 @@ class Storage {
     return total;
   }
 
-  /** F107: groupBy(field) — group all tasks by a field value. Returns { [fieldValue]: task[] }.
-   */
+  /** F132: avg(field) — average of a numeric field across all tasks. Non-numeric values are skipped. Returns 0 if no matching tasks. */
+  async avg(field) {
+    const tasks = await this.loadTasks();
+    let total = 0;
+    let count = 0;
+    for (const id in tasks) {
+      const val = tasks[id][field];
+      if (typeof val === 'number' && !isNaN(val)) {
+        total += val;
+        count++;
+      }
+    }
+    return count > 0 ? total / count : 0;
+  }
+
+  /** F107: groupBy(field) — group all tasks by a field value. Returns { [fieldValue]: task[] }. */
   async groupBy(field) {
     const tasks = await this.loadTasks();
     const result = {};
