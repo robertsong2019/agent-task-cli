@@ -405,6 +405,23 @@ class Storage {
     return [...vals];
   }
 
+  /** F133: sort(field, order) — return all tasks sorted by a field. order: 'asc' (default) or 'desc'. */
+  async sort(field, order = 'asc') {
+    const tasks = await this.loadTasks();
+    const all = Object.values(tasks);
+    const dir = order === 'desc' ? -1 : 1;
+    return all.sort((a, b) => {
+      const va = a[field];
+      const vb = b[field];
+      if (va === undefined && vb === undefined) return 0;
+      if (va === undefined) return 1;
+      if (vb === undefined) return -1;
+      if (va < vb) return -1 * dir;
+      if (va > vb) return 1 * dir;
+      return 0;
+    });
+  }
+
   /** F125: lock(key, fn) — run fn with exclusive access to a key's value. Returns fn result. Other ops on that key queue. */
   async lock(key, fn) {
     if (!this._locks) this._locks = new Map();

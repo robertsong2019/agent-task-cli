@@ -159,6 +159,11 @@ class ConcurrencyManager {
     return true;
   }
 
+  /** F135: isIdle() — true when no tasks are running and queue is empty. */
+  isIdle() {
+    return this.activeCount === 0 && this.queue.length === 0;
+  }
+
   /**
    * Update max concurrent limit
    */

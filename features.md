@@ -188,6 +188,11 @@
 - [x] Cache: `withTTL(key, fn, ttl)` — compute & cache with explicit TTL, skip if cached — **F128** ✅ 2026-06-12
 - [x] Cache: `snapshot()` — plain-object of all non-expired entries for serialization — **F129** ✅ 2026-06-12
 
+### Utils (Round 34)
+- [x] Storage: `sort(field, order)` — sort tasks by any field, asc/desc, undefined last — **F133** ✅ 2026-06-14
+- [x] PriorityQueue: `isEmpty()` + `remove(item, cmp?)` — empty check + remove by ref/comparator — **F134** ✅ 2026-06-14
+- [x] ConcurrencyManager: `isIdle()` — true when no active tasks and queue empty — **F135** ✅ 2026-06-14
+
 ### Utils (Round 33)
 - [x] Cache: `copy(srcKey, destKey, ttl?)` — copy value to new key with optional new TTL — **F130** ✅ 2026-06-13
 - [x] EventBus: `before(channel, handler)` — pre-emit hook, can cancel emission — **F131** ✅ 2026-06-13
