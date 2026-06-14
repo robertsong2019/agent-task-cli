@@ -826,6 +826,68 @@ class Cache {
     }
     return result;
   }
+
+  /**
+   * Find all keys matching a prefix.
+   * @param {string} prefix
+   * @returns {string[]}
+   */
+  keysByPrefix(prefix) {
+    const result = [];
+    const now = Date.now();
+    for (const [k, entry] of this.cache) {
+      if (k.startsWith(prefix)) {
+        if (entry.expiresAt === null || entry.expiresAt > now) {
+          result.push(k);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Export cache contents as JSON string (only non-expired entries).
+   * Includes metadata (createdAt, ttl) for restoration.
+   * @returns {string}
+   */
+  exportJSON() {
+    const now = Date.now();
+    const entries = [];
+    for (const [k, entry] of this.cache) {
+      if (entry.expiresAt !== null && entry.expiresAt <= now) continue;
+      const remainingTtl = entry.expiresAt === null ? null : entry.expiresAt - now;
+      entries.push({
+        key: k,
+        value: entry.value,
+        createdAt: entry.createdAt,
+        remainingTtl,
+      });
+    }
+    return JSON.stringify({ version: 1, exportedAt: now, entries });
+  }
+
+  /**
+   * Import cache contents from JSON string produced by exportJSON().
+   * @param {string} json
+   * @param {object} opts - { merge: true (default) appends, false replaces all }
+   * @returns {number} count of imported entries
+   */
+  importJSON(json, opts = { merge: true }) {
+    const data = JSON.parse(json);
+    if (!data.entries || !Array.isArray(data.entries)) {
+      throw new Error('Invalid cache JSON: missing entries array');
+    }
+    if (!opts.merge) this.clear();
+    const now = Date.now();
+    let count = 0;
+    for (const { key, value, remainingTtl } of data.entries) {
+      const ttl = remainingTtl === null ? null : (remainingTtl > 0 ? remainingTtl : 0);
+      if (ttl !== null && ttl <= 0) continue; // skip already-expired
+      this.set(key, value, ttl === null ? 0 : ttl);
+      count++;
+    }
+    return count;
+  }
 }
 
 /**
