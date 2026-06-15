@@ -544,6 +544,27 @@ class Cache {
     return this.incr(key, -delta);
   }
 
+  /** F137: incrTo(key, target, delta=1) — increment towards a target ceiling, stops at target. Returns new value. */
+  incrTo(key, target, delta = 1) {
+    if (typeof target !== 'number' || typeof delta !== 'number') {
+      throw new TypeError('incrTo: target and delta must be numbers');
+    }
+    if (delta <= 0) throw new RangeError('incrTo: delta must be positive');
+    const current = this.get(key);
+    if (current === undefined) {
+      const val = Math.min(delta, target);
+      this.set(key, val);
+      return val;
+    }
+    if (typeof current !== 'number') {
+      throw new TypeError(`Cache.incrTo: value at '${key}' is not a number`);
+    }
+    if (current >= target) return current;
+    const newVal = Math.min(current + delta, target);
+    this.set(key, newVal);
+    return newVal;
+  }
+
   /** F79: Swap — set new value and return old value (undefined if key didn't exist). */
   swap(key, value, ttl = this.defaultTTL) {
     const old = this.get(key);

@@ -437,6 +437,26 @@ class Storage {
       if (this._locks.get(key) === next) this._locks.delete(key);
     }
   }
+
+  /** F136: create(id, data) — insert-only, returns false if id already exists (NX pattern). */
+  async create(id, data) {
+    return await this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const fileData = await fs.readFile(this.tasksFile, 'utf8');
+        if (fileData && fileData.trim() !== '') {
+          tasks = JSON.parse(fileData);
+        }
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      if (tasks[id] !== undefined) return false;
+      tasks[id] = data;
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      return true;
+    });
+  }
 }
 
 module.exports = { Storage };

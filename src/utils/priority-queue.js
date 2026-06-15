@@ -45,6 +45,15 @@ class PriorityQueue {
     return removed.item;
   }
 
+  /** F138: peekAt(n) — peek at the Nth item (0-indexed) without dequeuing. Returns undefined if out of bounds. */
+  peekAt(n) {
+    if (typeof n !== 'number' || n < 0 || !Number.isInteger(n)) {
+      throw new RangeError('peekAt: n must be a non-negative integer');
+    }
+    const entry = this._items[n];
+    return entry ? entry.item : undefined;
+  }
+
   clear() {
     this._items = [];
   }
