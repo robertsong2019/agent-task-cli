@@ -457,6 +457,35 @@ class Storage {
       return true;
     });
   }
+
+  /** F139: where(predicate) — filter tasks by a predicate function. Returns array of matching tasks. */
+  async where(predicate) {
+    const tasks = await this.loadTasks();
+    const result = [];
+    for (const [id, t] of Object.entries(tasks)) {
+      const task = { id, ...t };
+      if (predicate(task)) result.push(task);
+    }
+    return result;
+  }
+
+  /** F140: chunk(field, size) — split tasks into chunks of N by sequential grouping. Returns array of arrays. */
+  async chunk(size = 10) {
+    if (size < 1) throw new Error('chunk size must be >= 1');
+    const tasks = await this.loadTasks();
+    const all = Object.values(tasks);
+    const chunks = [];
+    for (let i = 0; i < all.length; i += size) {
+      chunks.push(all.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  /** F141: count() — total number of stored tasks. */
+  async count() {
+    const tasks = await this.loadTasks();
+    return Object.keys(tasks).length;
+  }
 }
 
 module.exports = { Storage };
