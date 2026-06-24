@@ -712,6 +712,28 @@ class EventBus {
     }
     return [...names];
   }
+
+  /**
+   * F140: delegate(targetBus, channels) — forward events from this bus to another bus.
+   * If channels is omitted, forward all events. Returns undelegate function.
+   */
+  delegate(targetBus, channels = null) {
+    if (!targetBus || typeof targetBus.emit !== 'function') {
+      throw new TypeError('delegate: targetBus must have emit() method');
+    }
+    const handler = (event) => {
+      if (channels && !channels.includes(event.channel)) return;
+      targetBus.emit(event.channel, { ...event.data, __delegated: true });
+    };
+    this.onAny(handler);
+    if (!this._delegations) this._delegations = [];
+    const idx = this._delegations.length;
+    this._delegations.push(handler);
+    return () => {
+      this._emitter.off('*', handler);
+      this._delegations[idx] = null;
+    };
+  }
 }
 
 // Singleton instance

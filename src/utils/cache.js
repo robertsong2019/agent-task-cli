@@ -909,6 +909,18 @@ class Cache {
     }
     return count;
   }
+
+  /**
+   * F139: renameKey(oldKey, newKey) — rename a cache key preserving value and TTL.
+   * Returns true if renamed, false if oldKey doesn't exist.
+   */
+  renameKey(oldKey, newKey) {
+    if (!this.cache.has(oldKey)) return false;
+    const entry = this.cache.get(oldKey);
+    this.cache.delete(oldKey);
+    this.cache.set(newKey, entry);
+    return true;
+  }
 }
 
 /**
