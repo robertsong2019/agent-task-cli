@@ -835,6 +835,29 @@ class EventBus {
       unsub
     };
   }
+
+  /**
+   * F149: onceAny(channels[], handler) — fire handler once on the first event
+   * from any of the given channels, then auto-unsubscribe from all.
+   * Returns an unsub function for manual cancellation.
+   */
+  onceAny(channels, handler) {
+    if (!Array.isArray(channels) || channels.length === 0) {
+      throw new TypeError('onceAny requires a non-empty array of channels');
+    }
+    let fired = false;
+    const unsubs = [];
+    const cleanup = () => { for (const u of unsubs) u(); };
+    for (const ch of channels) {
+      unsubs.push(this.on(ch, (event) => {
+        if (fired) return;
+        fired = true;
+        handler(event);
+        cleanup();
+      }));
+    }
+    return cleanup;
+  }
 }
 
 // Singleton instance

@@ -988,6 +988,15 @@ class Cache {
     }
     return result;
   }
+
+  /**
+   * F147: mget(keys[]) — Redis MGET semantics. Returns array of values
+   * (undefined for missing/expired keys). Updates accessedAt for hits.
+   */
+  mget(keys) {
+    if (!Array.isArray(keys)) throw new TypeError('mget requires an array of keys');
+    return keys.map(k => this.get(k));
+  }
 }
 
 /**

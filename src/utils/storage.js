@@ -553,6 +553,35 @@ class Storage {
       return true;
     });
   }
+
+  /**
+   * F148: bulkUpdate(updates) — batch update multiple tasks by ID.
+   * @param {Object} updates — { id: { field: value, ... }, ... }
+   * @returns {Object} { updated: string[], missing: string[] }
+   */
+  async bulkUpdate(updates) {
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') tasks = JSON.parse(data);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      const updated = [];
+      const missing = [];
+      for (const [id, patch] of Object.entries(updates)) {
+        if (!tasks[id]) { missing.push(id); continue; }
+        Object.assign(tasks[id], patch);
+        updated.push(id);
+      }
+      if (updated.length > 0) {
+        await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      }
+      return { updated, missing };
+    });
+  }
 }
 
 module.exports = { Storage };
