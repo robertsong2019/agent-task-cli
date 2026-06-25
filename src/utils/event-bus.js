@@ -771,6 +771,32 @@ class EventBus {
       unsub();
     };
   }
+
+  /**
+   * F142: debounce(channel, waitMs, handler) — subscribe with debounce.
+   * Only processes the last event after a quiet period of waitMs.
+   * Returns an unsubscribe function.
+   */
+  debounce(channel, waitMs, handler) {
+    let timer = null;
+    let latest = null;
+
+    const unsub = this.on(channel, (event) => {
+      latest = event;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (latest) {
+          handler(latest);
+          latest = null;
+        }
+      }, waitMs);
+    });
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      unsub();
+    };
+  }
 }
 
 // Singleton instance

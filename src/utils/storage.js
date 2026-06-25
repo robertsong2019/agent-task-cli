@@ -486,6 +486,38 @@ class Storage {
     const tasks = await this.loadTasks();
     return Object.keys(tasks).length;
   }
+
+  /** F142: countWhere(predicate) — count tasks matching a predicate function. */
+  async countWhere(predicate) {
+    const tasks = await this.loadTasks();
+    let count = 0;
+    for (const [id, t] of Object.entries(tasks)) {
+      const task = { id, ...t };
+      if (predicate(task)) count++;
+    }
+    return count;
+  }
+
+  /** F143: hasTag(tag) — check if any task has the given tag. Returns boolean. */
+  async hasTag(tag) {
+    const tasks = await this.loadTasks();
+    for (const t of Object.values(tasks)) {
+      if (Array.isArray(t.tags) && t.tags.includes(tag)) return true;
+    }
+    return false;
+  }
+
+  /** F144: tags() — return all unique tags across all tasks, sorted alphabetically. */
+  async tags() {
+    const tasks = await this.loadTasks();
+    const tagSet = new Set();
+    for (const t of Object.values(tasks)) {
+      if (Array.isArray(t.tags)) {
+        for (const tag of t.tags) tagSet.add(tag);
+      }
+    }
+    return [...tagSet].sort();
+  }
 }
 
 module.exports = { Storage };
