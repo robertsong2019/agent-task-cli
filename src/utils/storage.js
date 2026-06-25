@@ -518,6 +518,41 @@ class Storage {
     }
     return [...tagSet].sort();
   }
+
+  /** F145: findByIds(ids) — return tasks by ID, preserving input order. Missing IDs skipped. */
+  async findByIds(ids) {
+    const tasks = await this.loadTasks();
+    const result = [];
+    for (const id of ids) {
+      if (tasks[id]) result.push({ id, ...tasks[id] });
+    }
+    return result;
+  }
+
+  /** F146: toggleTag(id, tag) — toggle a tag on a task. Returns true if added, false if removed. */
+  async toggleTag(id, tag) {
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') tasks = JSON.parse(data);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      if (!tasks[id]) throw new Error(`Task not found: ${id}`);
+      if (!Array.isArray(tasks[id].tags)) tasks[id].tags = [];
+      const idx = tasks[id].tags.indexOf(tag);
+      if (idx >= 0) {
+        tasks[id].tags.splice(idx, 1);
+        await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+        return false;
+      }
+      tasks[id].tags.push(tag);
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      return true;
+    });
+  }
 }
 
 module.exports = { Storage };

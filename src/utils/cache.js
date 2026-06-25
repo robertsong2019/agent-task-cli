@@ -972,6 +972,22 @@ class Cache {
     this.cache.set(newKey, entry);
     return true;
   }
+
+  /**
+   * F144: compute(key, computer, ttl) — atomically transform a value in-place.
+   * computer receives current value (or undefined if missing), returns new value.
+   * If computer returns undefined, the key is deleted.
+   */
+  compute(key, computer, ttl = this.defaultTTL) {
+    const current = this.get(key);
+    const result = computer(current);
+    if (result === undefined) {
+      this.delete(key);
+    } else {
+      this.set(key, result, ttl);
+    }
+    return result;
+  }
 }
 
 /**
