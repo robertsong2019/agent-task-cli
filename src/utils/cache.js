@@ -949,6 +949,19 @@ class Cache {
   }
 
   /**
+   * F143: ttl(key) — return remaining TTL in ms for a key.
+   * Returns -1 if key has no expiry (persistent). Returns -2 if key doesn't exist.
+   * Like Redis TTL.
+   */
+  ttl(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return -2;
+    if (!entry.expiresAt) return -1;
+    const remaining = entry.expiresAt - Date.now();
+    return remaining > 0 ? remaining : -2;
+  }
+
+  /**
    * F139: renameKey(oldKey, newKey) — rename a cache key preserving value and TTL.
    * Returns true if renamed, false if oldKey doesn't exist.
    */

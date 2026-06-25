@@ -797,6 +797,44 @@ class EventBus {
       unsub();
     };
   }
+
+  /**
+   * F143: buffer(channel, options) — buffer events and flush on trigger.
+   * Options: { max: N, flushMs: M }
+   * Returns { flush(), clear(), unsub() }.
+   * - flush(): returns buffered events and clears the buffer
+   * - on flush, emits to a consumer if provided via options.onFlush
+   */
+  buffer(channel, options = {}) {
+    const max = options.max || Infinity;
+    const flushMs = options.flushMs || null;
+    const onFlush = options.onFlush || null;
+    let buf = [];
+    let timer = null;
+
+    const doFlush = () => {
+      const items = buf;
+      buf = [];
+      if (timer) { clearTimeout(timer); timer = null; }
+      if (onFlush && items.length > 0) onFlush(items);
+      return items;
+    };
+
+    const unsub = this.on(channel, (event) => {
+      buf.push(event);
+      if (buf.length >= max) {
+        doFlush();
+      } else if (flushMs && !timer) {
+        timer = setTimeout(doFlush, flushMs);
+      }
+    });
+
+    return {
+      flush: doFlush,
+      clear: () => { buf = []; if (timer) { clearTimeout(timer); timer = null; } },
+      unsub
+    };
+  }
 }
 
 // Singleton instance
