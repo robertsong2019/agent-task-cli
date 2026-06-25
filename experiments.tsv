@@ -2,3 +2,7 @@ timestamp	commit	metric	value	status	description
 2026-06-14T20:30+08:00	e6c2eca	test_pass_rate	815→826	keep	Cycle 1: Cache keysByPrefix + exportJSON/importJSON serialization. 11 new tests. Zero regressions.
 2026-06-14T22:10+08:00	bb9336e	test_pass_rate	826→845	keep	Round 34: Storage.sort (F133) + PriorityQueue.isEmpty/remove (F134) + ConcurrencyManager.isIdle (F135). 19 new tests. Zero regressions.
 2026-06-16T19:55+08:00	b6cfc9c	test_count	868→882	keep	Round 36: Storage.where(predicate) + chunk(size) + count(). F139-F141. +14 tests. Zero regressions.
+2026-06-25T21:00+08:00	38731e0	test_count	893→908	keep	Cycle 1: Cache.expire/persist/swap + EventBus.subscribeThrottled. F141. +15 tests. Zero regressions.
+2026-06-25T21:10+08:00	47c5bca	test_count	908→921	keep	Cycle 2: Storage.countWhere/hasTag/tags + EventBus.debounce. F142. +13 tests. Zero regressions.
+2026-06-25T21:20+08:00	1f65cb0	test_count	921→933	keep	Cycle 3: Cache.ttl(Redis semantics) + EventBus.buffer(max/flushMs). F143. +12 tests. Zero regressions.
+2026-06-25T21:30+08:00	77be1fd	test_count	933→947	keep	Cycle 4: Cache.compute(atomic transform) + Storage.findByIds/toggleTag. F144-F146. +14 tests. Zero regressions.
