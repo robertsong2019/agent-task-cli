@@ -188,6 +188,11 @@
 - [x] Cache: `withTTL(key, fn, ttl)` — compute & cache with explicit TTL, skip if cached — **F128** ✅ 2026-06-12
 - [x] Cache: `snapshot()` — plain-object of all non-expired entries for serialization — **F129** ✅ 2026-06-12
 
+### Utils (Round 35)
+- [x] Storage: `create(id, data)` — insert-only, returns false if exists (NX pattern) — **F136** ✅ 2026-06-15
+- [x] Cache: `incrTo(key, target, delta?)` — increment towards ceiling, stops at target — **F137** ✅ 2026-06-15
+- [x] PriorityQueue: `peekAt(n)` — peek at Nth item (0-indexed) without dequeuing — **F138** ✅ 2026-06-15
+
 ### Utils (Round 34)
 - [x] Storage: `sort(field, order)` — sort tasks by any field, asc/desc, undefined last — **F133** ✅ 2026-06-14
 - [x] PriorityQueue: `isEmpty()` + `remove(item, cmp?)` — empty check + remove by ref/comparator — **F134** ✅ 2026-06-14

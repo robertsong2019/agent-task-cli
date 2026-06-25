@@ -911,6 +911,44 @@ class Cache {
   }
 
   /**
+   * F141: expire(key, ttl) — set or update TTL on an existing key without changing its value.
+   * Returns true if the key exists and was updated, false otherwise.
+   * ttl=0 makes the key immediately expire (effectively a delete).
+   */
+  expire(key, ttl = this.defaultTTL) {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    entry.expiresAt = ttl > 0 ? Date.now() + ttl : Date.now();
+    if (ttl <= 0) {
+      this.cache.delete(key);
+      this.stats.evictions++;
+    }
+    return true;
+  }
+
+  /**
+   * F142: persist(key) — remove TTL from a key, making it non-expiring.
+   * Returns true if the key exists, false otherwise.
+   */
+  persist(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    entry.expiresAt = null;
+    return true;
+  }
+
+  /**
+   * F143: swap(key, value, ttl) — atomically set a new value and return the previous value.
+   * Like Redis GETSET. Returns undefined if the key didn't exist.
+   */
+  swap(key, value, ttl = this.defaultTTL) {
+    const entry = this.cache.get(key);
+    const oldValue = entry ? entry.value : undefined;
+    this.set(key, value, ttl);
+    return oldValue;
+  }
+
+  /**
    * F139: renameKey(oldKey, newKey) — rename a cache key preserving value and TTL.
    * Returns true if renamed, false if oldKey doesn't exist.
    */

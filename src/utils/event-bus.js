@@ -734,6 +734,43 @@ class EventBus {
       this._delegations[idx] = null;
     };
   }
+
+  /**
+   * F141: subscribeThrottled(channel, intervalMs, handler) — subscribe with rate limiting.
+   * Only processes the last event within each interval window (trailing-edge).
+   * Returns an unsubscribe function.
+   */
+  subscribeThrottled(channel, intervalMs, handler) {
+    let lastFired = 0;
+    let pending = null;
+    let timer = null;
+
+    const tryFire = () => {
+      if (pending) {
+        handler(pending);
+        pending = null;
+        lastFired = Date.now();
+      }
+    };
+
+    const unsub = this.on(channel, (event) => {
+      const now = Date.now();
+      const elapsed = now - lastFired;
+      if (elapsed >= intervalMs) {
+        handler(event);
+        lastFired = now;
+      } else {
+        pending = event;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(tryFire, intervalMs - elapsed);
+      }
+    });
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      unsub();
+    };
+  }
 }
 
 // Singleton instance
