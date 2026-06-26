@@ -997,6 +997,42 @@ class Cache {
     if (!Array.isArray(keys)) throw new TypeError('mget requires an array of keys');
     return keys.map(k => this.get(k));
   }
+
+  /**
+   * F150: replace(key, value, ttl?) — Set only if key already exists (non-expired).
+   * Returns old value if replaced, undefined if key was missing/expired.
+   * @param {string} key
+   * @param {*} value
+   * @param {number} [ttl] - TTL in ms (default: this.defaultTTL)
+   * @returns {*} old value or undefined
+   */
+  replace(key, value, ttl = this.defaultTTL) {
+    if (!this.has(key)) return undefined;
+    const old = this.get(key); // has() already confirmed existence, get() returns value
+    this.set(key, value, ttl);
+    return old;
+  }
+
+  /**
+   * F151: retain(predicate) — Remove all non-expired entries that do NOT match the predicate.
+   * Mutates the cache in-place. Returns count of removed entries.
+   * @param {Function} predicate - (value, key) => boolean
+   * @returns {number} count of removed entries
+   */
+  retain(predicate) {
+    if (typeof predicate !== 'function') throw new TypeError('retain requires a predicate function');
+    const now = Date.now();
+    let removed = 0;
+    for (const [key, entry] of this.cache) {
+      if (entry.expiresAt && entry.expiresAt <= now) continue; // skip expired
+      if (!predicate(entry.value, key)) {
+        this.cache.delete(key);
+        removed++;
+      }
+    }
+    this.stats.size = this.cache.size;
+    return removed;
+  }
 }
 
 /**

@@ -582,6 +582,32 @@ class Storage {
       return { updated, missing };
     });
   }
+
+  /**
+   * F152: rename(id, newId) — Rename a task's ID.
+   * Returns true if renamed, false if source missing or target already exists.
+   * @param {string} id - current task ID
+   * @param {string} newId - desired new ID
+   * @returns {Promise<boolean>}
+   */
+  async rename(id, newId) {
+    if (!id || !newId || id === newId) return false;
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') tasks = JSON.parse(data);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      if (!tasks[id] || tasks[newId]) return false;
+      tasks[newId] = tasks[id];
+      delete tasks[id];
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      return true;
+    });
+  }
 }
 
 module.exports = { Storage };

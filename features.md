@@ -202,3 +202,13 @@
 - [x] Cache: `copy(srcKey, destKey, ttl?)` — copy value to new key with optional new TTL — **F130** ✅ 2026-06-13
 - [x] EventBus: `before(channel, handler)` — pre-emit hook, can cancel emission — **F131** ✅ 2026-06-13
 - [x] Storage: `avg(field)` — average of numeric field across all tasks — **F132** ✅ 2026-06-13
+
+### Utils (Round 36)
+- [x] Cache: `mget(keys[])` — Redis MGET, batch get preserving order — **F147** ✅ 2026-06-25
+- [x] Storage: `bulkUpdate(updates{})` — batch update multiple tasks by ID map — **F148** ✅ 2026-06-25
+- [x] EventBus: `onceAny(channels[], handler)` — first-event-wins across channels, auto-unsub — **F149** ✅ 2026-06-25
+
+### Utils (Round 37)
+- [x] Cache: `replace(key, value, ttl?)` — set only if key exists, return old value (Redis REPLACE) — **F150** ✅ 2026-06-26
+- [x] Cache: `retain(predicate)` — filter-in-place, remove non-matching, return count — **F151** ✅ 2026-06-26
+- [x] Storage: `rename(id, newId)` — rename task ID, collision-safe — **F152** ✅ 2026-06-26
