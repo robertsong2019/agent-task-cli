@@ -605,15 +605,29 @@ class Cache {
     return removed;
   }
 
-  /** F97: expire(key, ttl) — set new TTL on an existing key. Returns true if key existed and was updated. */
-  expire(key, ttl) {
+  /**
+   * F97/F141: expire(key, ttl) — set or update TTL on an existing key.
+   * Returns true if key exists and was updated, false otherwise.
+   * - ttl > 0: sets new TTL
+   * - ttl = 0 or negative: immediately deletes the key (F141 semantics)
+   * - ttl = null: makes key never expire (F97 semantics)
+   * Returns false for missing or already-expired keys.
+   */
+  expire(key, ttl = this.defaultTTL) {
     const entry = this.cache.get(key);
     if (!entry) return false;
     if (entry.expiresAt && Date.now() > entry.expiresAt) {
       this.delete(key);
       return false;
     }
-    entry.expiresAt = ttl ? Date.now() + ttl : null;
+    if (ttl === null) {
+      entry.expiresAt = null;
+    } else if (ttl <= 0) {
+      this.cache.delete(key);
+      this.stats.evictions++;
+    } else {
+      entry.expiresAt = Date.now() + ttl;
+    }
     return true;
   }
 
@@ -911,22 +925,6 @@ class Cache {
   }
 
   /**
-   * F141: expire(key, ttl) — set or update TTL on an existing key without changing its value.
-   * Returns true if the key exists and was updated, false otherwise.
-   * ttl=0 makes the key immediately expire (effectively a delete).
-   */
-  expire(key, ttl = this.defaultTTL) {
-    const entry = this.cache.get(key);
-    if (!entry) return false;
-    entry.expiresAt = ttl > 0 ? Date.now() + ttl : Date.now();
-    if (ttl <= 0) {
-      this.cache.delete(key);
-      this.stats.evictions++;
-    }
-    return true;
-  }
-
-  /**
    * F142: persist(key) — remove TTL from a key, making it non-expiring.
    * Returns true if the key exists, false otherwise.
    */
@@ -987,15 +985,6 @@ class Cache {
       this.set(key, result, ttl);
     }
     return result;
-  }
-
-  /**
-   * F147: mget(keys[]) — Redis MGET semantics. Returns array of values
-   * (undefined for missing/expired keys). Updates accessedAt for hits.
-   */
-  mget(keys) {
-    if (!Array.isArray(keys)) throw new TypeError('mget requires an array of keys');
-    return keys.map(k => this.get(k));
   }
 
   /**

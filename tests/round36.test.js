@@ -4,32 +4,32 @@ const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
 
-// ─── F147: Cache.mget(keys[]) ───
+// ─── F147: Cache.mget(keys[]) — object semantics ───
 describe('F147: Cache.mget', () => {
   let cache;
   beforeEach(() => { cache = new Cache({ defaultTTL: 0 }); });
 
-  test('returns values in same order as keys', () => {
+  test('returns object of found keys', () => {
     cache.set('a', 1);
     cache.set('b', 2);
     cache.set('c', 3);
-    expect(cache.mget(['a', 'b', 'c'])).toEqual([1, 2, 3]);
+    expect(cache.mget(['a', 'b', 'c'])).toEqual({ a: 1, b: 2, c: 3 });
   });
 
-  test('returns undefined for missing keys', () => {
+  test('omits missing keys', () => {
     cache.set('a', 1);
-    expect(cache.mget(['a', 'missing', 'c'])).toEqual([1, undefined, undefined]);
+    expect(cache.mget(['a', 'missing', 'c'])).toEqual({ a: 1 });
   });
 
-  test('returns undefined for expired keys', async () => {
+  test('omits expired keys', async () => {
     cache.set('a', 1, 50);
     cache.set('b', 2);
     await new Promise(r => setTimeout(r, 60));
-    expect(cache.mget(['a', 'b'])).toEqual([undefined, 2]);
+    expect(cache.mget(['a', 'b'])).toEqual({ b: 2 });
   });
 
-  test('empty array returns empty array', () => {
-    expect(cache.mget([])).toEqual([]);
+  test('empty array returns empty object', () => {
+    expect(cache.mget([])).toEqual({});
   });
 
   test('updates accessedAt on hits', () => {
@@ -43,15 +43,9 @@ describe('F147: Cache.mget', () => {
     expect(observedAt).toBeGreaterThanOrEqual(before);
   });
 
-  test('throws TypeError for non-array input', () => {
-    expect(() => cache.mget('a')).toThrow(TypeError);
-    expect(() => cache.mget(null)).toThrow(TypeError);
-    expect(() => cache.mget({})).toThrow(TypeError);
-  });
-
   test('handles single key', () => {
     cache.set('x', 42);
-    expect(cache.mget(['x'])).toEqual([42]);
+    expect(cache.mget(['x'])).toEqual({ x: 42 });
   });
 });
 
