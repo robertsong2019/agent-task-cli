@@ -290,6 +290,45 @@ npm test
 npm run test:coverage
 ```
 
+## Utility Classes
+
+### Cache (`src/utils/cache.js`)
+
+In-memory cache with TTL, LRU eviction, and hit/miss stats.
+
+```javascript
+const { Cache } = require('./src/utils/cache');
+
+const cache = new Cache({ maxSize: 100, defaultTTL: 3600000 });
+
+cache.set('key', 'value', 5000);  // TTL in ms
+cache.get('key');                  // → 'value'
+
+// F150: Replace only if key exists (Redis REPLACE semantics)
+const old = cache.replace('key', 'new_value', 10000);
+// → 'value' (old value), or undefined if key was missing/expired
+
+// F151: Retain only matching entries (filter-in-place)
+const removed = cache.retain((value, key) => key.startsWith('task:'));
+// → 5 (count of removed entries)
+```
+
+### Storage (`src/utils/storage.js`)
+
+File-based task storage with JSON persistence.
+
+```javascript
+const { Storage } = require('./src/utils/storage');
+
+const storage = new Storage({ dataDir: './data' });
+await storage.save(task);
+await storage.load(id);
+
+// F152: Rename a task's ID (collision-safe)
+const ok = await storage.rename('old-id', 'new-id');
+// → true if renamed, false if source missing or target already exists
+```
+
 ## Development
 
 ```bash
