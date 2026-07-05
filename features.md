@@ -212,3 +212,9 @@
 - [x] Cache: `replace(key, value, ttl?)` — set only if key exists, return old value (Redis REPLACE) — **F150** ✅ 2026-06-26
 - [x] Cache: `retain(predicate)` — filter-in-place, remove non-matching, return count — **F151** ✅ 2026-06-26
 - [x] Storage: `rename(id, newId)` — rename task ID, collision-safe — **F152** ✅ 2026-06-26
+
+### Utils (Round 38)
+- [x] Cache: `withDefault(key, defaultValue, ttl?)` — get or set default (not factory) — **F153** ✅ 2026-07-05
+- [x] Cache: `incrBy(key, amount, opts)` — increment by amount with min/max bounds — **F154** ✅ 2026-07-05
+- [x] Storage: `upsert(id, data)` — insert or merge-update, returns {created, task} — **F155** ✅ 2026-07-05
+- [x] EventBus: `emitWithMeta(channel, data, meta)` — emit with metadata attached to event — **F156** ✅ 2026-07-05

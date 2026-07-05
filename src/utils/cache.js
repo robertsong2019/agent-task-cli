@@ -1022,6 +1022,38 @@ class Cache {
     this.stats.size = this.cache.size;
     return removed;
   }
+
+  /**
+   * F153: withDefault(key, defaultValue)
+   * Get value; if missing or expired, set and return defaultValue.
+   * Unlike getOrSet, this always resets to default (not factory).
+   */
+  withDefault(key, defaultValue, ttl = this.defaultTTL) {
+    const existing = this.get(key);
+    if (existing !== undefined) return existing;
+    this.set(key, defaultValue, ttl);
+    return defaultValue;
+  }
+
+  /**
+   * F154: incrBy(key, amount, opts)
+   * Increment numeric value by arbitrary amount with optional min/max bounds.
+   * If key doesn't exist, starts from 0.
+   * Returns the new value after increment.
+   */
+  incrBy(key, amount, opts = {}) {
+    if (typeof amount !== 'number' || !Number.isFinite(amount)) {
+      throw new TypeError('incrBy: amount must be a finite number');
+    }
+    const { min, max, ttl = this.defaultTTL } = opts;
+    const current = this.get(key);
+    const base = typeof current === 'number' ? current : 0;
+    let next = base + amount;
+    if (typeof min === 'number') next = Math.max(min, next);
+    if (typeof max === 'number') next = Math.min(max, next);
+    this.set(key, next, ttl);
+    return next;
+  }
 }
 
 /**

@@ -608,6 +608,32 @@ class Storage {
       return true;
     });
   }
+
+  /**
+   * F155: upsert(id, data)
+   * Insert new task or merge-update existing one.
+   * Returns { created: boolean, task: mergedTask }.
+   */
+  async upsert(id, data) {
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const raw = await fs.readFile(this.tasksFile, 'utf8');
+        if (raw && raw.trim() !== '') tasks = JSON.parse(raw);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      const created = !tasks[id];
+      if (created) {
+        tasks[id] = { ...data, createdAt: new Date().toISOString() };
+      } else {
+        tasks[id] = { ...tasks[id], ...data, updatedAt: new Date().toISOString() };
+      }
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      return { created, task: tasks[id] };
+    });
+  }
 }
 
 module.exports = { Storage };

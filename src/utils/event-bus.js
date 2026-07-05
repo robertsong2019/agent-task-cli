@@ -858,6 +858,62 @@ class EventBus {
     }
     return cleanup;
   }
+
+  /**
+   * F156: emitWithMeta(channel, data, meta)
+   * Emit event with attached metadata object.
+   * Subscribers receive { channel, data, meta, timestamp, id }.
+   * Returns true if event was emitted (not cancelled by interceptors/before hooks).
+   */
+  emitWithMeta(channel, data = {}, meta = {}) {
+    if (typeof meta !== 'object' || meta === null) {
+      throw new TypeError('emitWithMeta: meta must be an object');
+    }
+
+    // Run before hooks (can cancel)
+    if (this._beforeHooks && this._beforeHooks[channel]) {
+      for (const hook of this._beforeHooks[channel]) {
+        if (hook(channel, data) === false) return false;
+      }
+    }
+
+    // Run interceptors (can cancel or transform data)
+    if (this._interceptors && this._interceptors.has(channel)) {
+      for (const fn of this._interceptors.get(channel)) {
+        const result = fn(data);
+        if (result === false) return false;
+        if (result !== undefined) data = result;
+      }
+    }
+
+    const event = {
+      channel,
+      data,
+      meta: { ...meta },
+      timestamp: Date.now(),
+      id: `${channel}:${Date.now()}`
+    };
+
+    // Store in history
+    if (this._history.length >= this._maxHistory) {
+      this._history.shift();
+    }
+    this._history.push(event);
+
+    // Emit to subscribers
+    this._emitter.emit(channel, event);
+    this._emitter.emit('*', event);
+
+    // Fire afterAll hooks
+    if (this._afterAllHooks && this._afterAllHooks[channel]) {
+      const count = this._emitter.listenerCount(channel);
+      for (const hook of this._afterAllHooks[channel]) {
+        hook({ channel, data: event.data, subscriberCount: count });
+      }
+    }
+
+    return true;
+  }
 }
 
 // Singleton instance
