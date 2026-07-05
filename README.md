@@ -311,6 +311,15 @@ const old = cache.replace('key', 'new_value', 10000);
 // F151: Retain only matching entries (filter-in-place)
 const removed = cache.retain((value, key) => key.startsWith('task:'));
 // → 5 (count of removed entries)
+
+// F153: Get with fallback default (auto-set)
+const val = cache.withDefault('missing', 'default-value');
+// → 'default-value' (also sets it with defaultTTL)
+
+// F154: Increment (or initialise then increment) a numeric value
+cache.incrBy('counter', 5);         // → 5 (initialised from 0)
+cache.incrBy('counter', 3);         // → 8
+cache.incrBy('counter', -2, { min: 0 }); // → 6 (clamped to min)
 ```
 
 ### Storage (`src/utils/storage.js`)
@@ -327,6 +336,26 @@ await storage.load(id);
 // F152: Rename a task's ID (collision-safe)
 const ok = await storage.rename('old-id', 'new-id');
 // → true if renamed, false if source missing or target already exists
+
+// F155: Upsert — insert or update in one call
+const task = await storage.upsert('task-42', { name: 'Updated', status: 'running' });
+// → creates if not exists, updates if exists
+```
+
+### EventBus (`src/utils/event-bus.js`)
+
+Channel-based pub/sub event system.
+
+```javascript
+const { EventBus } = require('./src/utils/event-bus');
+
+const bus = new EventBus();
+bus.on('task:progress', (data) => console.log(data));
+bus.emit('task:progress', { taskId: 'abc', percent: 50 });
+
+// F156: Emit with metadata envelope
+bus.emitWithMeta('task:done', { result: 'success' }, { duration: 1200, agent: 'bot' });
+// listeners receive { data: { result: 'success' }, meta: { duration: 1200, agent: 'bot' } }
 ```
 
 ## Development
