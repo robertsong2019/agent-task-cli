@@ -610,6 +610,53 @@ class Storage {
   }
 
   /**
+   * F157: paginate(page, pageSize, opts?) — return a page of tasks with metadata.
+   * @param {number} page - 1-indexed page number
+   * @param {number} pageSize - items per page
+   * @param {object} opts - optional { status, sortBy, order }
+   * @returns {Promise<{items, page, pageSize, total, totalPages, hasMore}>}
+   */
+  async paginate(page = 1, pageSize = 10, opts = {}) {
+    if (page < 1) throw new Error('paginate: page must be >= 1');
+    if (pageSize < 1) throw new Error('paginate: pageSize must be >= 1');
+    let tasks = await this.loadTasks();
+    let all = Object.values(tasks);
+    // Filter by status
+    if (opts.status) {
+      all = all.filter(t => t.status === opts.status);
+    }
+    // Sort
+    if (opts.sortBy) {
+      const field = opts.sortBy;
+      const dir = opts.order === 'desc' ? -1 : 1;
+      all.sort((a, b) => {
+        const va = a[field], vb = b[field];
+        if (va === undefined && vb === undefined) return 0;
+        if (va === undefined) return 1;
+        if (vb === undefined) return -1;
+        if (va < vb) return -1 * dir;
+        if (va > vb) return 1 * dir;
+        return 0;
+      });
+    } else {
+      // Default sort: createdAt desc
+      all.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+    const total = all.length;
+    const totalPages = Math.ceil(total / pageSize);
+    const start = (page - 1) * pageSize;
+    const items = all.slice(start, start + pageSize);
+    return {
+      items,
+      page,
+      pageSize,
+      total,
+      totalPages,
+      hasMore: page < totalPages
+    };
+  }
+
+  /**
    * F155: upsert(id, data)
    * Insert new task or merge-update existing one.
    * Returns { created: boolean, task: mergedTask }.

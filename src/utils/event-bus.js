@@ -914,6 +914,62 @@ class EventBus {
 
     return true;
   }
+
+  /**
+   * F158: emitWithRetry(channel, data, retries)
+   * Emit to a channel, retrying failed handlers up to `retries` times.
+   * A handler "fails" by throwing. After all retries exhausted, the error is
+   * collected but emission continues (does not block other handlers).
+   * Returns { delivered, failed, errors }.
+   */
+  async emitWithRetry(channel, data = {}, retries = 2) {
+    if (typeof channel !== 'string' || !channel) {
+      throw new TypeError('emitWithRetry: channel must be a non-empty string');
+    }
+    if (typeof retries !== 'number' || retries < 0) {
+      throw new TypeError('emitWithRetry: retries must be >= 0');
+    }
+
+    // Store in history
+    const event = {
+      channel,
+      data,
+      timestamp: Date.now(),
+      id: `${channel}:${Date.now()}:retry`
+    };
+    if (this._history.length >= this._maxHistory) {
+      this._history.shift();
+    }
+    this._history.push(event);
+
+    // Get handlers via emitter
+    const listeners = this._emitter.listeners(channel);
+    const errors = [];
+    let delivered = 0;
+    let failed = 0;
+
+    for (const listener of listeners) {
+      let lastErr = null;
+      let success = false;
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          await listener(event);
+          success = true;
+          break;
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      if (success) {
+        delivered++;
+      } else {
+        failed++;
+        errors.push({ error: lastErr && lastErr.message ? lastErr.message : String(lastErr) });
+      }
+    }
+
+    return { delivered, failed, errors };
+  }
 }
 
 // Singleton instance

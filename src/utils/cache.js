@@ -1054,6 +1054,29 @@ class Cache {
     this.set(key, next, ttl);
     return next;
   }
+
+  /**
+   * F159: touchMany(keys[], ttl?) — batch refresh TTL for multiple keys.
+   * Only refreshes keys that exist and are non-expired.
+   * Returns count of keys actually refreshed.
+   */
+  touchMany(keys, ttl) {
+    if (!Array.isArray(keys)) {
+      throw new TypeError('touchMany: keys must be an array');
+    }
+    const useTTL = ttl !== undefined ? ttl : this.defaultTTL;
+    let refreshed = 0;
+    for (const key of keys) {
+      const entry = this.cache.get(key);
+      if (!entry) continue;
+      // Skip already-expired entries
+      if (entry.expiresAt && Date.now() > entry.expiresAt) continue;
+      entry.expiresAt = Date.now() + useTTL;
+      entry.ttl = useTTL;
+      refreshed++;
+    }
+    return refreshed;
+  }
 }
 
 /**

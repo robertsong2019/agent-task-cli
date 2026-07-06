@@ -213,6 +213,11 @@
 - [x] Cache: `retain(predicate)` — filter-in-place, remove non-matching, return count — **F151** ✅ 2026-06-26
 - [x] Storage: `rename(id, newId)` — rename task ID, collision-safe — **F152** ✅ 2026-06-26
 
+### Utils (Round 39)
+- [x] Storage: `paginate(page, pageSize, opts?)` — pagination with metadata (total, totalPages, hasMore, status filter, sort) — **F157** ✅ 2026-07-06
+- [x] EventBus: `emitWithRetry(channel, data, retries)` — async emit with per-handler retry on throw — **F158** ✅ 2026-07-06
+- [x] Cache: `touchMany(keys[], ttl?)` — batch refresh TTL for multiple keys — **F159** ✅ 2026-07-06
+
 ### Utils (Round 38)
 - [x] Cache: `withDefault(key, defaultValue, ttl?)` — get or set default (not factory) — **F153** ✅ 2026-07-05
 - [x] Cache: `incrBy(key, amount, opts)` — increment by amount with min/max bounds — **F154** ✅ 2026-07-05
