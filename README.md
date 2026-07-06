@@ -320,6 +320,10 @@ const val = cache.withDefault('missing', 'default-value');
 cache.incrBy('counter', 5);         // → 5 (initialised from 0)
 cache.incrBy('counter', 3);         // → 8
 cache.incrBy('counter', -2, { min: 0 }); // → 6 (clamped to min)
+
+// F159: Batch refresh TTL for multiple keys
+cache.touchMany(['k1', 'k2', 'k3'], 60000);
+// → 3 (count of keys successfully refreshed)
 ```
 
 ### Storage (`src/utils/storage.js`)
@@ -340,6 +344,10 @@ const ok = await storage.rename('old-id', 'new-id');
 // F155: Upsert — insert or update in one call
 const task = await storage.upsert('task-42', { name: 'Updated', status: 'running' });
 // → creates if not exists, updates if exists
+
+// F157: Paginate tasks with metadata
+const page = await storage.paginate(2, 10, { status: 'done' });
+// → { items: [...], page: 2, pageSize: 10, total: 42, totalPages: 5 }
 ```
 
 ### EventBus (`src/utils/event-bus.js`)
@@ -356,6 +364,10 @@ bus.emit('task:progress', { taskId: 'abc', percent: 50 });
 // F156: Emit with metadata envelope
 bus.emitWithMeta('task:done', { result: 'success' }, { duration: 1200, agent: 'bot' });
 // listeners receive { data: { result: 'success' }, meta: { duration: 1200, agent: 'bot' } }
+
+// F158: Emit with automatic retry on listener errors
+await bus.emitWithRetry('task:save', data, 2);
+// retries up to 2 times if listeners throw, with exponential backoff
 ```
 
 ## Development
