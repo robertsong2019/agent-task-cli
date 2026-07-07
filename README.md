@@ -324,6 +324,10 @@ cache.incrBy('counter', -2, { min: 0 }); // → 6 (clamped to min)
 // F159: Batch refresh TTL for multiple keys
 cache.touchMany(['k1', 'k2', 'k3'], 60000);
 // → 3 (count of keys successfully refreshed)
+
+// F164: Rename a key, preserving value and remaining TTL
+cache.rename('old-key', 'new-key'); // → true
+cache.rename('k1', 'k2', { keepOriginal: true }); // copy semantics
 ```
 
 ### Storage (`src/utils/storage.js`)
@@ -368,6 +372,77 @@ bus.emitWithMeta('task:done', { result: 'success' }, { duration: 1200, agent: 'b
 // F158: Emit with automatic retry on listener errors
 await bus.emitWithRetry('task:save', data, 2);
 // retries up to 2 times if listeners throw, with exponential backoff
+
+// F162: Merge another bus's subscribers and history into this one
+const bus2 = new EventBus();
+bus2.on('task:alert', handler);
+bus.merge(bus2); // bus now receives events from both buses
+// → count of subscribers merged
+```
+
+### PriorityQueue (`src/utils/priority-queue.js`)
+
+Binary heap priority queue with FIFO fallback for equal priorities.
+
+```javascript
+const { PriorityQueue } = require('./src/utils/priority-queue');
+
+const pq = new PriorityQueue();
+pq.push('urgent', 1);
+pq.push('normal', 5);
+pq.pop(); // → 'urgent'
+
+// F160: Drain all items in priority order, leaving the queue empty
+const all = pq.drain(); // → ['urgent', 'normal'] (priority order)
+```
+
+### ConcurrencyManager (`src/utils/concurrency-manager.js`)
+
+Promise-based concurrency limiter for controlling parallel async operations.
+
+```javascript
+const { ConcurrencyManager } = require('./src/utils/concurrency-manager');
+
+const cm = new ConcurrencyManager(3); // max 3 concurrent
+
+// F163: Map over items with concurrency limit
+const results = await cm.map([1, 2, 3, 4, 5], async (item) => {
+  return await fetch(`/api/${item}`).then(r => r.json());
+}, { stopOnError: false });
+// → array of results in same order as input
+```
+
+### RetryHandler (`src/utils/retry-handler.js`)
+
+Configurable retry with exponential backoff and error classification.
+
+```javascript
+const { RetryHandler } = require('./src/utils/retry-handler');
+
+const retry = new RetryHandler({ maxRetries: 3, baseDelay: 100 });
+
+// F165: Execute with fallback function on final failure
+const result = await retry.withFallback(
+  async () => await fetchPrimary(),
+  async () => await fetchCache(), // called if all retries fail
+  { maxRetries: 2 }
+);
+```
+
+### Cache (additional methods)
+
+```javascript
+// F164: Rename a key, preserving value and remaining TTL
+const ok = cache.rename('old-key', 'new-key');
+// → true if renamed, false if old key doesn't exist
+cache.rename('k1', 'k2', { keepOriginal: true }); // copy semantics
+
+### Storage (additional methods)
+
+```javascript
+// F161: Find first task matching all key-value pairs in filter
+const task = await storage.findOne({ status: 'pending', priority: 'high' });
+// → matching task (with id) or null if none found
 ```
 
 ## Development
