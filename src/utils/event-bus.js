@@ -970,6 +970,34 @@ class EventBus {
 
     return { delivered, failed, errors };
   }
+
+  /**
+   * F162: merge(bus2) — merge all subscribers and history from another bus into this one.
+   * After merge, this bus receives events from both its own channels and bus2's channels.
+   * Returns count of subscribers merged.
+   */
+  merge(otherBus) {
+    if (!otherBus || !(otherBus._subscribers instanceof Map)) {
+      throw new TypeError('merge: argument must be an EventBus instance');
+    }
+    let count = 0;
+    for (const [channel, handlers] of otherBus._subscribers.entries()) {
+      if (!this._subscribers.has(channel)) {
+        this._subscribers.set(channel, new Set());
+      }
+      for (const handler of handlers) {
+        this._subscribers.get(channel).add(handler);
+        this._emitter.on(channel, handler);
+        count++;
+      }
+    }
+    // Merge history
+    for (const event of otherBus._history) {
+      if (this._history.length >= this._maxHistory) this._history.shift();
+      this._history.push(event);
+    }
+    return count;
+  }
 }
 
 // Singleton instance

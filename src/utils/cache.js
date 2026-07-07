@@ -1077,6 +1077,24 @@ class Cache {
     }
     return refreshed;
   }
+
+  /**
+   * F164: rename(oldKey, newKey, opts?) — rename a key, preserving value and remaining TTL.
+   * opts.keepOriginal: if true, keeps the old key too (copy semantics).
+   * Returns true if renamed, false if old key doesn't exist.
+   */
+  rename(oldKey, newKey, opts = {}) {
+    const { keepOriginal = false } = opts;
+    const entry = this.cache.get(oldKey);
+    if (!entry) return false;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(oldKey);
+      return false;
+    }
+    this.cache.set(newKey, { ...entry });
+    if (!keepOriginal) this.cache.delete(oldKey);
+    return true;
+  }
 }
 
 /**

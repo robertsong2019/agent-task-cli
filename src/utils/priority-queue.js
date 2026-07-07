@@ -61,6 +61,16 @@ class PriorityQueue {
   toArray() {
     return this._items.map(e => e.item);
   }
+
+  /**
+   * F160: drain() — dequeue all items in priority order, leaving the queue empty.
+   * Returns array of items (empty if queue was already empty).
+   */
+  drain() {
+    const items = this._items.map(e => e.item);
+    this._items = [];
+    return items;
+  }
 }
 
 module.exports = { PriorityQueue };

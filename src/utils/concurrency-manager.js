@@ -178,6 +178,44 @@ class ConcurrencyManager {
         .catch(next.reject);
     }
   }
+
+  /**
+   * F163: map(items, fn, opts?) — process array with concurrency limit.
+   * Returns array of results in the same order as input items.
+   * opts.stopOnError: if true (default false), rejects on first error and returns partial results.
+   */
+  async map(items, fn, opts = {}) {
+    if (!Array.isArray(items)) throw new TypeError('map: items must be an array');
+    const { stopOnError = false } = opts;
+    const results = new Array(items.length);
+    const errors = new Array(items.length);
+    let index = 0;
+
+    const worker = async () => {
+      while (index < items.length) {
+        const i = index++;
+        try {
+          results[i] = await fn(items[i], i);
+        } catch (err) {
+          if (stopOnError) throw err;
+          errors[i] = err;
+        }
+      }
+    };
+
+    const workers = [];
+    for (let i = 0; i < Math.min(this.maxConcurrent, items.length); i++) {
+      workers.push(worker());
+    }
+    await Promise.all(workers);
+
+    // If any errors and not stopOnError, attach them
+    const hasErrors = errors.some(e => e !== undefined);
+    if (hasErrors) {
+      return { results, errors, partial: true };
+    }
+    return { results, errors: null, partial: false };
+  }
 }
 
 module.exports = { ConcurrencyManager };

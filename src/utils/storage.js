@@ -681,6 +681,20 @@ class Storage {
       return { created, task: tasks[id] };
     });
   }
+
+  /**
+   * F161: findOne(filter) — find first task matching all key-value pairs in filter object.
+   * Returns the matching task (with id) or null if none found.
+   */
+  async findOne(filter = {}) {
+    const tasks = await this.loadTasks();
+    for (const [id, t] of Object.entries(tasks)) {
+      const task = { id, ...t };
+      const match = Object.entries(filter).every(([k, v]) => task[k] === v);
+      if (match) return task;
+    }
+    return null;
+  }
 }
 
 module.exports = { Storage };

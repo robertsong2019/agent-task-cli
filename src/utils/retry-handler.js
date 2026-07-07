@@ -241,6 +241,16 @@ class RetryHandler {
     }
     return { ok: false, error: lastError, attempts };
   }
+
+  /**
+   * F165: withFallback(fn, fallbackFn, opts?) — execute fn with retries; on final failure, call fallbackFn.
+   * Returns fn result on success, or fallbackFn result on failure.
+   */
+  async withFallback(fn, fallbackFn, options = {}) {
+    const result = await this.try(fn, options);
+    if (result.ok) return result.result;
+    return fallbackFn(result.error, result.attempts);
+  }
 }
 
 module.exports = { RetryHandler };
