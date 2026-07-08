@@ -223,3 +223,11 @@
 - [x] Cache: `incrBy(key, amount, opts)` — increment by amount with min/max bounds — **F154** ✅ 2026-07-05
 - [x] Storage: `upsert(id, data)` — insert or merge-update, returns {created, task} — **F155** ✅ 2026-07-05
 - [x] EventBus: `emitWithMeta(channel, data, meta)` — emit with metadata attached to event — **F156** ✅ 2026-07-05
+
+### Utils (Round 40)
+- [x] PriorityQueue: `drain(n?)` — remove and return up to N highest-priority items — **F160** ✅ 2026-07-07
+- [x] Storage: `findOne(filter)` — return first task matching predicate — **F161** ✅ 2026-07-07
+- [x] EventBus: `merge(buses[])` — merge multiple event buses into one — **F162** ✅ 2026-07-07
+- [x] ConcurrencyManager: `map(items, fn, concurrency?)` — parallel map with concurrency limit — **F163** ✅ 2026-07-07
+- [x] Cache: `rename(oldKey, newKey)` — rename key preserving value and TTL — **F164** ✅ 2026-07-07
+- [x] RetryHandler: `withFallback(primaryFn, fallbackFn, retries?)` — try primary, fallback on failure — **F165** ✅ 2026-07-07

@@ -216,6 +216,42 @@ class ConcurrencyManager {
     }
     return { results, errors: null, partial: false };
   }
+
+  /**
+   * F168: allSettled(items, fn, concurrency?) — like Promise.allSettled but with concurrency limit.
+   * Returns array of { status: 'fulfilled'|'rejected', value, reason } objects.
+   * Never rejects; handles all errors internally.
+   */
+  async allSettled(items, fn, concurrency) {
+    if (!Array.isArray(items)) throw new TypeError('allSettled: items must be an array');
+    if (typeof fn !== 'function') throw new TypeError('allSettled: fn must be a function');
+    concurrency = concurrency || this.maxConcurrent;
+    if (typeof concurrency !== 'number' || concurrency < 1) {
+      throw new TypeError('allSettled: concurrency must be >= 1');
+    }
+
+    const results = new Array(items.length);
+    const active = [];
+
+    // Process items with concurrency control
+    for (let i = 0; i < items.length; i += concurrency) {
+      const chunk = items.slice(i, i + concurrency);
+      const chunkPromises = chunk.map((item, idx) => {
+        const globalIdx = i + idx;
+        return Promise.resolve()
+          .then(() => fn(item))
+          .then(result => {
+            results[globalIdx] = { status: 'fulfilled', value: result };
+          })
+          .catch(err => {
+            results[globalIdx] = { status: 'rejected', reason: err };
+          });
+      });
+      await Promise.all(chunkPromises);
+    }
+
+    return results;
+  }
 }
 
 module.exports = { ConcurrencyManager };

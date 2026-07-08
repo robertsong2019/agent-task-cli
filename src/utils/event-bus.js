@@ -11,6 +11,8 @@ class EventBus {
     this._history = [];
     this._maxHistory = 1000;
     this._subscribers = new Map();
+    this._pausedChannels = new Set();
+    this._pausedBuffers = new Map();
   }
 
   /**
@@ -19,6 +21,18 @@ class EventBus {
    * @param {object} data - Event payload
    */
   emit(channel, data = {}) {
+    // F166: Check if channel is paused — buffer instead of emitting
+    if (this._pausedChannels.has(channel)) {
+      const event = { channel, data, timestamp: Date.now(), id: `${channel}:${Date.now()}:paused` };
+      // Still store in history
+      if (this._history.length >= this._maxHistory) this._history.shift();
+      this._history.push(event);
+      // Buffer the event for flushing on resume
+      const buf = this._pausedBuffers.get(channel);
+      if (buf) buf.push(event);
+      return;
+    }
+
     // Run before hooks if any (can cancel emission by returning false)
     if (this._beforeHooks && this._beforeHooks[channel]) {
       for (const hook of this._beforeHooks[channel]) {
@@ -970,6 +984,47 @@ class EventBus {
 
     return { delivered, failed, errors };
   }
+
+  /**
+   * F166: pause(channel) — buffer events on a channel without firing handlers.
+ * Events are queued and flushed when resume(channel) is called.
+ * @param {string} channel - Channel to pause
+   */
+  pause(channel) {
+    this._pausedChannels.add(channel);
+    if (!this._pausedBuffers.has(channel)) {
+      this._pausedBuffers.set(channel, []);
+    }
+  }
+
+  /**
+   * F166: resume(channel) — flush all buffered events and resume normal emission.
+   * @param {string} channel - Channel to resume
+   */
+  resume(channel) {
+    if (!this._pausedChannels.has(channel)) return;
+    this._pausedChannels.delete(channel);
+    const buf = this._pausedBuffers.get(channel) || [];
+    this._pausedBuffers.delete(channel);
+    for (const evt of buf) {
+      this._emitter.emit(channel, evt);
+      this._emitter.emit('*', evt);
+    }
+  }
+
+  /**
+   * F166: isPaused(channel) — check if a channel is currently paused.
+   * @param {string} channel
+   * @returns {boolean}
+   */
+  isPaused(channel) {
+    return this._pausedChannels.has(channel);
+  }
+
+  /**
+   * Override emit to support paused channels.
+   * F166: When a channel is paused, events are buffered instead of emitted.
+   */
 
   /**
    * F162: merge(bus2) — merge all subscribers and history from another bus into this one.

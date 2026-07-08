@@ -71,6 +71,33 @@ class PriorityQueue {
     this._items = [];
     return items;
   }
+
+  /**
+   * F171: drainUntil(predicate) — dequeue items while predicate holds.
+   * Predicate receives (item, priority) and should return boolean.
+   * Stops at first item where predicate is false, that item remains in queue.
+   * Returns array of drained items (empty if queue was empty or predicate always false).
+   */
+  drainUntil(predicate) {
+    if (typeof predicate !== 'function') {
+      throw new TypeError('drainUntil: predicate must be a function');
+    }
+    
+    const drained = [];
+    const remaining = [];
+    
+    for (const entry of this._items) {
+      const shouldKeep = predicate(entry.item, entry.priority);
+      if (shouldKeep) {
+        drained.push(entry);
+      } else {
+        remaining.push(entry);
+      }
+    }
+    
+    this._items = remaining;
+    return drained;
+  }
 }
 
 module.exports = { PriorityQueue };

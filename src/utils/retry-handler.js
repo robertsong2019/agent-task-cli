@@ -251,6 +251,39 @@ class RetryHandler {
     if (result.ok) return result.result;
     return fallbackFn(result.error, result.attempts);
   }
+
+  /**
+   * F170: retryIf(fn, predicate, retries?) - retry until predicate is satisfied.
+   * Retries as long as predicate returns false or throws, up to maxRetries.
+   * Returns the value that satisfies the predicate.
+   * @param {Function} fn - Async function to execute
+   * @param {Function} predicate - (value) => boolean (continue retrying if false)
+   * @param {number} retries - Max retries (default: from constructor)
+   * @returns {Promise<*>} - Value that satisfies predicate
+   */
+  async retryIf(fn, predicate, retries) {
+    const maxRetries = retries !== undefined ? retries : this.maxRetries;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const result = await fn();
+        if (predicate(result)) return result;
+        
+        // If this was the last attempt and predicate still not satisfied, throw
+        if (attempt === maxRetries) {
+          throw new Error(`Max retries (${maxRetries}) exceeded without satisfying predicate`);
+        }
+      } catch (error) {
+        // If error occurred and we still have retries left, continue
+        if (attempt < maxRetries) {
+          const delay = this.calculateDelay(attempt);
+          await this.sleep(delay);
+        } else {
+          throw error;
+        }
+      }
+    }
+  }
 }
 
 module.exports = { RetryHandler };

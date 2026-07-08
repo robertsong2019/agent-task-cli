@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
 
 class Storage {
@@ -86,6 +87,45 @@ class Storage {
       
       return taskData;
     });
+  }
+
+  /**
+   * Synchronous version of saveTask for testing
+   */
+  saveTaskSync(taskId, taskData) {
+    try {
+      // Ensure data directory exists
+      if (!fsSync.existsSync(this.dataDir)) {
+        fsSync.mkdirSync(this.dataDir, { recursive: true });
+      }
+      
+      // Read current tasks
+      let tasks = {};
+      if (fsSync.existsSync(this.tasksFile)) {
+        const data = fsSync.readFileSync(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') {
+          tasks = JSON.parse(data);
+        }
+      }
+      
+      // Update task
+      tasks[taskId] = taskData;
+      
+      // Write back
+      fsSync.writeFileSync(this.tasksFile, JSON.stringify(tasks, null, 2));
+      
+      return taskData;
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        console.warn('Warning: Malformed JSON in tasks file, starting fresh');
+        // Try again with empty tasks
+        fsSync.writeFileSync(this.tasksFile, JSON.stringify({}, null, 2));
+        tasks = { [taskId]: taskData };
+        fsSync.writeFileSync(this.tasksFile, JSON.stringify(tasks, null, 2));
+        return taskData;
+      }
+      throw error;
+    }
   }
 
   async getTask(taskId) {
@@ -680,6 +720,46 @@ class Storage {
       await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
       return { created, task: tasks[id] };
     });
+  }
+
+  /**
+   * F167: aggregate(field, fn, initial) — reduce/aggregation over a numeric field.
+   * Skips tasks where field is undefined. Returns initial value for empty storage.
+   */
+  aggregate(field, fn = (acc, v) => acc + v, initial = 0) {
+    const tasks = this.loadTasksSync();
+    let result = initial;
+    for (const [id, task] of Object.entries(tasks)) {
+      const taskObj = { id, ...task };
+      const value = taskObj[field];
+      // Only aggregate defined values
+      if (value !== undefined) {
+        result = fn(result, value, id, taskObj);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Synchronous version of loadTasks for aggregate() and similar methods
+   */
+  loadTasksSync() {
+    try {
+      if (fsSync.existsSync(this.tasksFile)) {
+        const data = fsSync.readFileSync(this.tasksFile, 'utf8');
+        if (!data || data.trim() === '') {
+          return {};
+        }
+        return JSON.parse(data);
+      }
+      return {};
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        console.warn('Warning: Malformed JSON in tasks file, starting fresh');
+        return {};
+      }
+      throw error;
+    }
   }
 
   /**

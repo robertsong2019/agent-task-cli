@@ -1095,6 +1095,31 @@ class Cache {
     if (!keepOriginal) this.cache.delete(oldKey);
     return true;
   }
+
+  /**
+   * F169: msetnx(entries, ttl?) — multiple set if not exist (atomic).
+   * Sets all keys only if none of them already exist. Returns true if set, false if any exist.
+   * If ttl provided, applies to all entries. Empty entries object returns true.
+   */
+  msetnx(entries, ttl) {
+    if (typeof entries !== 'object' || entries === null) {
+      throw new TypeError('msetnx: entries must be an object');
+    }
+    
+    // Check if any key already exists
+    for (const key of Object.keys(entries)) {
+      if (this.has(key)) {
+        return false;
+      }
+    }
+    
+    // All keys are safe to set
+    const useTTL = ttl !== undefined ? ttl : this.defaultTTL;
+    for (const [key, value] of Object.entries(entries)) {
+      this.set(key, value, useTTL);
+    }
+    return true;
+  }
 }
 
 /**
