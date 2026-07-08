@@ -10,3 +10,6 @@ timestamp	commit	metric	value	status	description
 2026-07-05T22:25+08:00	91295f7	test_count	986→1012	keep	Round 38: Cache.withDefault (F153) + Cache.incrBy (F154) + Storage.upsert (F155) + EventBus.emitWithMeta (F156). 26 new tests. Zero regressions.
 2026-07-06T22:25+08:00	d2be038	test_count	1012→1034	keep	Round 39: Storage.paginate (F157) + EventBus.emitWithRetry (F158) + Cache.touchMany (F159). 22 new tests. Zero regressions.
 2026-07-07T19:30+08:00	9f73568	test_count	1034→1066/1087 pass	keep	Round 40: F160 PriorityQueue.drain() + F161 Storage.findOne(filter) + F162 EventBus.merge() + F163 ConcurrencyManager.map() + F164 Cache.rename() + F165 RetryHandler.withFallback(). 32 new tests. Zero regressions. 185th consecutive day.
+cycle	date	baseline	result	status	features	notes
+1	2026-07-08	1066/1087	1119/1119	keep	F166-F171	+53 tests, all passing. Implemented Storage.aggregate (sync w/ loadTasksSync), Cache.msetnx, RetryHandler.retryIf, PriorityQueue.drainUntil. F166+F168 were already passing.
+2026-07-08T22:30+08:00	-	test_count	+19 (19/19 pass)	keep	Round 42: PriorityQueue.toSortedArray() (F172) + ConcurrencyManager.activeTasks() (F173) + Storage.countWhere() (F174). 19 new tests. Zero regressions.

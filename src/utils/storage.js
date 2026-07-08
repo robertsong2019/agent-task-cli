@@ -763,6 +763,23 @@ class Storage {
   }
 
   /**
+   * F174: countWhere(predicate) — count tasks matching a predicate function.
+   * @param {Function} predicate - (task, id) => boolean
+   * @returns {Promise<number>} count of matching tasks
+   */
+  async countWhere(predicate) {
+    if (typeof predicate !== 'function') {
+      throw new TypeError('countWhere: predicate must be a function');
+    }
+    const tasks = await this.loadTasks();
+    let count = 0;
+    for (const [id, t] of Object.entries(tasks)) {
+      if (predicate({ id, ...t }, id)) count++;
+    }
+    return count;
+  }
+
+  /**
    * F161: findOne(filter) — find first task matching all key-value pairs in filter object.
    * Returns the matching task (with id) or null if none found.
    */

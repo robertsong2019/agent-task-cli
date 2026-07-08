@@ -231,3 +231,8 @@
 - [x] ConcurrencyManager: `map(items, fn, concurrency?)` — parallel map with concurrency limit — **F163** ✅ 2026-07-07
 - [x] Cache: `rename(oldKey, newKey)` — rename key preserving value and TTL — **F164** ✅ 2026-07-07
 - [x] RetryHandler: `withFallback(primaryFn, fallbackFn, retries?)` — try primary, fallback on failure — **F165** ✅ 2026-07-07
+
+### Utils (Round 42)
+- [x] PriorityQueue: `toSortedArray()` — return all items in priority order without draining — **F172** ✅ 2026-07-08
+- [x] ConcurrencyManager: `activeTasks()` — return IDs of currently executing tasks — **F173** ✅ 2026-07-08
+- [x] Storage: `countWhere(predicate)` — count tasks matching a predicate function — **F174** ✅ 2026-07-08

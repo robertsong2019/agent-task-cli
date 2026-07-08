@@ -73,6 +73,15 @@ class PriorityQueue {
   }
 
   /**
+   * F172: toSortedArray() — return all items in priority order without modifying the queue.
+   * Non-destructive peek at the full sorted contents.
+   * @returns {Array} items in priority order
+   */
+  toSortedArray() {
+    return this._items.map(e => e.item);
+  }
+
+  /**
    * F171: drainUntil(predicate) — dequeue items while predicate holds.
    * Predicate receives (item, priority) and should return boolean.
    * Stops at first item where predicate is false, that item remains in queue.

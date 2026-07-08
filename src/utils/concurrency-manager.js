@@ -6,6 +6,7 @@ class ConcurrencyManager {
   constructor(options = {}) {
     this.maxConcurrent = options.maxConcurrent || 5;
     this.activeCount = 0;
+    this._activeIds = new Set();
     this.queue = [];
     this.stats = {
       totalExecuted: 0,
@@ -47,6 +48,7 @@ class ConcurrencyManager {
    */
   async _runTask(fn, _taskId) {
     this.activeCount++;
+    if (_taskId) this._activeIds.add(_taskId);
     this.stats.totalExecuted++;
     this.stats.peakConcurrency = Math.max(
       this.stats.peakConcurrency,
@@ -58,6 +60,7 @@ class ConcurrencyManager {
       return result;
     } finally {
       this.activeCount--;
+      if (_taskId) this._activeIds.delete(_taskId);
       
       // Process next queued task
       if (this.queue.length > 0) {
@@ -177,6 +180,17 @@ class ConcurrencyManager {
         .then(next.resolve)
         .catch(next.reject);
     }
+  }
+
+  /**
+   * F173: activeTasks() — return array of currently executing task IDs.
+   * Tasks without IDs are excluded. Useful for monitoring and debugging.
+   * @returns {string[]} active task IDs
+   */
+  activeTasks() {
+    // activeCount tracks the number, but we don't store IDs explicitly.
+    // We track them via a Set for O(1) add/remove.
+    return Array.from(this._activeIds || []);
   }
 
   /**
