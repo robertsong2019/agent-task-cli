@@ -17,7 +17,7 @@ A powerful CLI tool for orchestrating multi-agent tasks with different patterns 
 - 📊 **Real-time Monitoring**: Track agent execution progress
 - 💾 **Export Results**: JSON/Markdown report generation
 - 🔧 **Modular Design**: Easy to extend and customize
-- 🧪 **Test Coverage**: Comprehensive test suite
+- 🧪 **Test Coverage**: 1138 tests across 117 suites
 
 ## Installation
 
@@ -427,6 +427,27 @@ const result = await retry.withFallback(
   async () => await fetchCache(), // called if all retries fail
   { maxRetries: 2 }
 );
+
+// F169: Retry only while predicate returns true
+const data = await retry.retryIf(
+  async () => await pollApi(),
+  (value) => value.status === 'pending', // keep retrying if still pending
+  5 // max retries
+);
+```
+
+### EventBus (additional methods)
+
+```javascript
+const { EventBus } = require('./src/utils/event-bus');
+
+const bus = new EventBus();
+
+// F166: Pause event emission (events queued, not lost)
+bus.pause();
+
+// F167: Resume paused emission — queued events fire in order
+bus.resume();
 ```
 
 ### Cache (additional methods)
@@ -437,14 +458,48 @@ const ok = cache.rename('old-key', 'new-key');
 // → true if renamed, false if old key doesn't exist
 cache.rename('k1', 'k2', { keepOriginal: true }); // copy semantics
 
+// F168: Set multiple keys only if ALL are absent (atomic)
+const setAll = cache.msetnx({ a: 1, b: 2, c: 3 });
+// → true if all set, false if any key already exists (no changes)
+```
+
 ### Storage (additional methods)
 
 ```javascript
 // F161: Find first task matching all key-value pairs in filter
 const task = await storage.findOne({ status: 'pending', priority: 'high' });
 // → matching task (with id) or null if none found
+
+// F170: Aggregate a field across all tasks
+const totalPriority = storage.aggregate(
+  'priority',
+  (acc, v) => acc + v,  // reducer
+  0                      // initial value
+);
+// Also supports prefix filtering:
+storage.aggregate('price', (sum, v) => sum + v, 0, 'order:');
+
+// F173: Get all active (non-completed) tasks
+const active = storage.activeTasks();
+// → array of tasks where status !== 'completed'
+
+// F174: Count tasks matching a predicate
+const n = await storage.countWhere((task) => task.priority > 5);
+// → number of matching tasks
 ```
 
+### PriorityQueue (additional methods)
+
+```javascript
+// F171: Drain until a condition is met
+const taken = queue.drainUntil(item => item.priority >= 5);
+// → array of items with priority ≥ 5, removed from queue
+// Remaining items stay in the queue
+
+// F172: Get items as a sorted array (without removing)
+const sorted = queue.toSortedArray();
+// → items sorted by priority (highest first)
+```
 ## Development
 
 ```bash
