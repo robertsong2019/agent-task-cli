@@ -1129,6 +1129,18 @@ class Cache {
     if (value !== undefined) this.delete(key);
     return value;
   }
+
+  /**
+   * F178: mpop(keys[]) — batch pop. Returns object mapping key to value (misses omitted).
+   */
+  mpop(keys) {
+    const result = {};
+    for (const key of keys) {
+      const val = this.pop(key);
+      if (val !== undefined) result[key] = val;
+    }
+    return result;
+  }
 }
 
 /**

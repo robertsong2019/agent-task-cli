@@ -1069,6 +1069,16 @@ class EventBus {
     });
     return unsub;
   }
+
+  /**
+   * F180: forwardMany(pairs[]) — forward multiple channels at once.
+   * pairs: [{ channel, targetBus, transform? }]
+   * Returns an unsubscribe function that stops all forwards.
+   */
+  forwardMany(pairs) {
+    const unsubs = pairs.map(p => this.forward(p.channel, p.targetBus, p.transform));
+    return () => unsubs.forEach(fn => fn());
+  }
 }
 
 // Singleton instance

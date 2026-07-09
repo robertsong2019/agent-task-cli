@@ -805,6 +805,19 @@ class Storage {
     }
     return acc;
   }
+
+  /**
+   * F179: flatMap(field) — map each task's field value (must be array) and flatten.
+   * Returns a single flat array. Skips tasks where field is not an array.
+   */
+  async flatMap(field) {
+    const tasks = await this.loadTasks();
+    const result = [];
+    for (const t of Object.values(tasks)) {
+      if (Array.isArray(t[field])) result.push(...t[field]);
+    }
+    return result;
+  }
 }
 
 module.exports = { Storage };

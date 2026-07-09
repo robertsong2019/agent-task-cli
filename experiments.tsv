@@ -13,3 +13,4 @@ timestamp	commit	metric	value	status	description
 cycle	date	baseline	result	status	features	notes
 1	2026-07-08	1066/1087	1119/1119	keep	F166-F171	+53 tests, all passing. Implemented Storage.aggregate (sync w/ loadTasksSync), Cache.msetnx, RetryHandler.retryIf, PriorityQueue.drainUntil. F166+F168 were already passing.
 2026-07-08T22:30+08:00	-	test_count	+19 (19/19 pass)	keep	Round 42: PriorityQueue.toSortedArray() (F172) + ConcurrencyManager.activeTasks() (F173) + Storage.countWhere() (F174). 19 new tests. Zero regressions.
+2026-07-09T11:31:33Z	d306649	tests	1152	keep	Round 43: F175-F177 (Cache.pop, Storage.mapReduce, EventBus.forward) +14 tests, 196 insertions
