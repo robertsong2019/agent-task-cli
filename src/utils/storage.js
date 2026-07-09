@@ -807,6 +807,15 @@ class Storage {
   }
 
   /**
+   * F182: except(ids[]) — return all tasks excluding the given IDs.
+   */
+  async except(ids = []) {
+    const tasks = await this.loadTasks();
+    const exclude = new Set(ids);
+    return Object.values(tasks).filter(t => !exclude.has(t.id));
+  }
+
+  /**
    * F179: flatMap(field) — map each task's field value (must be array) and flatten.
    * Returns a single flat array. Skips tasks where field is not an array.
    */

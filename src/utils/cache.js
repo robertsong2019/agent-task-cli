@@ -1131,6 +1131,19 @@ class Cache {
   }
 
   /**
+   * F181: getTTL(key) — return remaining TTL in ms (Redis PTTL semantics).
+   * Returns -1 if key exists but has no expiry.
+   * Returns -2 if key does not exist.
+   */
+  getTTL(key) {
+    if (!this.cache.has(key)) return -2;
+    const entry = this.cache.get(key);
+    if (!entry.expiresAt) return -1;
+    const remaining = entry.expiresAt - Date.now();
+    return remaining > 0 ? remaining : -2;
+  }
+
+  /**
    * F178: mpop(keys[]) — batch pop. Returns object mapping key to value (misses omitted).
    */
   mpop(keys) {

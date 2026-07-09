@@ -1071,6 +1071,18 @@ class EventBus {
   }
 
   /**
+   * F183: broadcast(data) — emit the same data to all active channels at once.
+   * Returns the list of channels that received the event.
+   */
+  broadcast(data = {}) {
+    const channels = [...this._subscribers.keys()].filter(ch => this._subscribers.get(ch).size > 0);
+    for (const ch of channels) {
+      this.emit(ch, data);
+    }
+    return channels;
+  }
+
+  /**
    * F180: forwardMany(pairs[]) — forward multiple channels at once.
    * pairs: [{ channel, targetBus, transform? }]
    * Returns an unsubscribe function that stops all forwards.
