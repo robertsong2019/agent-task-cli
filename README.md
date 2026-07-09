@@ -17,7 +17,7 @@ A powerful CLI tool for orchestrating multi-agent tasks with different patterns 
 - 📊 **Real-time Monitoring**: Track agent execution progress
 - 💾 **Export Results**: JSON/Markdown report generation
 - 🔧 **Modular Design**: Easy to extend and customize
-- 🧪 **Test Coverage**: 1138 tests across 117 suites
+- 🧪 **Test Coverage**: 1197 tests across 117 suites
 
 ## Installation
 
@@ -488,7 +488,76 @@ const n = await storage.countWhere((task) => task.priority > 5);
 // → number of matching tasks
 ```
 
-### PriorityQueue (additional methods)
+### Cache (advanced)
+
+```javascript
+// F175: Atomically get and delete a key
+const val = cache.pop('temp-key');
+// → value or undefined if key doesn't exist
+
+// F178: Batch pop — atomically get and delete multiple keys
+const vals = cache.mpop(['k1', 'k2', 'k3']);
+// → { k1: <value>, k3: <value> } (misses omitted)
+
+// F181: Get remaining TTL in milliseconds (Redis PTTL semantics)
+const ttl = cache.getTTL('session-token');
+// → ms remaining, -1 if no expiry, -2 if key doesn't exist
+
+// F184: Serialize all non-expired entries to JSON-safe plain object
+const snapshot = cache.serialize();
+// → { key1: value1, key2: value2, ... }
+// Cleans non-serializable values (functions, symbols, undefined)
+```
+
+### Storage (advanced)
+
+```javascript
+// F176: Map each task and reduce results
+const totalCost = await storage.mapReduce(
+  (task) => task.cost,
+  (acc, cost) => acc + cost,
+  0
+);
+// → sum of all task costs
+
+// F179: Flat-map a field (must be array) across all tasks
+const allTags = await storage.flatMap('tags');
+// → ['urgent', 'backend', 'frontend', ...] (flattened)
+
+// F182: Get all tasks except the given IDs
+const others = await storage.except(['task-1', 'task-2']);
+// → all tasks NOT matching the given IDs
+
+// F185: Get n random tasks (Fisher-Yates partial shuffle)
+const sample = await storage.random(3);
+// → array of 3 random tasks
+```
+
+### EventBus (advanced)
+
+```javascript
+// F177: Forward events from one channel to another bus
+const unsub = bus.forward('alerts', targetBus, (event) => ({
+  ...event,
+  forwarded: true
+}));
+// transform optional; returns unsubscribe function
+
+// F180: Forward multiple channels at once
+const unsub = bus.forwardMany([
+  { channel: 'alerts', targetBus },
+  { channel: 'logs', targetBus, transform: fn }
+]);
+// Returns unsubscribe function that stops all forwards
+
+// F183: Emit the same data to all active channels
+const channels = bus.broadcast({ level: 'critical' });
+// → list of channel names that received the event
+
+// F186: Total subscriber count across all channels
+const count = bus.size();
+// → number (excludes wildcard subscribers)
+```
 
 ```javascript
 // F171: Drain until a condition is met
@@ -500,6 +569,7 @@ const taken = queue.drainUntil(item => item.priority >= 5);
 const sorted = queue.toSortedArray();
 // → items sorted by priority (highest first)
 ```
+
 ## Development
 
 ```bash
