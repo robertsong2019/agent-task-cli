@@ -15,3 +15,4 @@ cycle	date	baseline	result	status	features	notes
 2026-07-08T22:30+08:00	-	test_count	+19 (19/19 pass)	keep	Round 42: PriorityQueue.toSortedArray() (F172) + ConcurrencyManager.activeTasks() (F173) + Storage.countWhere() (F174). 19 new tests. Zero regressions.
 2026-07-09T11:31:33Z	d306649	tests	1152	keep	Round 43: F175-F177 (Cache.pop, Storage.mapReduce, EventBus.forward) +14 tests, 196 insertions
 2026-07-09T11:36:14Z	a037ba9	tests	1167	keep	Round 44: F178-F180 (Cache.mpop, Storage.flatMap, EventBus.forwardMany) +15 tests
+2026-07-09T22:10+08:00	22ad5bb	tests	1167→1182	keep	Round 45: F181 Cache.getTTL (Redis PTTL semantics) + F182 Storage.except(ids[]) + F183 EventBus.broadcast(data). 15 new tests. Zero regressions.
