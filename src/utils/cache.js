@@ -1154,6 +1154,39 @@ class Cache {
     }
     return result;
   }
+
+  /**
+   * F184: serialize() — return a JSON-safe plain object of all non-expired entries.
+   * Unlike snapshot(), this cleans non-serializable values (functions, symbols, undefined).
+   */
+  serialize() {
+    const now = Date.now();
+    const out = {};
+    for (const [key, entry] of this.cache) {
+      if (entry.expiresAt && entry.expiresAt <= now) continue;
+      out[key] = this._safeJSON(entry.value);
+    }
+    return out;
+  }
+
+  /**
+   * Helper: make a value JSON-safe (recursive). Removes functions, symbols, undefined keys.
+   */
+  _safeJSON(value) {
+    if (value === null || typeof value !== 'object') {
+      if (typeof value === 'function' || typeof value === 'symbol' || typeof value === 'undefined') return null;
+      return value;
+    }
+    if (Array.isArray(value)) {
+      return value.map(v => this._safeJSON(v)).filter(v => v !== null || typeof value !== 'function');
+    }
+    const out = {};
+    for (const k of Object.keys(value)) {
+      if (typeof value[k] === 'function' || typeof value[k] === 'undefined') continue;
+      out[k] = this._safeJSON(value[k]);
+    }
+    return out;
+  }
 }
 
 /**

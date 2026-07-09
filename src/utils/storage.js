@@ -827,6 +827,21 @@ class Storage {
     }
     return result;
   }
+
+  /**
+   * F185: random(n=1) — return n random tasks from storage.
+   * Uses Fisher-Yates partial shuffle for efficiency.
+   */
+  async random(n = 1) {
+    const tasks = await this.loadTasks();
+    const entries = Object.entries(tasks).map(([id, data]) => ({ id, ...data }));
+    const count = Math.min(n, entries.length);
+    for (let i = 0; i < count; i++) {
+      const j = i + Math.floor(Math.random() * (entries.length - i));
+      [entries[i], entries[j]] = [entries[j], entries[i]];
+    }
+    return entries.slice(0, count);
+  }
 }
 
 module.exports = { Storage };

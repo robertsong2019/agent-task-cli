@@ -1091,6 +1091,18 @@ class EventBus {
     const unsubs = pairs.map(p => this.forward(p.channel, p.targetBus, p.transform));
     return () => unsubs.forEach(fn => fn());
   }
+
+  /**
+   * F186: size() — total subscriber count across all channels (excludes wildcard).
+   */
+  size() {
+    let total = 0;
+    for (const [ch, set] of this._subscribers) {
+      if (ch === '*') continue;
+      total += set.size;
+    }
+    return total;
+  }
 }
 
 // Singleton instance

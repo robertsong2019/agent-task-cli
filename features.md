@@ -236,3 +236,23 @@
 - [x] PriorityQueue: `toSortedArray()` — return all items in priority order without draining — **F172** ✅ 2026-07-08
 - [x] ConcurrencyManager: `activeTasks()` — return IDs of currently executing tasks — **F173** ✅ 2026-07-08
 - [x] Storage: `countWhere(predicate)` — count tasks matching a predicate function — **F174** ✅ 2026-07-08
+
+### Utils (Round 43)
+- [x] Cache: `pop(key)` — get value and delete key atomically — **F175** ✅ 2026-07-09
+- [x] Storage: `mapReduce(mapFn, reduceFn, initial)` — map-reduce over all tasks — **F176** ✅ 2026-07-09
+- [x] EventBus: `forward(channel, targetBus, transform?)` — relay events to another bus with optional transform — **F177** ✅ 2026-07-09
+
+### Utils (Round 44)
+- [x] Cache: `mpop(keys[], n?)` — pop multiple keys at once — **F178** ✅ 2026-07-09
+- [x] Storage: `flatMap(mapFn)` — map then flatten results — **F179** ✅ 2026-07-09
+- [x] EventBus: `forwardMany(channels[], targetBus)` — forward multiple channels to target bus — **F180** ✅ 2026-07-09
+
+### Utils (Round 45)
+- [x] Cache: `getTTL(key)` — Redis PTTL semantics: -2 missing, -1 no expiry, >0 ms remaining — **F181** ✅ 2026-07-09
+- [x] Storage: `except(ids[])` — return all tasks except those with specified IDs — **F182** ✅ 2026-07-09
+- [x] EventBus: `broadcast(data)` — emit same event to all active channels — **F183** ✅ 2026-07-09
+
+### Utils (Round 46)
+- [x] Cache: `serialize()` — JSON-safe snapshot that strips functions/undefined — **F184** ✅ 2026-07-09
+- [x] Storage: `random(n=1)` — return n random tasks via Fisher-Yates partial shuffle — **F185** ✅ 2026-07-09
+- [x] EventBus: `size()` — total subscriber count across all channels (excludes wildcard) — **F186** ✅ 2026-07-09
