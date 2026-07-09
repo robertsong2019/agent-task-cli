@@ -792,6 +792,19 @@ class Storage {
     }
     return null;
   }
+
+  /**
+   * F176: mapReduce(mapFn, reduceFn, initial) — map each task, reduce results.
+   * mapFn(task) produces value, reduceFn(acc, mapped) accumulates.
+   */
+  async mapReduce(mapFn, reduceFn, initial) {
+    const tasks = await this.loadTasks();
+    let acc = initial;
+    for (const t of Object.values(tasks)) {
+      acc = reduceFn(acc, mapFn(t));
+    }
+    return acc;
+  }
 }
 
 module.exports = { Storage };

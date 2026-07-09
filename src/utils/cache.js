@@ -1120,6 +1120,15 @@ class Cache {
     }
     return true;
   }
+
+  /**
+   * F175: pop(key) — atomically get and delete. Returns value or undefined.
+   */
+  pop(key) {
+    const value = this.get(key);
+    if (value !== undefined) this.delete(key);
+    return value;
+  }
 }
 
 /**

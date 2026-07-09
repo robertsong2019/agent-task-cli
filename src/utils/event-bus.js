@@ -1053,6 +1053,22 @@ class EventBus {
     }
     return count;
   }
+
+  /**
+   * F177: forward(channel, targetBus, transform?) — relay events from this bus to another bus.
+   * transform(event) receives the wrapped event and returns new data for the target.
+   * Returns unsubscribe function.
+   */
+  forward(channel, targetBus, transform) {
+    if (!targetBus || typeof targetBus.emit !== 'function') {
+      throw new TypeError('forward: targetBus must have an emit method');
+    }
+    const unsub = this.on(channel, (event) => {
+      const payload = transform ? transform(event) : event.data;
+      targetBus.emit(channel, payload);
+    });
+    return unsub;
+  }
 }
 
 // Singleton instance
