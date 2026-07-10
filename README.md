@@ -23,7 +23,7 @@ A powerful CLI tool for orchestrating multi-agent tasks with different patterns 
 - 📊 **Real-time Monitoring**: Track agent execution progress
 - 💾 **Export Results**: JSON/Markdown report generation
 - 🔧 **Modular Design**: Easy to extend and customize
-- 🧪 **Test Coverage**: 1197 tests across 117 suites
+- 🧪 **Test Coverage**: 1209 tests across 122 suites
 - 🔌 **Plugin System**: Extend with custom patterns and agents
 - ⚡ **High Performance**: Concurrent execution with caching
 
@@ -513,6 +513,17 @@ const ttl = cache.getTTL('session-token');
 const snapshot = cache.serialize();
 // → { key1: value1, key2: value2, ... }
 // Cleans non-serializable values (functions, symbols, undefined)
+
+// F187: Validate cached value against a schema
+const result = cache.validate('user-session', {
+  type: 'object',
+  required: ['userId', 'token']
+});
+// → { valid: true } or { valid: false, errors: ['Missing required field: token'] }
+
+// F188: Count entries by JavaScript type
+const typeCounts = cache.countType();
+// → { object: 15, array: 3, string: 8, number: 2, boolean: 1, other: 0 }
 ```
 
 ### Storage (advanced)
