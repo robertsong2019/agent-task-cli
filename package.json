@@ -38,5 +38,24 @@
   },
   "engines": {
     "node": ">=14.0.0"
-  }
+  },
+  "homepage": "https://github.com/robertsong2019/agent-task-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robertsong2019/agent-task-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/robertsong2019/agent-task-cli/issues"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/robertsong2019"
+  },
+  "files": [
+    "src/",
+    "bin/",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ]
 }

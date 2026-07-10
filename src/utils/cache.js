@@ -1187,11 +1187,49 @@ class Cache {
     }
     return out;
   }
-}
 
-/**
- * Generate cache key from task configuration
- */
+  /**
+   * F187: validate(key, schema) — validate cached value against a simple schema.
+   * Schema: { type: 'object'|'array'|'string'|'number'|'boolean', required?: string[] }
+   * Returns { valid: boolean, errors: string[] }
+   */
+  validate(key, schema) {
+    const errors = [];
+    const entry = this.get(key);
+    if (entry === undefined) {
+      return { valid: false, errors: ['Key not found or expired'] };
+    }
+    if (schema.type) {
+      const actual = Array.isArray(entry) ? 'array' : typeof entry;
+      if (actual !== schema.type) {
+        errors.push(`Type mismatch: expected ${schema.type}, got ${actual}`);
+      }
+    }
+    if (schema.required && typeof entry === 'object' && !Array.isArray(entry)) {
+      for (const field of schema.required) {
+        if (!(field in entry)) {
+          errors.push(`Missing required field: ${field}`);
+        }
+      }
+    }
+    return { valid: errors.length === 0, errors };
+  }
+
+  /**
+   * F188: countType() — count entries by their JS type.
+   * Returns { object, array, string, number, boolean, other }
+   */
+  countType() {
+    const counts = { object: 0, array: 0, string: 0, number: 0, boolean: 0, other: 0 };
+    const now = Date.now();
+    for (const [, entry] of this.cache) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      const t = Array.isArray(entry.value) ? 'array' : typeof entry.value;
+      counts[t] = (counts[t] || 0) + 1;
+    }
+    return counts;
+  }
+}
 
 /**
  * Generate cache key from task configuration

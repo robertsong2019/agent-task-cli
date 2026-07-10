@@ -1,16 +1,22 @@
 # Agent Task Orchestrator CLI
 
+[![npm version](https://badge.fury.io/js/agent-task-cli.svg)](https://badge.fury.io/js/agent-task-cli)
+[![Build Status](https://github.com/robertsong2019/agent-task-cli/workflows/CI/badge.svg)](https://github.com/robertsong2019/agent-task-cli/actions)
+[![Test Coverage](https://codecov.io/gh/robertsong2019/agent-task-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/robertsong2019/agent-task-cli)
+[![License](https://img.shields.io/npm/l/agent-task-cli.svg)](LICENSE)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg)](https://nodejs.org/en/)
+
 A powerful CLI tool for orchestrating multi-agent tasks with different patterns (Work Crew, Supervisor, Pipeline, Council, Auto-Routing).
 
 ## 📚 Documentation
 
 | Document | Description |
 |----------|-------------|
-| [Tutorial](docs/TUTORIAL.md) | Step-by-step guide from zero to running |
-| [API Reference](docs/API_REFERENCE.md) | Full method signatures and config schema |
-| [Architecture](docs/ARCHITECTURE.md) | Design principles and data flow |
+| [📖 Tutorial](docs/TUTORIAL.md) | Step-by-step guide from zero to running |
+| [🔌 API Reference](docs/API_REFERENCE.md) | Full method signatures and config schema |
+| [🏗️ Architecture](docs/ARCHITECTURE.md) | Design principles and data flow |
 
-## Features
+## ✨ Features
 
 - 🎯 **Multiple Orchestration Patterns**: Work Crew, Supervisor, Pipeline, Council, Auto-Routing
 - 📝 **Task Definition**: YAML/JSON-based task configuration
@@ -18,16 +24,16 @@ A powerful CLI tool for orchestrating multi-agent tasks with different patterns 
 - 💾 **Export Results**: JSON/Markdown report generation
 - 🔧 **Modular Design**: Easy to extend and customize
 - 🧪 **Test Coverage**: 1197 tests across 117 suites
+- 🔌 **Plugin System**: Extend with custom patterns and agents
+- ⚡ **High Performance**: Concurrent execution with caching
 
-## Installation
+## 🚀 Installation
 
 ```bash
-cd /root/.openclaw/workspace/projects/agent-task-cli
-npm install
-npm link  # Install globally
+npm install -g agent-task-cli
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 ### 1. Define a Task
 
@@ -570,18 +576,34 @@ const sorted = queue.toSortedArray();
 // → items sorted by priority (highest first)
 ```
 
-## Development
+## 🛠️ Development
 
 ```bash
-npm run dev  # Watch mode
-npm run lint
-npm run format
+git clone https://github.com/robertsong2019/agent-task-cli.git
+cd agent-task-cli
+npm install
+
+npm run dev    # Watch mode
+npm run lint   # Code linting
+npm run format # Code formatting
+npm test       # Run tests
 ```
 
-## License
+## 🤝 Contributing
 
-MIT
+Contributions welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-## Contributing
+## 📋 Changelog
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
+See [CHANGELOG.md](CHANGELOG.md) for details on changes between versions.
+
+## 📄 License
+
+[MIT License](LICENSE) - see the [LICENSE](LICENSE) file for details.
+
+## 🌐 Support
+
+- 📚 [Documentation](https://github.com/robertsong2019/agent-task-cli#readme)
+- 🐛 [Bug Reports](https://github.com/robertsong2019/agent-task-cli/issues)
+- 💡 [Feature Requests](https://github.com/robertsong2019/agent-task-cli/issues)
+- 💬 [Discussions](https://github.com/robertsong2019/agent-task-cli/discussions)
