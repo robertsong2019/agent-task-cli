@@ -266,6 +266,61 @@ class ConcurrencyManager {
 
     return results;
   }
+
+  /**
+   * F187: mapSettled(items, fn, opts) — concurrency-limited map that never throws.
+   * Returns { fulfilled: [{index, value}], rejected: [{index, reason}], summary: {total, passed, failed} }.
+   */
+  async mapSettled(items, fn, opts = {}) {
+    if (!Array.isArray(items)) throw new TypeError('mapSettled: items must be an array');
+    if (typeof fn !== 'function') throw new TypeError('mapSettled: fn must be a function');
+
+    const raw = await this.allSettled(items, fn, opts.concurrency);
+    const fulfilled = [];
+    const rejected = [];
+
+    for (let i = 0; i < raw.length; i++) {
+      if (raw[i].status === 'fulfilled') {
+        fulfilled.push({ index: i, value: raw[i].value });
+      } else {
+        rejected.push({ index: i, reason: raw[i].reason });
+      }
+    }
+
+    return {
+      fulfilled,
+      rejected,
+      summary: {
+        total: raw.length,
+        passed: fulfilled.length,
+        failed: rejected.length,
+      },
+    };
+  }
+
+  /**
+   * F188: withRetry(fn, retries, taskId?) — execute fn with automatic retry on failure.
+   * Retries up to `retries` times. Throws last error if all retries exhausted.
+   */
+  async withRetry(fn, retries = 3, taskId = null) {
+    if (typeof fn !== 'function') throw new TypeError('withRetry: fn must be a function');
+    if (typeof retries !== 'number' || retries < 0) throw new TypeError('withRetry: retries must be >= 0');
+
+    let lastError;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await this.execute(fn, taskId);
+      } catch (err) {
+        lastError = err;
+        if (attempt < retries) {
+          // Brief delay before retry (exponential-ish)
+          const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    throw lastError;
+  }
 }
 
 module.exports = { ConcurrencyManager };
