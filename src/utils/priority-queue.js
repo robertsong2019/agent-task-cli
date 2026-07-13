@@ -82,6 +82,37 @@ class PriorityQueue {
   }
 
   /**
+   * F189: contains(item, cmp?) — check if an item exists in the queue.
+   * @param {*} item - Item to search for
+   * @param {Function} [cmp] - Optional comparator(item) => boolean
+   * @returns {boolean} true if item is in the queue
+   */
+  contains(item, cmp) {
+    const match = cmp || ((x) => x === item);
+    return this._items.some(e => match(e.item));
+  }
+
+  /**
+   * F190: updatePriority(item, newPriority, cmp?) — update the priority of an existing item.
+   * Re-sorts the queue after update. Returns true if found and updated, false if not found.
+   * @param {*} item - Item to find
+   * @param {number} newPriority - New priority value
+   * @param {Function} [cmp] - Optional comparator(item) => boolean
+   * @returns {boolean} true if updated
+   */
+  updatePriority(item, newPriority, cmp) {
+    if (typeof newPriority !== 'number') {
+      throw new TypeError('updatePriority: newPriority must be a number');
+    }
+    const match = cmp || ((x) => x === item);
+    const idx = this._items.findIndex(e => match(e.item));
+    if (idx === -1) return false;
+    this._items[idx].priority = newPriority;
+    this._items.sort((a, b) => a.priority - b.priority || a.seq - b.seq);
+    return true;
+  }
+
+  /**
    * F171: drainUntil(predicate) — dequeue items while predicate holds.
    * Predicate receives (item, priority) and should return boolean.
    * Stops at first item where predicate is false, that item remains in queue.

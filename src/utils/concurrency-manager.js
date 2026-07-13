@@ -183,6 +183,17 @@ class ConcurrencyManager {
   }
 
   /**
+   * F191: getQueuedIds() — return task IDs of queued tasks (companion to activeTasks()).
+   * Tasks without IDs are excluded.
+   * @returns {string[]} queued task IDs
+   */
+  getQueuedIds() {
+    return this.queue
+      .filter(item => item.taskId != null)
+      .map(item => item.taskId);
+  }
+
+  /**
    * F173: activeTasks() — return array of currently executing task IDs.
    * Tasks without IDs are excluded. Useful for monitoring and debugging.
    * @returns {string[]} active task IDs

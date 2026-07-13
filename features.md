@@ -252,7 +252,12 @@
 - [x] Storage: `except(ids[])` — return all tasks except those with specified IDs — **F182** ✅ 2026-07-09
 - [x] EventBus: `broadcast(data)` — emit same event to all active channels — **F183** ✅ 2026-07-09
 
-### Utils (Round 46)
+### Utils (Round 47)
+- [x] PriorityQueue: `contains(item, cmp?)` — check if item exists in queue — **F189** ✅ 2026-07-13
+- [x] PriorityQueue: `updatePriority(item, newPriority, cmp?)` — update priority of existing item, re-sorts — **F190** ✅ 2026-07-13
+- [x] ConcurrencyManager: `getQueuedIds()` — return task IDs of queued tasks (companion to activeTasks) — **F191** ✅ 2026-07-13
+
+## Utils (Round 46)
 - [x] Cache: `serialize()` — JSON-safe snapshot that strips functions/undefined — **F184** ✅ 2026-07-09
 - [x] Storage: `random(n=1)` — return n random tasks via Fisher-Yates partial shuffle — **F185** ✅ 2026-07-09
 - [x] EventBus: `size()` — total subscriber count across all channels (excludes wildcard) — **F186** ✅ 2026-07-09
