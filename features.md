@@ -257,6 +257,11 @@
 - [x] PriorityQueue: `updatePriority(item, newPriority, cmp?)` — update priority of existing item, re-sorts — **F190** ✅ 2026-07-13
 - [x] ConcurrencyManager: `getQueuedIds()` — return task IDs of queued tasks (companion to activeTasks) — **F191** ✅ 2026-07-13
 
+### Utils (Round 48)
+- [x] PriorityQueue: `removeAt(index)` — remove item at specific index — **F192** ✅ 2026-07-14
+- [x] Cache: `peek(key)` — get value without updating LRU or stats — **F193** ✅ 2026-07-14
+- [x] Storage: `batchCreate(records)` — insert-only bulk create, skip existing — **F194** ✅ 2026-07-14
+
 ## Utils (Round 46)
 - [x] Cache: `serialize()` — JSON-safe snapshot that strips functions/undefined — **F184** ✅ 2026-07-09
 - [x] Storage: `random(n=1)` — return n random tasks via Fisher-Yates partial shuffle — **F185** ✅ 2026-07-09

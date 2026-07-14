@@ -61,6 +61,22 @@ class Cache {
   }
 
   /**
+   * F193: peek(key) — get value without updating LRU position or access stats.
+   * Returns undefined for missing or expired keys. Does NOT count as a hit or miss.
+   * @param {string} key
+   * @returns {*} value or undefined
+   */
+  peek(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return undefined;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return undefined;
+    }
+    return entry.value;
+  }
+
+  /**
    * Check if a key exists in cache without affecting stats
    * @param {string} key
    * @returns {boolean}

@@ -842,6 +842,35 @@ class Storage {
     }
     return entries.slice(0, count);
   }
+
+  /**
+   * F194: batchCreate(records) — insert-only bulk create. Skips IDs that already exist.
+   * @param {Object} records — { id: data, ... }
+   * @returns {Object} { created: string[], skipped: string[] }
+   */
+  async batchCreate(records) {
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') tasks = JSON.parse(data);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      const created = [];
+      const skipped = [];
+      for (const [id, taskData] of Object.entries(records)) {
+        if (tasks[id]) { skipped.push(id); continue; }
+        tasks[id] = taskData;
+        created.push(id);
+      }
+      if (created.length > 0) {
+        await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      }
+      return { created, skipped };
+    });
+  }
 }
 
 module.exports = { Storage };

@@ -113,6 +113,20 @@ class PriorityQueue {
   }
 
   /**
+   * F192: removeAt(index) — remove and return the item at the specified index.
+   * @param {number} index - 0-based index into priority-sorted queue
+   * @returns {*} The removed item, or undefined if index is out of bounds
+   */
+  removeAt(index) {
+    if (typeof index !== 'number' || index < 0 || !Number.isInteger(index)) {
+      throw new RangeError('removeAt: index must be a non-negative integer');
+    }
+    if (index >= this._items.length) return undefined;
+    const removed = this._items.splice(index, 1)[0];
+    return removed.item;
+  }
+
+  /**
    * F171: drainUntil(predicate) — dequeue items while predicate holds.
    * Predicate receives (item, priority) and should return boolean.
    * Stops at first item where predicate is false, that item remains in queue.
