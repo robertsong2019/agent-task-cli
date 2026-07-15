@@ -1093,6 +1093,48 @@ class EventBus {
   }
 
   /**
+   * F197: emitWithAck(channel, data, timeout = 5000) — emit and collect results from all handlers.
+   * Calls each subscriber directly, collects return values.
+   * Async handlers are awaited with timeout. Returns { results, errors, handlers }.
+   */
+  async emitWithAck(channel, data = {}, timeout = 5000) {
+    const subs = this._subscribers.get(channel);
+    const handlers = subs ? Array.from(subs) : [];
+    const event = {
+      channel,
+      data,
+      timestamp: Date.now(),
+      id: `${channel}:${Date.now()}:ack`
+    };
+    // Store in history
+    if (this._history.length >= this._maxHistory) this._history.shift();
+    this._history.push(event);
+    const results = [];
+    const errors = [];
+    for (const handler of handlers) {
+      try {
+        const result = handler(event);
+        if (result instanceof Promise) {
+          const val = await Promise.race([
+            result,
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error(`Handler timeout after ${timeout}ms`)), timeout)
+            )
+          ]);
+          results.push(val);
+        } else {
+          results.push(result);
+        }
+      } catch (err) {
+        errors.push({ handler: handler.name || 'anonymous', error: err.message });
+      }
+    }
+    // Also emit to wildcard listeners (fire-and-forget, no ack)
+    this._emitter.emit('*', event);
+    return { results, errors, handlers: handlers.length };
+  }
+
+  /**
    * F186: size() — total subscriber count across all channels (excludes wildcard).
    */
   size() {

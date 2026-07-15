@@ -1235,6 +1235,33 @@ class Cache {
    * F188: countType() — count entries by their JS type.
    * Returns { object, array, string, number, boolean, other }
    */
+  /**
+   * F196: toggle(key, initial) — boolean toggle: flips truthy↔falsy, returns new value.
+   * If key doesn't exist or is expired, sets to !initial (default initial=false → starts true).
+   * Does not count as hit or miss. Evicts expired entry if found.
+   */
+  toggle(key, initial = false) {
+    const entry = this.cache.get(key);
+    let newVal;
+    if (entry && !(entry.expiresAt && Date.now() > entry.expiresAt)) {
+      newVal = !entry.value;
+      entry.value = newVal;
+      entry.lastAccessed = Date.now();
+    } else {
+      if (entry) this.delete(key); // expired
+      if (this.cache.size >= this.maxSize) this.evictLRU();
+      newVal = !initial;
+      this.cache.set(key, {
+        value: newVal,
+        createdAt: Date.now(),
+        lastAccessed: Date.now(),
+        expiresAt: this.defaultTTL ? Date.now() + this.defaultTTL : null
+      });
+      this.stats.size = this.cache.size;
+    }
+    return newVal;
+  }
+
   countType() {
     const counts = { object: 0, array: 0, string: 0, number: 0, boolean: 0, other: 0 };
     const now = Date.now();

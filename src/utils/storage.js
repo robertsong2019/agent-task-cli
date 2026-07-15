@@ -844,6 +844,25 @@ class Storage {
   }
 
   /**
+   * F195: countByField(field) — count tasks grouped by any field value.
+   * Generalization of countByStatus(). Returns { [fieldValue]: count }.
+   * Tasks where the field is undefined are counted under 'undefined'.
+   */
+  async countByField(field) {
+    if (typeof field !== 'string' || !field) {
+      throw new TypeError('countByField: field must be a non-empty string');
+    }
+    const tasks = await this.loadTasks();
+    const counts = {};
+    for (const t of Object.values(tasks)) {
+      const val = t[field];
+      const key = val === undefined ? 'undefined' : String(val);
+      counts[key] = (counts[key] || 0) + 1;
+    }
+    return counts;
+  }
+
+  /**
    * F194: batchCreate(records) — insert-only bulk create. Skips IDs that already exist.
    * @param {Object} records — { id: data, ... }
    * @returns {Object} { created: string[], skipped: string[] }

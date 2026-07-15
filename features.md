@@ -262,6 +262,11 @@
 - [x] Cache: `peek(key)` — get value without updating LRU or stats — **F193** ✅ 2026-07-14
 - [x] Storage: `batchCreate(records)` — insert-only bulk create, skip existing — **F194** ✅ 2026-07-14
 
+## Utils (Round 49)
+- [x] Storage: `countByField(field)` — count tasks grouped by any field value (generalized countByStatus) — **F195** ✅ 2026-07-15
+- [x] Cache: `toggle(key, initial?)` — boolean toggle, flips truthy↔falsy — **F196** ✅ 2026-07-15
+- [x] EventBus: `emitWithAck(channel, data, timeout?)` — emit and collect {results, errors} from all handlers — **F197** ✅ 2026-07-15
+
 ## Utils (Round 46)
 - [x] Cache: `serialize()` — JSON-safe snapshot that strips functions/undefined — **F184** ✅ 2026-07-09
 - [x] Storage: `random(n=1)` — return n random tasks via Fisher-Yates partial shuffle — **F185** ✅ 2026-07-09
