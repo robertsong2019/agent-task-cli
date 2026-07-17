@@ -271,3 +271,8 @@
 - [x] Cache: `serialize()` — JSON-safe snapshot that strips functions/undefined — **F184** ✅ 2026-07-09
 - [x] Storage: `random(n=1)` — return n random tasks via Fisher-Yates partial shuffle — **F185** ✅ 2026-07-09
 - [x] EventBus: `size()` — total subscriber count across all channels (excludes wildcard) — **F186** ✅ 2026-07-09
+
+## Utils (Round 50)
+- [x] ConcurrencyManager: `awaitIdle(timeout?)` — Promise resolving true when idle, false on timeout — **F198** ✅ 2026-07-17
+- [x] Cache: `shift()` — evict and return oldest LRU entry, skip expired — **F199** ✅ 2026-07-17
+- [x] EventBus: `hasListeners(channel)` — check if channel has direct subscribers — **F200** ✅ 2026-07-17

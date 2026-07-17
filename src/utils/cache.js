@@ -1272,6 +1272,29 @@ class Cache {
     }
     return counts;
   }
+
+  /**
+   * F199: shift() — Evict and return the least-recently-used (oldest in insertion order)
+   * non-expired entry. Returns undefined if cache is empty or all expired.
+   * Increments eviction counter. Useful for manual eviction policies.
+   * @returns {{ key: string, value: * } | undefined}
+   */
+  shift() {
+    const now = Date.now();
+    for (const [key, entry] of this.cache) {
+      if (entry.expiresAt && now > entry.expiresAt) {
+        this.cache.delete(key);
+        this.stats.size = this.cache.size;
+        continue;
+      }
+      const value = entry.value;
+      this.cache.delete(key);
+      this.stats.size = this.cache.size;
+      this.stats.evictions++;
+      return { key, value };
+    }
+    return undefined;
+  }
 }
 
 /**

@@ -168,6 +168,34 @@ class ConcurrencyManager {
   }
 
   /**
+   * F198: awaitIdle(timeout?) — Promise that resolves true when all tasks complete
+   * and queue empties. Returns false if timeout elapses without becoming idle.
+   * @param {number} timeout - Max wait in ms (default: Infinity)
+   * @returns {Promise<boolean>}
+   */
+  async awaitIdle(timeout) {
+    if (this.isIdle()) return true;
+    return new Promise((resolve) => {
+      let settled = false;
+      let interval = null;
+      let timer = null;
+      const finish = (val) => {
+        if (settled) return;
+        settled = true;
+        if (interval) clearInterval(interval);
+        if (timer) clearTimeout(timer);
+        resolve(val);
+      };
+      interval = setInterval(() => {
+        if (this.isIdle()) finish(true);
+      }, 10);
+      if (timeout !== undefined && timeout !== null) {
+        timer = setTimeout(() => finish(false), timeout);
+      }
+    });
+  }
+
+  /**
    * Update max concurrent limit
    */
   setMaxConcurrent(max) {

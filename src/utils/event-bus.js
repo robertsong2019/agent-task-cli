@@ -1145,6 +1145,16 @@ class EventBus {
     }
     return total;
   }
+  /**
+   * F200: hasListeners(channel) — check if a channel has any direct subscribers.
+   * Does NOT check wildcard subscribers.
+   * @param {string} channel
+   * @returns {boolean}
+   */
+  hasListeners(channel) {
+    const set = this._subscribers.get(channel);
+    return !!(set && set.size > 0);
+  }
 }
 
 // Singleton instance
