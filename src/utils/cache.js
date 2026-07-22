@@ -1295,6 +1295,39 @@ class Cache {
     }
     return undefined;
   }
+
+  /**
+   * F201: Get value and refresh TTL in one atomic call.
+   * Returns undefined if key missing/expired.
+   * @param {string} key - Cache key
+   * @param {number} ttl - New TTL in ms (default: refresh existing)
+   * @returns {*} The value or undefined
+   */
+  getAndTouch(key, ttl) {
+    const entry = this.cache.get(key);
+    if (entry === undefined) {
+      this.stats.misses++;
+      return undefined;
+    }
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      this.stats.size = this.cache.size;
+      this.stats.evictions++;
+      this.stats.misses++;
+      return undefined;
+    }
+    // Refresh TTL
+    const newTTL = ttl !== undefined ? ttl : (entry.expiresAt ? entry.expiresAt - entry.createdAt : this.defaultTTL);
+    if (newTTL > 0) {
+      entry.expiresAt = Date.now() + newTTL;
+    }
+    entry.accessedAt = Date.now();
+    // LRU: move to end
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+    this.stats.hits++;
+    return entry.value;
+  }
 }
 
 /**

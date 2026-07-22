@@ -890,6 +890,45 @@ class Storage {
       return { created, skipped };
     });
   }
+
+  /**
+   * F203: Ensure an in-memory index exists for a field.
+   * Maintains a Map<fieldValue, Set<taskId>> for O(1) lookups by field value.
+   * Returns the index Map. Async — reads from disk.
+   * @param {string} field
+   * @returns {Promise<Map<string, Set<string>>>}
+   */
+  async ensureIndex(field) {
+    if (!this._indexes) this._indexes = new Map();
+    if (this._indexes.has(field)) return this._indexes.get(field);
+    const index = new Map();
+    const tasks = await this.loadTasks();
+    for (const id in tasks) {
+      const val = tasks[id]?.[field];
+      if (val === undefined) continue;
+      const key = String(val);
+      if (!index.has(key)) index.set(key, new Set());
+      index.get(key).add(id);
+    }
+    this._indexes.set(field, index);
+    return index;
+  }
+
+  /**
+   * F203 companion: Query by indexed field (requires ensureIndex first).
+   * Returns array of matching tasks.
+   * @param {string} field
+   * @param {string} value
+   * @returns {Promise<object[]>}
+   */
+  async findByIndex(field, value) {
+    const index = this._indexes?.get(field);
+    if (!index) throw new Error(`No index for field "${field}". Call ensureIndex() first.`);
+    const ids = index.get(String(value));
+    if (!ids || ids.size === 0) return [];
+    const tasks = await this.loadTasks();
+    return [...ids].map(id => tasks[id]).filter(Boolean);
+  }
 }
 
 module.exports = { Storage };

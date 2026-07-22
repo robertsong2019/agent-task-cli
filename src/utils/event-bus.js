@@ -1155,6 +1155,25 @@ class EventBus {
     const set = this._subscribers.get(channel);
     return !!(set && set.size > 0);
   }
+
+  /**
+   * F202: Emit only if data differs from last emission on this channel.
+   * Uses optional keyFn to extract a comparison key (default: deep JSON compare).
+   * Returns true if emitted, false if suppressed (duplicate).
+   * @param {string} channel
+   * @param {*} data
+   * @param {(data: *) => string} [keyFn] - optional key extractor for dedup
+   * @returns {boolean} whether emission occurred
+   */
+  emitIfChanged(channel, data, keyFn) {
+    const cmpKey = keyFn ? keyFn(data) : JSON.stringify(data);
+    if (!this._lastEmitKey) this._lastEmitKey = new Map();
+    const lastKey = this._lastEmitKey.get(channel);
+    if (lastKey === cmpKey) return false;
+    this._lastEmitKey.set(channel, cmpKey);
+    this.emit(channel, data);
+    return true;
+  }
 }
 
 // Singleton instance
