@@ -276,3 +276,8 @@
 - [x] ConcurrencyManager: `awaitIdle(timeout?)` — Promise resolving true when idle, false on timeout — **F198** ✅ 2026-07-17
 - [x] Cache: `shift()` — evict and return oldest LRU entry, skip expired — **F199** ✅ 2026-07-17
 - [x] EventBus: `hasListeners(channel)` — check if channel has direct subscribers — **F200** ✅ 2026-07-17
+
+## Utils (Round 51)
+- [x] Cache: `getAndTouch(key, ttl?)` — get value + refresh TTL atomically, LRU update — **F201** ✅ 2026-07-22
+- [x] EventBus: `emitIfChanged(channel, data, keyFn?)` — dedup emissions, only emit when data differs — **F202** ✅ 2026-07-22
+- [x] Storage: `ensureIndex(field)` + `findByIndex(field, value)` — in-memory index for O(1) field lookups — **F203** ✅ 2026-07-22
