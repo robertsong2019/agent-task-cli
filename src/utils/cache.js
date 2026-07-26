@@ -581,6 +581,26 @@ class Cache {
     return newVal;
   }
 
+  /** F204: incrByEx(key, amount, ttl) — increment by amount AND set new TTL atomically.
+   * Combines incr + expire in a single operation (Redis INCR + EX pipeline semantics).
+   * If key doesn't exist, initializes to amount. Throws TypeError if existing value isn't a number.
+   * @param {string} key
+   * @param {number} amount — increment amount (default 1)
+   * @param {number} ttl — new TTL in ms
+   * @returns {number} new value after increment
+   */
+  incrByEx(key, amount = 1, ttl = this.defaultTTL) {
+    if (typeof amount !== 'number') throw new TypeError('incrByEx: amount must be a number');
+    if (typeof ttl !== 'number' || ttl <= 0) throw new TypeError('incrByEx: ttl must be a positive number');
+    const current = this.get(key);
+    if (current !== undefined && typeof current !== 'number') {
+      throw new TypeError(`Cache.incrByEx: value at '${key}' is not a number`);
+    }
+    const newVal = (current || 0) + amount;
+    this.set(key, newVal, ttl); // set with new TTL
+    return newVal;
+  }
+
   /** F79: Swap — set new value and return old value (undefined if key didn't exist). */
   swap(key, value, ttl = this.defaultTTL) {
     const old = this.get(key);

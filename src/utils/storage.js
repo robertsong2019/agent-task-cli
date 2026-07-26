@@ -929,6 +929,22 @@ class Storage {
     const tasks = await this.loadTasks();
     return [...ids].map(id => tasks[id]).filter(Boolean);
   }
+
+  /** F205: replace(id, data) — full data replacement preserving id/createdAt.
+   * Unlike updateTask (which merges), this overwrites all fields.
+   * Returns old task data (or null if not found).
+   * @param {string} id
+   * @param {object} data — new task data (id and createdAt are preserved)
+   * @returns {Promise<object|null>} old task data or null
+   */
+  async replace(id, data) {
+    const tasks = await this.loadTasks();
+    if (!tasks[id]) return null;
+    const old = { ...tasks[id] };
+    tasks[id] = { ...data, id, createdAt: tasks[id].createdAt, updatedAt: new Date().toISOString() };
+    await this.saveTasks(tasks);
+    return old;
+  }
 }
 
 module.exports = { Storage };

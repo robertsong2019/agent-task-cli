@@ -1174,6 +1174,47 @@ class EventBus {
     this.emit(channel, data);
     return true;
   }
+
+  /** F206: emitThrow(channel, data) — synchronous emit that throws if any handler throws.
+   * Regular emit lets EventEmitter swallow/handle errors. emitThrow aggregates
+   * all handler errors into a single AggregateError for the caller.
+   * @param {string} channel
+   * @param {object} data
+   * @returns {number} count of handlers that fired successfully
+   * @throws {AggregateError} if any handler threw
+   */
+  emitThrow(channel, data = {}) {
+    const listeners = this._emitter.listeners(channel);
+    const event = { channel, data, timestamp: Date.now(), id: `${channel}:${Date.now()}` };
+    if (this._history.length >= this._maxHistory) this._history.shift();
+    this._history.push(event);
+    const errors = [];
+    let successCount = 0;
+    for (const listener of listeners) {
+      try {
+        listener(event);
+        successCount++;
+      } catch (err) {
+        errors.push(err);
+      }
+    }
+    // Also fire wildcard listeners
+    const wildcardListeners = this._emitter.listeners('*');
+    for (const listener of wildcardListeners) {
+      try {
+        listener(event);
+        successCount++;
+      } catch (err) {
+        errors.push(err);
+      }
+    }
+    if (errors.length > 0) {
+      const aggErr = new Error(`emitThrow: ${errors.length} handler(s) threw on channel '${channel}'`);
+      aggErr.errors = errors;
+      throw aggErr;
+    }
+    return successCount;
+  }
 }
 
 // Singleton instance
