@@ -277,6 +277,11 @@
 - [x] Cache: `shift()` — evict and return oldest LRU entry, skip expired — **F199** ✅ 2026-07-17
 - [x] EventBus: `hasListeners(channel)` — check if channel has direct subscribers — **F200** ✅ 2026-07-17
 
+## Utils (Round 52)
+- [x] Cache: `incrByEx(key, amount, ttl)` — increment + set new TTL atomically (Redis INCR+EX pipeline) — **F204** ✅ 2026-07-26
+- [x] Storage: `replace(id, data)` — full data replacement preserving id/createdAt, returns old data — **F205** ✅ 2026-07-26
+- [x] EventBus: `emitThrow(channel, data)` — synchronous emit that aggregates handler errors into single throw — **F206** ✅ 2026-07-26
+
 ## Utils (Round 51)
 - [x] Cache: `getAndTouch(key, ttl?)` — get value + refresh TTL atomically, LRU update — **F201** ✅ 2026-07-22
 - [x] EventBus: `emitIfChanged(channel, data, keyFn?)` — dedup emissions, only emit when data differs — **F202** ✅ 2026-07-22
