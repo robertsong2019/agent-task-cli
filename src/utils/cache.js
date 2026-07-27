@@ -1348,6 +1348,30 @@ class Cache {
     this.stats.hits++;
     return entry.value;
   }
+
+  /**
+   * F207: memo(fn, opts) — wrap a function with cache-backed memoization.
+   * Cache keys are auto-generated from serialized args unless keyFn is provided.
+   * @param {Function} fn - The function to memoize.
+   * @param {object} [opts]
+   * @param {Function} [opts.keyFn] - Custom key generator (receives ...args, returns string).
+   * @param {number} [opts.ttl] - TTL in ms (defaults to cache defaultTTL).
+   * @returns {Function} Memoized function with `.cache` property pointing to the Cache instance.
+   */
+  memo(fn, opts = {}) {
+    const { keyFn, ttl = this.defaultTTL } = opts;
+    const cacheInstance = this;
+    const memoized = function (...args) {
+      const key = keyFn ? keyFn(...args) : `memo:${JSON.stringify(args)}`;
+      const existing = cacheInstance.get(key);
+      if (existing !== undefined) return existing;
+      const result = fn.apply(this, args);
+      cacheInstance.set(key, result, ttl);
+      return result;
+    };
+    memoized.cache = cacheInstance;
+    return memoized;
+  }
 }
 
 /**

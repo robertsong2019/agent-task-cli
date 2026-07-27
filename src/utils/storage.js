@@ -945,6 +945,20 @@ class Storage {
     await this.saveTasks(tasks);
     return old;
   }
+
+  /**
+   * F208: difference(otherStorage) — return task IDs present in self but not in other.
+   * @param {Storage} otherStorage — another Storage instance to compare against.
+   * @returns {Promise<string[]>} array of IDs in self but not in other.
+   */
+  async difference(otherStorage) {
+    const [myTasks, otherTasks] = await Promise.all([
+      this.loadTasks(),
+      otherStorage.loadTasks()
+    ]);
+    const otherIds = new Set(Object.keys(otherTasks));
+    return Object.keys(myTasks).filter(id => !otherIds.has(id));
+  }
 }
 
 module.exports = { Storage };
