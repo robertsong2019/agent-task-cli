@@ -286,6 +286,11 @@
 - [x] Cache: `memo(fn, opts)` — wrap any function with cache-backed memoization, auto key from args or custom keyFn, TTL support — **F207** ✅ 2026-07-27
 - [x] Storage: `difference(otherStorage)` — set operation returning IDs in self but not in other — **F208** ✅ 2026-07-27
 
+## Utils (Round 54)
+- [x] Storage: `upsertMany(records)` — bulk upsert: insert new + merge-update existing, returns {created, updated} — **F209** ✅ 2026-07-28
+- [x] Cache: `touch(key, ttl?)` — extend TTL without fetching value or updating LRU/stats — **F210** ✅ 2026-07-28
+- [x] EventBus: `emitBatch(channel, items, opts)` — emit multiple events in sequence with optional delay and atomic mode — **F211** ✅ 2026-07-28
+
 ## Utils (Round 51)
 - [x] Cache: `getAndTouch(key, ttl?)` — get value + refresh TTL atomically, LRU update — **F201** ✅ 2026-07-22
 - [x] EventBus: `emitIfChanged(channel, data, keyFn?)` — dedup emissions, only emit when data differs — **F202** ✅ 2026-07-22
