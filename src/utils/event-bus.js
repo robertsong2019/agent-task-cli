@@ -1175,6 +1175,35 @@ class EventBus {
     return true;
   }
 
+  /**
+   * F211: emitBatch(channel, items, opts) — emit multiple events in sequence.
+   * Useful for replay, bulk notifications, or controlled delivery.
+   * @param {string} channel - Target channel
+   * @param {Array} items - Array of data objects to emit
+   * @param {object} [opts]
+   * @param {number} [opts.delay=0] - Delay between emissions in ms
+   * @param {boolean} [opts.atomic=false] - If true, throw on first error and stop
+   * @returns {Promise<{ emitted: number, errors: Array<{ index: number, error: Error }> }>}
+   */
+  async emitBatch(channel, items = [], opts = {}) {
+    const { delay = 0, atomic = false } = opts;
+    let emitted = 0;
+    const errors = [];
+    for (let i = 0; i < items.length; i++) {
+      try {
+        this.emit(channel, items[i]);
+        emitted++;
+      } catch (err) {
+        errors.push({ index: i, error: err });
+        if (atomic) break;
+      }
+      if (delay > 0 && i < items.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    return { emitted, errors };
+  }
+
   /** F206: emitThrow(channel, data) — synchronous emit that throws if any handler throws.
    * Regular emit lets EventEmitter swallow/handle errors. emitThrow aggregates
    * all handler errors into a single AggregateError for the caller.

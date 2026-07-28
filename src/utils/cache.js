@@ -1350,6 +1350,30 @@ class Cache {
   }
 
   /**
+   * F210: touch(key, ttl?) — extend TTL of a key without fetching its value.
+   * Companion to getAndTouch (which also returns the value) and touchMany.
+   * Does not update LRU position or stats.
+   * @param {string} key - Cache key
+   * @param {number} [ttl] - New TTL in ms (default: refresh with defaultTTL)
+   * @returns {boolean} true if key existed and was touched, false if missing/expired
+   */
+  touch(key, ttl) {
+    const entry = this.cache.get(key);
+    if (entry === undefined) return false;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      this.stats.size = this.cache.size;
+      this.stats.evictions++;
+      return false;
+    }
+    const newTTL = ttl !== undefined ? ttl : this.defaultTTL;
+    if (newTTL > 0) {
+      entry.expiresAt = Date.now() + newTTL;
+    }
+    return true;
+  }
+
+  /**
    * F207: memo(fn, opts) — wrap a function with cache-backed memoization.
    * Cache keys are auto-generated from serialized args unless keyFn is provided.
    * @param {Function} fn - The function to memoize.

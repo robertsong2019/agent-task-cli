@@ -947,6 +947,41 @@ class Storage {
   }
 
   /**
+   * F209: upsertMany(records) — bulk upsert: insert new + update existing.
+   * Unlike batchCreate (which skips existing), this updates existing records.
+   * @param {Object<string, object>} records — { id: taskData, ... }
+   * @returns {Promise<{ created: string[], updated: string[] }>}
+   */
+  async upsertMany(records) {
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const raw = await fs.readFile(this.tasksFile, 'utf8');
+        if (raw && raw.trim() !== '') tasks = JSON.parse(raw);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      const created = [];
+      const updated = [];
+      const now = new Date().toISOString();
+      for (const [id, taskData] of Object.entries(records)) {
+        if (tasks[id]) {
+          tasks[id] = { ...tasks[id], ...taskData, updatedAt: now };
+          updated.push(id);
+        } else {
+          tasks[id] = { ...taskData, createdAt: now };
+          created.push(id);
+        }
+      }
+      if (created.length > 0 || updated.length > 0) {
+        await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      }
+      return { created, updated };
+    });
+  }
+
+  /**
    * F208: difference(otherStorage) — return task IDs present in self but not in other.
    * @param {Storage} otherStorage — another Storage instance to compare against.
    * @returns {Promise<string[]>} array of IDs in self but not in other.
