@@ -1176,8 +1176,9 @@ class EventBus {
   }
 
   /**
-   * F211: emitBatch(channel, items, opts) — emit multiple events in sequence.
+   * F211: emitSeries(channel, items, opts) — emit multiple events in sequence.
    * Useful for replay, bulk notifications, or controlled delivery.
+   * (Renamed from emitBatch to avoid collision with F16 emitBatch.)
    * @param {string} channel - Target channel
    * @param {Array} items - Array of data objects to emit
    * @param {object} [opts]
@@ -1185,7 +1186,7 @@ class EventBus {
    * @param {boolean} [opts.atomic=false] - If true, throw on first error and stop
    * @returns {Promise<{ emitted: number, errors: Array<{ index: number, error: Error }> }>}
    */
-  async emitBatch(channel, items = [], opts = {}) {
+  async emitSeries(channel, items = [], opts = {}) {
     const { delay = 0, atomic = false } = opts;
     let emitted = 0;
     const errors = [];
@@ -1243,6 +1244,28 @@ class EventBus {
       throw aggErr;
     }
     return successCount;
+  }
+
+  /**
+   * F214: emitWithDelay(channel, data, delayMs) — emit after a setTimeout delay.
+   * Returns a timer handle with a .cancel() method for cancellation.
+   * @param {string} channel - Target channel
+   * @param {*} data - Event payload
+   * @param {number} delayMs - Delay in milliseconds
+   * @returns {{ cancel: () => void, timer: NodeJS.Timeout }} Handle with cancel()
+   */
+  emitWithDelay(channel, data, delayMs) {
+    let timer;
+    let cancelled = false;
+    const self = this;
+    timer = setTimeout(function() {
+      if (!cancelled) self.emit(channel, data);
+    }, delayMs);
+    const handle = {
+      timer,
+      cancel() { cancelled = true; clearTimeout(timer); }
+    };
+    return handle;
   }
 }
 

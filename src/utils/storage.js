@@ -994,6 +994,20 @@ class Storage {
     const otherIds = new Set(Object.keys(otherTasks));
     return Object.keys(myTasks).filter(id => !otherIds.has(id));
   }
+
+  /**
+   * F213: intersect(otherStorage) — return task IDs present in both storages.
+   * @param {Storage} otherStorage — another Storage instance.
+   * @returns {Promise<string[]>} array of common task IDs.
+   */
+  async intersect(otherStorage) {
+    const [myTasks, otherTasks] = await Promise.all([
+      this.loadTasks(),
+      otherStorage.loadTasks()
+    ]);
+    const otherIds = new Set(Object.keys(otherTasks));
+    return Object.keys(myTasks).filter(id => otherIds.has(id));
+  }
 }
 
 module.exports = { Storage };

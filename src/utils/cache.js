@@ -1396,6 +1396,23 @@ class Cache {
     memoized.cache = cacheInstance;
     return memoized;
   }
+
+  /**
+   * F212: mset(entries, ttl?) — batch set multiple key-value pairs (Redis MSET).
+   * @param {Array<[string, any]>} entries — array of [key, value] pairs
+   * @param {number} [ttl] — optional TTL in ms applied to all entries
+   * @returns {number} number of entries set
+   */
+  mset(entries, ttl) {
+    if (!Array.isArray(entries) || entries.length === 0) return 0;
+    let count = 0;
+    for (const [key, value] of entries) {
+      if (key === undefined || key === null) continue;
+      this.set(key, value, ttl);
+      count++;
+    }
+    return count;
+  }
 }
 
 /**
