@@ -291,6 +291,12 @@
 - [x] Cache: `touch(key, ttl?)` — extend TTL without fetching value or updating LRU/stats — **F210** ✅ 2026-07-28
 - [x] EventBus: `emitBatch(channel, items, opts)` — emit multiple events in sequence with optional delay and atomic mode — **F211** ✅ 2026-07-28
 
+## Utils (Round 55)
+- [x] Cache: `mset(entries, ttl?)` — Redis MSET, batch set multiple key-value pairs — **F212** ✅ 2026-07-29
+- [x] Storage: `intersect(otherStorage)` — return task IDs present in both storages — **F213** ✅ 2026-07-29
+- [x] EventBus: `emitWithDelay(channel, data, delayMs)` — emit after setTimeout delay, returns cancelable handle — **F214** ✅ 2026-07-29
+- [x] **Bug fix**: F211 `emitBatch` renamed to `emitSeries` — was silently overriding F16 sync `emitBatch` — ✅ 2026-07-29
+
 ## Utils (Round 51)
 - [x] Cache: `getAndTouch(key, ttl?)` — get value + refresh TTL atomically, LRU update — **F201** ✅ 2026-07-22
 - [x] EventBus: `emitIfChanged(channel, data, keyFn?)` — dedup emissions, only emit when data differs — **F202** ✅ 2026-07-22
