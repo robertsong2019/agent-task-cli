@@ -23,7 +23,7 @@ A powerful CLI tool for orchestrating multi-agent tasks with different patterns 
 - 📊 **Real-time Monitoring**: Track agent execution progress
 - 💾 **Export Results**: JSON/Markdown report generation
 - 🔧 **Modular Design**: Easy to extend and customize
-- 🧪 **Test Coverage**: 1209 tests across 122 suites
+- 🧪 **Test Coverage**: 1340 tests across 122+ suites
 - 🔌 **Plugin System**: Extend with custom patterns and agents
 - ⚡ **High Performance**: Concurrent execution with caching
 
@@ -585,6 +585,120 @@ const taken = queue.drainUntil(item => item.priority >= 5);
 // F172: Get items as a sorted array (without removing)
 const sorted = queue.toSortedArray();
 // → items sorted by priority (highest first)
+```
+
+### Utils (Rounds 47–55: F189–F214)
+
+26 additional utility methods added since F188, organized by class:
+
+#### PriorityQueue
+
+```javascript
+// F189: Check if item exists in queue
+pq.contains('task-urgent'); // → true/false
+
+// F190: Update priority of existing item, re-sorts automatically
+pq.updatePriority('task-x', 2); // old priority 5 → 2
+
+// F192: Remove item at specific index
+pq.removeAt(3); // → removed item
+```
+
+#### Cache
+
+```javascript
+// F193: Peek value without updating LRU or stats
+const val = cache.peek('session'); // → value or undefined
+
+// F196: Boolean toggle — flips truthy↔falsy, initialises if absent
+cache.toggle('feature-flag'); // → true (initialised)
+cache.toggle('feature-flag'); // → false (toggled)
+
+// F199: Evict and return oldest LRU entry (skips expired)
+const oldest = cache.shift();
+
+// F201: Get value + refresh TTL atomically (LRU updated)
+const v = cache.getAndTouch('key', 60000);
+
+// F204: Increment + set new TTL atomically (Redis INCR+EX pipeline)
+cache.incrByEx('counter', 1, 30000); // → new value
+
+// F207: Memoize any function with cache-backed result caching
+const fastFn = cache.memo(expensiveFn, { ttl: 60000 });
+// or with custom key:
+cache.memo(fn, { keyFn: (args) => JSON.stringify(args) });
+
+// F210: Extend TTL without fetching value or updating LRU/stats
+cache.touch('key', 120000); // → true if key exists
+
+// F212: Batch set multiple key-value pairs (Redis MSET)
+cache.mset({ a: 1, b: 2, c: 3 }, 60000); // → count of keys set
+```
+
+#### Storage
+
+```javascript
+// F194: Bulk create — insert-only, skip existing IDs
+const { created, skipped } = await storage.batchCreate([
+  { id: 't1', name: 'Task 1' },
+  { id: 't2', name: 'Task 2' }
+]);
+
+// F195: Count tasks grouped by any field value
+const byStatus = storage.countByField('status');
+// → { pending: 5, running: 3, completed: 12 }
+
+// F203: In-memory index for O(1) field lookups
+storage.ensureIndex('priority');
+const highPriority = storage.findByIndex('priority', 'high');
+
+// F205: Full data replacement preserving id/createdAt, returns old data
+const old = await storage.replace('task-42', { name: 'New', status: 'done' });
+
+// F208: Set difference — IDs in self but not in other
+const unique = storage.difference(otherStorage); // → ['id1', 'id2']
+
+// F209: Bulk upsert — insert new + merge-update existing
+const { created, updated } = await storage.upsertMany([
+  { id: 't1', name: 'Updated' },
+  { id: 't3', name: 'New Task' }
+]);
+
+// F213: Set intersection — IDs present in both storages
+const common = storage.intersect(otherStorage); // → ['shared-id']
+```
+
+#### EventBus
+
+```javascript
+// F197: Emit and collect {results, errors} from all handlers
+const { results, errors } = await bus.emitWithAck('task:save', data, 5000);
+
+// F200: Check if a channel has direct subscribers
+bus.hasListeners('alerts'); // → true/false
+
+// F202: Dedup emissions — only emit when data differs
+bus.emitIfChanged('metrics', { cpu: 80 }, (d) => JSON.stringify(d));
+
+// F206: Synchronous emit that aggregates handler errors into single throw
+bus.emitThrow('critical', data); // throws if any handler throws
+
+// F211: Emit multiple events in sequence with optional delay/atomic mode
+bus.emitSeries('log', [entry1, entry2, entry3], { delay: 100 });
+
+// F214: Emit after setTimeout delay, returns cancelable handle
+const handle = bus.emitWithDelay('reminder', data, 5000);
+handle.cancel(); // cancel if needed
+```
+
+#### ConcurrencyManager
+
+```javascript
+// F191: Get IDs of queued tasks (companion to activeTasks)
+const queued = cm.getQueuedIds(); // → ['task-5', 'task-6']
+
+// F198: Promise resolving true when idle, false on timeout
+const idle = await cm.awaitIdle(10000); // → true if all done
 ```
 
 ## 🛠️ Development
