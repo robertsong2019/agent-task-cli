@@ -297,6 +297,11 @@
 - [x] EventBus: `emitWithDelay(channel, data, delayMs)` — emit after setTimeout delay, returns cancelable handle — **F214** ✅ 2026-07-29
 - [x] **Bug fix**: F211 `emitBatch` renamed to `emitSeries` — was silently overriding F16 sync `emitBatch` — ✅ 2026-07-29
 
+## Utils (Round 56)
+- [x] Cache: `mdelete(keys[])` — Redis DEL, batch delete multiple keys returning count — **F215** ✅ 2026-07-30
+- [x] Storage: `union(otherStorage)` — merge two storages into combined task map, other wins on conflict — **F216** ✅ 2026-07-30
+- [x] EventBus: `drainChannel(channel)` — remove and return all history events for a specific channel — **F217** ✅ 2026-07-30
+
 ## Utils (Round 51)
 - [x] Cache: `getAndTouch(key, ttl?)` — get value + refresh TTL atomically, LRU update — **F201** ✅ 2026-07-22
 - [x] EventBus: `emitIfChanged(channel, data, keyFn?)` — dedup emissions, only emit when data differs — **F202** ✅ 2026-07-22

@@ -1267,6 +1267,18 @@ class EventBus {
     };
     return handle;
   }
+
+  /**
+   * F217: drainChannel(channel) — remove and return all historical events for a channel.
+   * Clears the drained events from history.
+   * @param {string} channel — channel to drain
+   * @returns {Array} array of removed events (oldest first)
+   */
+  drainChannel(channel) {
+    const removed = this._history.filter(function(e) { return e.channel === channel; });
+    this._history = this._history.filter(function(e) { return e.channel !== channel; });
+    return removed;
+  }
 }
 
 // Singleton instance

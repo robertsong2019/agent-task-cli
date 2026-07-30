@@ -1008,6 +1008,20 @@ class Storage {
     const otherIds = new Set(Object.keys(otherTasks));
     return Object.keys(myTasks).filter(id => otherIds.has(id));
   }
+
+  /**
+   * F216: union(otherStorage) — merge tasks from both storages.
+   * On ID collision, otherStorage's version wins (last-write-wins).
+   * @param {Storage} otherStorage — another Storage instance.
+   * @returns {Promise<Object>} merged task map { id: task, ... }
+   */
+  async union(otherStorage) {
+    const [myTasks, otherTasks] = await Promise.all([
+      this.loadTasks(),
+      otherStorage.loadTasks()
+    ]);
+    return { ...myTasks, ...otherTasks };
+  }
 }
 
 module.exports = { Storage };

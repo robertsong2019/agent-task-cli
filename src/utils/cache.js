@@ -1413,6 +1413,20 @@ class Cache {
     }
     return count;
   }
+
+  /**
+   * F215: mdelete(keys[]) — batch delete multiple keys (Redis DEL).
+   * @param {string[]} keys — array of keys to delete
+   * @returns {number} count of keys actually deleted (skips non-existent)
+   */
+  mdelete(keys) {
+    if (!Array.isArray(keys) || keys.length === 0) return 0;
+    let count = 0;
+    for (const key of keys) {
+      if (this.delete(key)) count++;
+    }
+    return count;
+  }
 }
 
 /**
