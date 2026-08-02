@@ -152,6 +152,36 @@ class PriorityQueue {
     this._items = remaining;
     return drained;
   }
+
+  /**
+   * Returns the priority of the item at the front of the queue.
+   * Returns undefined for empty queue.
+   * @returns {number|undefined}
+   */
+  frontPriority() {
+    if (this._items.length === 0) return undefined;
+    return this._items[0].priority;
+  }
+
+  /**
+   * Returns a shallow copy of all items sorted by priority.
+   * Does not modify the queue.
+   * @returns {Array}
+   */
+  toSortedArray() {
+    return this._items.map(e => e.item);
+  }
+
+  /**
+   * Returns all items with a specific priority value.
+   * @param {number} priority
+   * @returns {Array}
+   */
+  getByPriority(priority) {
+    return this._items
+      .filter(e => e.priority === priority)
+      .map(e => e.item);
+  }
 }
 
 module.exports = { PriorityQueue };

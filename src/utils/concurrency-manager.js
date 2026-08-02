@@ -360,6 +360,22 @@ class ConcurrencyManager {
     }
     throw lastError;
   }
+
+  /**
+   * Returns the number of tasks waiting in the queue (not currently executing).
+   * @returns {number}
+   */
+  pendingCount() {
+    return Math.max(0, this.queue.length);
+  }
+
+  /**
+   * Returns true if the manager is idle (no running or queued tasks).
+   * @returns {boolean}
+   */
+  isIdle() {
+    return this.activeCount === 0 && this.queue.length === 0;
+  }
 }
 
 module.exports = { ConcurrencyManager };
