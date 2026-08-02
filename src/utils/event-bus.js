@@ -1306,6 +1306,16 @@ class EventBus {
     }
     return listeners.length;
   }
+
+  /**
+   * F223: listenerCount(channel) — return number of listeners for a channel.
+   * @param {string} channel
+   * @returns {number}
+   */
+  listenerCount(channel) {
+    const listeners = this._emitter.listeners(channel);
+    return listeners.length;
+  }
 }
 
 // Singleton instance

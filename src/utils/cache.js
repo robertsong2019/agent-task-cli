@@ -1466,6 +1466,42 @@ class Cache {
     }
     return n;
   }
+
+  /**
+   * F222: expireAll() — immediately expire all entries that have TTL.
+   * Entries without TTL (null expiresAt) are kept. Returns count expired.
+   * @returns {number} count of entries expired
+   */
+  expireAll() {
+    let count = 0;
+    for (const [key, entry] of this.cache) {
+      if (entry.expiresAt !== null) {
+        this.cache.delete(key);
+        count++;
+      }
+    }
+    this.stats.size = this.cache.size;
+    return count;
+  }
+
+  /**
+   * F223: oldest() — return the key with the oldest lastAccessed time.
+   * Excludes expired entries. Returns undefined for empty cache.
+   * @returns {string|undefined}
+   */
+  oldest() {
+    let oldestKey = undefined;
+    let oldestTime = Infinity;
+    const now = Date.now();
+    for (const [key, entry] of this.cache) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      if (entry.lastAccessed < oldestTime) {
+        oldestTime = entry.lastAccessed;
+        oldestKey = key;
+      }
+    }
+    return oldestKey;
+  }
 }
 
 /**

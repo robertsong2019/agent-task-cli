@@ -1037,6 +1037,25 @@ class Storage {
     await this.saveTask(id, task);
     return task;
   }
+
+  /**
+   * F222: batchDelete(ids) — delete multiple tasks by ID.
+   * @param {string[]} ids — task IDs to delete
+   * @returns {Promise<number>} count of tasks actually deleted
+   */
+  async batchDelete(ids) {
+    if (!Array.isArray(ids)) return 0;
+    const tasks = await this.loadTasks();
+    let count = 0;
+    for (const id of ids) {
+      if (tasks[id]) {
+        delete tasks[id];
+        count++;
+      }
+    }
+    if (count > 0) await this.saveTasks(tasks);
+    return count;
+  }
 }
 
 module.exports = { Storage };
