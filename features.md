@@ -306,3 +306,8 @@
 - [x] Cache: `getAndTouch(key, ttl?)` — get value + refresh TTL atomically, LRU update — **F201** ✅ 2026-07-22
 - [x] EventBus: `emitIfChanged(channel, data, keyFn?)` — dedup emissions, only emit when data differs — **F202** ✅ 2026-07-22
 - [x] Storage: `ensureIndex(field)` + `findByIndex(field, value)` — in-memory index for O(1) field lookups — **F203** ✅ 2026-07-22
+
+## Utils (Round 57)
+- [x] Storage: `forEach(callback)` — iterate all tasks with early-exit support — **F224** ✅ 2026-08-02
+- [x] EventBus: `eventAge(channel)` — ms since last event on channel, -1 if none — **F225** ✅ 2026-08-02
+- [x] Cache: `getOrThrow(key)` — get value or throw if missing/expired — **F226** ✅ 2026-08-02

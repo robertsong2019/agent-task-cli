@@ -34,3 +34,4 @@ cycle	date	baseline	result	status	features	notes
 2026-08-02T22:20+08:00	20b80b0	test_count	1417→1436 (+19)	keep	Cycle 2: F218 Cache.withExpiry + F219 Cache.getEntries + F220 Cache.size + Storage.findOrCreate + F221 EventBus.emitSync
 2026-08-02T22:30+08:00	eebb07f	test_count	1436→1454 (+18)	keep	Cycle 3: F222 Cache.expireAll + F223 Cache.oldest + Storage.batchDelete + EventBus.listenerCount
 2026-08-02T22:40+08:00	715d6c1	test_count	1454→1466 (+12)	keep	Cycle 4: PQ.frontPriority/toSortedArray/getByPriority + CM.pendingCount/isIdle. Full suite 1466/1466 pass.
+2026-08-02T23:00+08:00	fe5b1bb	test_count	1466+19=1485	keep	Round 57: F224 Storage.forEach (early-exit iteration) + F225 EventBus.eventAge (ms since last event) + F226 Cache.getOrThrow (get-or-throw for required keys). 19 new tests (6+6+7). Zero regressions.
