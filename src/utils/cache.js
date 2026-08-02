@@ -262,24 +262,7 @@ class Cache {
    * @param {object} entries - Key-value pairs to set
    * @param {number} ttl - TTL in milliseconds
    */
-  mset(entries, ttl = this.defaultTTL) {
-    for (const [key, value] of Object.entries(entries)) {
-      this.set(key, value, ttl);
-    }
-  }
-
-  /**
-   * Delete multiple keys at once
-   * @param {string[]} keys - Cache keys
-   * @returns {number} Number of keys actually deleted
-   */
-  mdelete(keys) {
-    let deleted = 0;
-    for (const key of keys) {
-      if (this.delete(key)) deleted++;
-    }
-    return deleted;
-  }
+  // NOTE: mset/mdelete are defined later (F212/F215) with unified object+array support.
 
   /**
    * Invalidate all keys matching a prefix
@@ -1399,17 +1382,25 @@ class Cache {
 
   /**
    * F212: mset(entries, ttl?) — batch set multiple key-value pairs (Redis MSET).
-   * @param {Array<[string, any]>} entries — array of [key, value] pairs
+   * Accepts both object format {a:1, b:2} and array format [['a',1],['b',2]].
+   * @param {Object|Array<[string, any]>} entries — key-value pairs to set
    * @param {number} [ttl] — optional TTL in ms applied to all entries
    * @returns {number} number of entries set
    */
-  mset(entries, ttl) {
-    if (!Array.isArray(entries) || entries.length === 0) return 0;
+  mset(entries, ttl = this.defaultTTL) {
+    if (!entries || typeof entries !== 'object') return 0;
     let count = 0;
-    for (const [key, value] of entries) {
-      if (key === undefined || key === null) continue;
-      this.set(key, value, ttl);
-      count++;
+    if (Array.isArray(entries)) {
+      for (const [key, value] of entries) {
+        if (key === undefined || key === null) continue;
+        this.set(key, value, ttl);
+        count++;
+      }
+    } else {
+      for (const [key, value] of Object.entries(entries)) {
+        this.set(key, value, ttl);
+        count++;
+      }
     }
     return count;
   }
@@ -1420,9 +1411,11 @@ class Cache {
    * @returns {number} count of keys actually deleted (skips non-existent)
    */
   mdelete(keys) {
-    if (!Array.isArray(keys) || keys.length === 0) return 0;
+    if (!keys) return 0;
+    // Accept both array format ['a','b'] and single string 'a'
+    const keyList = Array.isArray(keys) ? keys : [keys];
     let count = 0;
-    for (const key of keys) {
+    for (const key of keyList) {
       if (this.delete(key)) count++;
     }
     return count;
