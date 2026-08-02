@@ -1279,6 +1279,33 @@ class EventBus {
     this._history = this._history.filter(function(e) { return e.channel !== channel; });
     return removed;
   }
+
+  /**
+   * F221: emitSync(channel, data) — synchronous emit without async overhead.
+   * Calls handlers directly, returns count of handlers fired.
+   * Does NOT catch handler errors (unlike emit which wraps in try/catch).
+   * @param {string} channel
+   * @param {*} [data={}]
+   * @returns {number} count of handlers fired
+   */
+  emitSync(channel, data = {}) {
+    const event = {
+      channel,
+      data,
+      timestamp: Date.now(),
+      id: `${channel}:${Date.now()}:sync`
+    };
+    if (this._history.length >= this._maxHistory) {
+      this._history.shift();
+    }
+    this._history.push(event);
+
+    const listeners = this._emitter.listeners(channel);
+    for (const listener of listeners) {
+      listener(event);
+    }
+    return listeners.length;
+  }
 }
 
 // Singleton instance

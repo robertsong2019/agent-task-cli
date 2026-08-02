@@ -1010,7 +1010,7 @@ class Storage {
   }
 
   /**
-   * F216: union(otherStorage) — merge tasks from both storages.
+   * F214: union(otherStorage) — merge tasks from both storages.
    * On ID collision, otherStorage's version wins (last-write-wins).
    * @param {Storage} otherStorage — another Storage instance.
    * @returns {Promise<Object>} merged task map { id: task, ... }
@@ -1021,6 +1021,21 @@ class Storage {
       otherStorage.loadTasks()
     ]);
     return { ...myTasks, ...otherTasks };
+  }
+
+  /**
+   * F218: findOrCreate(id, defaults) — find a task by exact ID, or create it if missing.
+   * Persists immediately. Returns the found or created task.
+   * @param {string} id — task ID
+   * @param {Object} [defaults={}] — fields for newly created task
+   * @returns {Promise<Object>} the found or created task
+   */
+  async findOrCreate(id, defaults = {}) {
+    const existing = await this.getTask(id);
+    if (existing) return existing;
+    const task = { ...defaults, id, createdAt: new Date().toISOString() };
+    await this.saveTask(id, task);
+    return task;
   }
 }
 

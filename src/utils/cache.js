@@ -1420,6 +1420,52 @@ class Cache {
     }
     return count;
   }
+
+  /**
+   * F218: withExpiry(key, value, expiresAt) — set with absolute expiry timestamp.
+   * Returns this for chaining. Thin wrapper over setWithExpiry.
+   * @param {string} key
+   * @param {*} value
+   * @param {number} expiresAt — absolute epoch ms
+   */
+  withExpiry(key, value, expiresAt) {
+    this.setWithExpiry(key, value, expiresAt);
+    return this;
+  }
+
+  /**
+   * F219: getEntries(pattern?) — return [key, entry-copy] pairs for non-expired entries.
+   * Optional wildcard pattern filters keys (e.g. 'user:*').
+   * @param {string} [pattern] — optional wildcard pattern
+   * @returns {Array<[string, {value:*, createdAt:number, lastAccessed:number, expiresAt:number|null}]>}
+   */
+  getEntries(pattern) {
+    const now = Date.now();
+    const result = [];
+    for (const [key, entry] of this.cache) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      if (pattern) {
+        const regex = new RegExp('^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
+        if (!regex.test(key)) continue;
+      }
+      result.push([key, { ...entry }]);
+    }
+    return result;
+  }
+
+  /**
+   * F220: size() — return number of non-expired entries currently in cache.
+   * Differs from stats.size (which includes expired entries until cleanup).
+   * @returns {number}
+   */
+  size() {
+    let n = 0;
+    const now = Date.now();
+    for (const [, entry] of this.cache) {
+      if (!entry.expiresAt || now <= entry.expiresAt) n++;
+    }
+    return n;
+  }
 }
 
 /**
