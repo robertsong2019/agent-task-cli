@@ -1316,6 +1316,18 @@ class EventBus {
     const listeners = this._emitter.listeners(channel);
     return listeners.length;
   }
+
+  /**
+   * F225: eventAge(channel) — return ms since last event on a channel.
+   * @param {string} channel — channel name
+   * @returns {number} ms since last event, or -1 if no events recorded
+   */
+  eventAge(channel) {
+    const events = this._history.filter(e => e.channel === channel);
+    if (events.length === 0) return -1;
+    const last = events[events.length - 1];
+    return Date.now() - last.timestamp;
+  }
 }
 
 // Singleton instance

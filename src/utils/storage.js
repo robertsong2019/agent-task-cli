@@ -1056,6 +1056,21 @@ class Storage {
     if (count > 0) await this.saveTasks(tasks);
     return count;
   }
+
+  /**
+   * F224: forEach(callback) — iterate all tasks.
+   * @param {(task: object, id: string) => boolean|void} callback — return false to stop iteration
+   * @returns {Promise<number>} number of tasks iterated
+   */
+  async forEach(callback) {
+    const tasks = await this.loadTasks();
+    let count = 0;
+    for (const [id, task] of Object.entries(tasks)) {
+      count++;
+      if (callback(task, id) === false) break;
+    }
+    return count;
+  }
 }
 
 module.exports = { Storage };

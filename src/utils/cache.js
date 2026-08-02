@@ -1502,6 +1502,21 @@ class Cache {
     }
     return oldestKey;
   }
+
+  /**
+   * F226: getOrThrow(key) — get value or throw if missing/expired.
+   * Useful for required config values where absence is an error.
+   * @param {string} key — cache key
+   * @returns {*} cached value
+   * @throws {Error} if key is missing or expired
+   */
+  getOrThrow(key) {
+    const val = this.get(key);
+    if (val === null || val === undefined) {
+      throw new Error(`Cache key not found or expired: ${key}`);
+    }
+    return val;
+  }
 }
 
 /**
