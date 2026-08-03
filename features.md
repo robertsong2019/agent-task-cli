@@ -307,6 +307,11 @@
 - [x] EventBus: `emitIfChanged(channel, data, keyFn?)` — dedup emissions, only emit when data differs — **F202** ✅ 2026-07-22
 - [x] Storage: `ensureIndex(field)` + `findByIndex(field, value)` — in-memory index for O(1) field lookups — **F203** ✅ 2026-07-22
 
+## Utils (Round 58)
+- [x] PriorityQueue: `merge(otherQueue)` — merge another PQ, preserving priority, empties source — **F227** ✅ 2026-08-03
+- [x] Storage: `toJSON(fields?)` — serialize tasks to JSON string with optional field whitelist — **F228** ✅ 2026-08-03
+- [x] Cache: `count(predicate?)` — count non-expired entries matching optional predicate — **F229** ✅ 2026-08-03
+
 ## Utils (Round 57)
 - [x] Storage: `forEach(callback)` — iterate all tasks with early-exit support — **F224** ✅ 2026-08-02
 - [x] EventBus: `eventAge(channel)` — ms since last event on channel, -1 if none — **F225** ✅ 2026-08-02
