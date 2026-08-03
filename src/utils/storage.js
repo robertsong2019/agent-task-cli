@@ -1071,6 +1071,27 @@ class Storage {
     }
     return count;
   }
+
+  /**
+   * F228: toJSON(fields?) — serialize all tasks to a JSON string.
+   * @param {string[]} [fields] — optional field whitelist; if provided, each task is filtered to only these keys
+   * @returns {Promise<string>} JSON string of all tasks
+   */
+  async toJSON(fields) {
+    const tasks = await this.loadTasks();
+    if (fields && Array.isArray(fields) && fields.length > 0) {
+      const filtered = {};
+      for (const [id, task] of Object.entries(tasks)) {
+        const picked = {};
+        for (const f of fields) {
+          if (task[f] !== undefined) picked[f] = task[f];
+        }
+        filtered[id] = picked;
+      }
+      return JSON.stringify(filtered, null, 2);
+    }
+    return JSON.stringify(tasks, null, 2);
+  }
 }
 
 module.exports = { Storage };

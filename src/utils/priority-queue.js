@@ -182,6 +182,26 @@ class PriorityQueue {
       .filter(e => e.priority === priority)
       .map(e => e.item);
   }
+
+  /**
+   * F227: merge(otherQueue) — merge another PriorityQueue into this one.
+   * All items from otherQueue are added to this queue, then re-sorted.
+   * The other queue is emptied.
+   * @param {PriorityQueue} otherQueue — queue to merge from
+   * @returns {number} count of items merged
+   */
+  merge(otherQueue) {
+    if (!otherQueue || !Array.isArray(otherQueue._items)) {
+      throw new TypeError('merge: argument must be a PriorityQueue');
+    }
+    const count = otherQueue._items.length;
+    for (const entry of otherQueue._items) {
+      this._items.push({ item: entry.item, priority: entry.priority, seq: this._seq++ });
+    }
+    this._items.sort((a, b) => a.priority - b.priority || a.seq - b.seq);
+    otherQueue._items = [];
+    return count;
+  }
 }
 
 module.exports = { PriorityQueue };

@@ -1517,6 +1517,22 @@ class Cache {
     }
     return val;
   }
+
+  /**
+   * F229: count(predicate?) — count non-expired entries matching an optional predicate.
+   * Without a predicate, returns count of all non-expired entries.
+   * @param {(value: *, key: string) => boolean} [predicate] — filter function
+   * @returns {number} count of matching non-expired entries
+   */
+  count(predicate) {
+    const now = Date.now();
+    let n = 0;
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.expiresAt && now > entry.expiresAt) continue;
+      if (!predicate || predicate(entry.value, key)) n++;
+    }
+    return n;
+  }
 }
 
 /**
