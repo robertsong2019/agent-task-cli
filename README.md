@@ -23,7 +23,7 @@ A powerful CLI tool for orchestrating multi-agent tasks with different patterns 
 - 📊 **Real-time Monitoring**: Track agent execution progress
 - 💾 **Export Results**: JSON/Markdown report generation
 - 🔧 **Modular Design**: Easy to extend and customize
-- 🧪 **Test Coverage**: 1340 tests across 122+ suites
+- 🧪 **Test Coverage**: 1503 tests across 226 features
 - 🔌 **Plugin System**: Extend with custom patterns and agents
 - ⚡ **High Performance**: Concurrent execution with caching
 
