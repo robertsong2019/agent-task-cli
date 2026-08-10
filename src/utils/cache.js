@@ -1553,6 +1553,27 @@ class Cache {
     this.set(key, current + delta);
     return true;
   }
+
+  /**
+   * F233: decrIfGreater(key, min, delta=1) — conditional bounded decrement.
+   * Decrements key by delta only if the resulting value would be ≥ min.
+   * Returns true if decremented, false if current value - delta < min.
+   * Missing keys are treated as 0.
+   * @param {string} key — cache key
+   * @param {number} min — lower bound (inclusive)
+   * @param {number} [delta=1] — decrement amount
+   * @returns {boolean} true if decrement succeeded
+   */
+  decrIfGreater(key, min, delta = 1) {
+    const current = this.get(key);
+    const val = current === undefined ? 0 : current;
+    if (typeof val !== 'number' || isNaN(val)) {
+      throw new TypeError('Cannot decrIfGreater on non-numeric value for key: ' + key);
+    }
+    if (val - delta < min) return false;
+    this.set(key, val - delta);
+    return true;
+  }
 }
 
 /**

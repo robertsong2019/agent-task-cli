@@ -1108,6 +1108,40 @@ class Storage {
     if (!task || task[field] === undefined) return defaultValue;
     return task[field];
   }
+
+  /**
+   * F234: incrField(id, field, delta=1) — atomically increment a numeric field on a task.
+   * Redis HINCRBY semantics. If field doesn't exist, starts from 0.
+   * Returns the new value after increment, or null if task doesn't exist.
+   * @param {string} id — task ID
+   * @param {string} field — field name to increment
+   * @param {number} [delta=1] — increment amount (can be negative for decrement)
+   * @returns {Promise<number|null>} new value or null if task not found
+   * @throws {TypeError} if existing field value is non-numeric
+   */
+  async incrField(id, field, delta = 1) {
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') tasks = JSON.parse(data);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      if (!tasks[id]) return null;
+      const current = tasks[id][field];
+      const base = typeof current === 'number' ? current : (current === undefined ? 0 : undefined);
+      if (base === undefined) {
+        throw new TypeError(`incrField: field '${field}' on task '${id}' is not a number`);
+      }
+      const newVal = base + delta;
+      tasks[id][field] = newVal;
+      tasks[id].updatedAt = new Date().toISOString();
+      await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      return newVal;
+    });
+  }
 }
 
 module.exports = { Storage };
