@@ -316,3 +316,8 @@
 - [x] Storage: `forEach(callback)` — iterate all tasks with early-exit support — **F224** ✅ 2026-08-02
 - [x] EventBus: `eventAge(channel)` — ms since last event on channel, -1 if none — **F225** ✅ 2026-08-02
 - [x] Cache: `getOrThrow(key)` — get value or throw if missing/expired — **F226** ✅ 2026-08-02
+
+## Utils (Round 59)
+- [x] Cache: `incrIfLess(key, max, delta=1)` — atomic increment bounded by max, Redis-style — **F230** ✅ 2026-08-10
+- [x] Storage: `getField(id, field, default?)` — get single field from task with default fallback — **F231** ✅ 2026-08-10
+- [x] ConcurrencyManager: `wrap(fn, opts?)` — wrap async fn with concurrency + retry support — **F232** ✅ 2026-08-10
