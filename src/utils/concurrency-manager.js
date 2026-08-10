@@ -376,6 +376,29 @@ class ConcurrencyManager {
   isIdle() {
     return this.activeCount === 0 && this.queue.length === 0;
   }
+
+  /**
+   * F232: wrap(fn, opts) — wrap any function with concurrency control.
+   * Returns a new function that, when called, executes fn through this manager.
+   * Options: { taskId, retries }
+   * @param {Function} fn — function to wrap
+   * @param {{ taskId?: string, retries?: number }} [opts]
+   * @returns {Function} wrapped function that returns a Promise
+   */
+  wrap(fn, opts) {
+    if (typeof fn !== 'function') throw new TypeError('wrap: fn must be a function');
+    var o = opts || {};
+    var taskId = o.taskId || null;
+    var retries = o.retries || 0;
+
+    return (...args) => {
+      const bound = () => fn(...args);
+      if (retries > 0) {
+        return this.withRetry(bound, retries, taskId);
+      }
+      return this.execute(bound, taskId);
+    };
+  }
 }
 
 module.exports = { ConcurrencyManager };

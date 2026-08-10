@@ -1533,6 +1533,26 @@ class Cache {
     }
     return n;
   }
+
+  /**
+   * F230: incrIfLess(key, max, delta=1) — conditional bounded increment.
+   * Increments key by delta only if the resulting value would be ≤ max.
+   * Returns true if incremented, false if current value + delta > max.
+   * Creates the key with value=delta if it doesn't exist (and delta ≤ max).
+   * @param {string} key — cache key
+   * @param {number} max — upper bound (inclusive)
+   * @param {number} [delta=1] — increment amount
+   * @returns {boolean} true if increment succeeded
+   */
+  incrIfLess(key, max, delta = 1) {
+    const current = this.get(key) || 0;
+    if (typeof current !== 'number' || isNaN(current)) {
+      throw new TypeError('Cannot incrIfLess on non-numeric value for key: ' + key);
+    }
+    if (current + delta > max) return false;
+    this.set(key, current + delta);
+    return true;
+  }
 }
 
 /**

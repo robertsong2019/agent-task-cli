@@ -1092,6 +1092,22 @@ class Storage {
     }
     return JSON.stringify(tasks, null, 2);
   }
+
+  /**
+   * F231: getField(id, field, defaultValue) — get a single field from a task
+   * without loading the entire task object into context.
+   * @param {string} id — task ID
+   * @param {string} field — field name to read
+   * @param {*} [defaultValue] — value to return if task or field doesn't exist
+   * @returns {Promise<*>} field value or defaultValue
+   */
+  async getField(id, field, defaultValue) {
+    if (defaultValue === undefined) defaultValue = undefined;
+    const tasks = await this.loadTasks();
+    const task = tasks[id];
+    if (!task || task[field] === undefined) return defaultValue;
+    return task[field];
+  }
 }
 
 module.exports = { Storage };
