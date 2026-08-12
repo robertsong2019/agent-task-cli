@@ -1142,6 +1142,22 @@ class Storage {
       return newVal;
     });
   }
+
+  /**
+   * F235: getMany(ids) — batch get multiple tasks by ID.
+   * Returns a Map of id → task for found tasks. Missing IDs are simply omitted.
+   * @param {string[]} ids — array of task IDs
+   * @returns {Promise<Map<string, object>>} Map of found tasks keyed by ID
+   */
+  async getMany(ids) {
+    if (!Array.isArray(ids)) throw new TypeError('getMany: ids must be an array');
+    const tasks = await this.loadTasks();
+    const result = new Map();
+    for (const id of ids) {
+      if (tasks[id]) result.set(id, tasks[id]);
+    }
+    return result;
+  }
 }
 
 module.exports = { Storage };

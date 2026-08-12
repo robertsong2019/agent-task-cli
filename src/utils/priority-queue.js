@@ -202,6 +202,19 @@ class PriorityQueue {
     otherQueue._items = [];
     return count;
   }
+
+  /**
+   * F236: getValues() — return raw items in priority order without priority wrapper.
+   * Unlike toSortedArray() which returns {item, priority} objects, this returns
+   * just the item values, useful when callers don't need priority metadata.
+   * @returns {Array} items in priority order
+   */
+  getValues() {
+    return this._items
+      .slice()
+      .sort((a, b) => a.priority - b.priority || a.seq - b.seq)
+      .map(e => e.item);
+  }
 }
 
 module.exports = { PriorityQueue };

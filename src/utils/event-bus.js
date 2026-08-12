@@ -1328,6 +1328,26 @@ class EventBus {
     const last = events[events.length - 1];
     return Date.now() - last.timestamp;
   }
+
+  /**
+   * F237: emitOnce(channel, data, keyFn) — dedup emit: only emits if no prior event
+   * on this channel has the same computed key. Key persists for the lifetime of the bus.
+   * Default keyFn is JSON.stringify(data).
+   * @param {string} channel — target channel
+   * @param {*} data — event payload
+   * @param {(data: *) => string} [keyFn] — optional key extractor for dedup
+   * @returns {boolean} true if emitted, false if suppressed (duplicate)
+   */
+  emitOnce(channel, data, keyFn) {
+    const cmpKey = (keyFn || JSON.stringify)(data);
+    if (!this._emitOnceKeys) this._emitOnceKeys = new Map();
+    if (!this._emitOnceKeys.has(channel)) this._emitOnceKeys.set(channel, new Set());
+    const seen = this._emitOnceKeys.get(channel);
+    if (seen.has(cmpKey)) return false;
+    seen.add(cmpKey);
+    this.emit(channel, data);
+    return true;
+  }
 }
 
 // Singleton instance
