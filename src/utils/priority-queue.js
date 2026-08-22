@@ -215,6 +215,23 @@ class PriorityQueue {
       .sort((a, b) => a.priority - b.priority || a.seq - b.seq)
       .map(e => e.item);
   }
+
+  /**
+   * F240: batch(n) — dequeue up to n items in priority order.
+   * Returns fewer items if the queue has less than n. Always returns an array.
+   * @param {number} n — max number of items to dequeue (0 returns [])
+   * @returns {Array} dequeued items in priority order
+   */
+  batch(n) {
+    if (!Number.isInteger(n) || n < 0) {
+      throw new TypeError('batch: n must be a non-negative integer');
+    }
+    const out = [];
+    while (out.length < n && this._items.length > 0) {
+      out.push(this._items.shift().item);
+    }
+    return out;
+  }
 }
 
 module.exports = { PriorityQueue };

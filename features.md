@@ -321,3 +321,13 @@
 - [x] Cache: `incrIfLess(key, max, delta=1)` — atomic increment bounded by max, Redis-style — **F230** ✅ 2026-08-10
 - [x] Storage: `getField(id, field, default?)` — get single field from task with default fallback — **F231** ✅ 2026-08-10
 - [x] ConcurrencyManager: `wrap(fn, opts?)` — wrap async fn with concurrency + retry support — **F232** ✅ 2026-08-10
+
+## Utils (Round 60)
+- [x] Storage: `getMany(ids[])` — batch get tasks by ID, returns Map of found tasks — **F235** ✅ 2026-08-12
+- [x] PriorityQueue: `getValues()` — return raw items in priority order without wrapper — **F236** ✅ 2026-08-12
+- [x] EventBus: `emitOnce(channel, data, keyFn)` — dedup emit, skip if same key already emitted — **F237** ✅ 2026-08-12
+
+## Utils (Round 61)
+- [x] Storage: `every(predicate)` — true only if ALL tasks match (vacuously true on empty) — **F238** ✅ 2026-08-22
+- [x] Storage: `some(predicate)` — true if at least one task matches — **F239** ✅ 2026-08-22
+- [x] PriorityQueue: `batch(n)` — dequeue up to n items in priority order, returns array — **F240** ✅ 2026-08-22

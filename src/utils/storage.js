@@ -538,6 +538,24 @@ class Storage {
     return count;
   }
 
+  /** F239: some(predicate) — return true if at least one task matches the predicate. */
+  async some(predicate) {
+    const tasks = await this.loadTasks();
+    for (const [id, t] of Object.entries(tasks)) {
+      if (predicate({ id, ...t })) return true;
+    }
+    return false;
+  }
+
+  /** F238: every(predicate) — return true only if ALL tasks match the predicate (true for empty storage). */
+  async every(predicate) {
+    const tasks = await this.loadTasks();
+    for (const [id, t] of Object.entries(tasks)) {
+      if (!predicate({ id, ...t })) return false;
+    }
+    return true;
+  }
+
   /** F143: hasTag(tag) — check if any task has the given tag. Returns boolean. */
   async hasTag(tag) {
     const tasks = await this.loadTasks();
