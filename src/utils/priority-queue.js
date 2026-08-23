@@ -217,6 +217,28 @@ class PriorityQueue {
   }
 
   /**
+   * F242: priorities() — distinct priority levels currently in the queue, sorted ascending.
+   * Returns []. Introspection helper (e.g. "which urgency bands are pending?").
+   * @returns {number[]} sorted unique priorities
+   */
+  priorities() {
+    return [...new Set(this._items.map(e => e.priority))].sort((a, b) => a - b);
+  }
+
+  /**
+   * F243: enqueueAll(items, priority) — bulk enqueue (inverse of batch()).
+   * Returns new queue size. Empty array is a no-op.
+   * @param {Array} items — items to enqueue
+   * @param {number} priority — priority for all items (default 5)
+   * @returns {number} queue size after enqueue
+   */
+  enqueueAll(items, priority = 5) {
+    if (!Array.isArray(items)) throw new TypeError('enqueueAll: items must be an array');
+    for (const item of items) this.enqueue(item, priority);
+    return this._items.length;
+  }
+
+  /**
    * F240: batch(n) — dequeue up to n items in priority order.
    * Returns fewer items if the queue has less than n. Always returns an array.
    * @param {number} n — max number of items to dequeue (0 returns [])

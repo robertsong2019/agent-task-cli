@@ -556,6 +556,34 @@ class Storage {
     return true;
   }
 
+  /** F241: updateWhere(predicate, updates) — bulk-update ALL tasks matching predicate (SQL UPDATE ... WHERE).
+   * Returns count of updated tasks (0 if none matched). Non-matching tasks untouched. */
+  async updateWhere(predicate, updates) {
+    if (typeof predicate !== 'function') throw new TypeError('updateWhere: predicate must be a function');
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      throw new TypeError('updateWhere: updates must be an object');
+    }
+    return this.withLock(async () => {
+      await this.ensureDataDir();
+      let tasks = {};
+      try {
+        const data = await fs.readFile(this.tasksFile, 'utf8');
+        if (data && data.trim() !== '') tasks = JSON.parse(data);
+      } catch (e) {
+        if (e.code !== 'ENOENT' && !(e instanceof SyntaxError)) throw e;
+      }
+      let count = 0;
+      for (const [id, t] of Object.entries(tasks)) {
+        if (predicate({ id, ...t })) {
+          tasks[id] = { ...t, ...updates };
+          count++;
+        }
+      }
+      if (count > 0) await fs.writeFile(this.tasksFile, JSON.stringify(tasks, null, 2));
+      return count;
+    });
+  }
+
   /** F143: hasTag(tag) — check if any task has the given tag. Returns boolean. */
   async hasTag(tag) {
     const tasks = await this.loadTasks();

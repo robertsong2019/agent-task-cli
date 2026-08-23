@@ -331,3 +331,6 @@
 - [x] Storage: `every(predicate)` — true only if ALL tasks match (vacuously true on empty) — **F238** ✅ 2026-08-22
 - [x] Storage: `some(predicate)` — true if at least one task matches — **F239** ✅ 2026-08-22
 - [x] PriorityQueue: `batch(n)` — dequeue up to n items in priority order, returns array — **F240** ✅ 2026-08-22
+- [x] Storage: `updateWhere(predicate, updates)` — SQL UPDATE...WHERE bulk update, returns count — **F241** ✅ 2026-08-23
+- [x] PriorityQueue: `priorities()` — distinct priorities present, sorted ascending — **F242** ✅ 2026-08-23
+- [x] PriorityQueue: `enqueueAll(items, priority)` — bulk enqueue (inverse of batch), returns new size — **F243** ✅ 2026-08-23
