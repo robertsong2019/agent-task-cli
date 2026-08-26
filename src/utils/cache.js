@@ -1574,6 +1574,32 @@ class Cache {
     this.set(key, val - delta);
     return true;
   }
+
+  /**
+   * F245: deleteMany(keys) — batch delete (inverse of getMany).
+   * Returns the number of keys actually deleted. Expired entries are
+   * purged but not counted as deleted.
+   * @param {string[]} keys
+   * @returns {number}
+   */
+  deleteMany(keys) {
+    if (!Array.isArray(keys)) throw new TypeError('deleteMany: keys must be an array');
+    const now = Date.now();
+    let deleted = 0;
+    for (const key of keys) {
+      const entry = this.cache.get(key);
+      if (!entry) continue;
+      if (entry.expiresAt !== null && entry.expiresAt !== undefined && entry.expiresAt <= now) {
+        // expired: purge but do not count as deleted
+        this.cache.delete(key);
+        this.stats.size = this.cache.size;
+        continue;
+      }
+      this.delete(key);
+      deleted++;
+    }
+    return deleted;
+  }
 }
 
 /**

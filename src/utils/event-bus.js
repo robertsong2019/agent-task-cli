@@ -1348,6 +1348,25 @@ class EventBus {
     this.emit(channel, data);
     return true;
   }
+
+  /**
+   * F246: onOnce(channel, handler) — one-shot listener: auto-removed after its
+   * first invocation. Returns an unsubscribe function (usable before the event
+   * fires). Regular `off(channel, handler)` also works since the wrapper is
+   * tracked per-channel.
+   * @param {string} channel
+   * @param {Function} handler
+   * @returns {Function} unsubscribe
+   */
+  onOnce(channel, handler) {
+    if (typeof handler !== 'function') throw new TypeError('onOnce: handler must be a function');
+    const wrapper = (data) => {
+      this.off(channel, wrapper);
+      handler(data);
+    };
+    this.on(channel, wrapper);
+    return () => this.off(channel, wrapper);
+  }
 }
 
 // Singleton instance

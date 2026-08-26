@@ -334,3 +334,8 @@
 - [x] Storage: `updateWhere(predicate, updates)` — SQL UPDATE...WHERE bulk update, returns count — **F241** ✅ 2026-08-23
 - [x] PriorityQueue: `priorities()` — distinct priorities present, sorted ascending — **F242** ✅ 2026-08-23
 - [x] PriorityQueue: `enqueueAll(items, priority)` — bulk enqueue (inverse of batch), returns new size — **F243** ✅ 2026-08-23
+
+## Utils (Round 63)
+- [x] ConcurrencyManager: `waterfall(tasks, initialValue?)` — sequential async chain, each task receives previous result, fail-fast on error — **F244** ✅ 2026-08-26
+- [x] Cache: `deleteMany(keys[])` — batch delete (inverse of getMany), returns count; expired entries purged but not counted — **F245** ✅ 2026-08-26
+- [x] EventBus: `onOnce(channel, handler)` — one-shot listener, auto-removed after first fire, returns unsubscribe handle — **F246** ✅ 2026-08-26

@@ -399,6 +399,24 @@ class ConcurrencyManager {
       return this.execute(bound, taskId);
     };
   }
+
+  /**
+   * F244: waterfall(tasks, initialValue?) — sequential async chain where each
+   * task receives the previous task's result. The first task receives
+   * initialValue (default undefined). Rejects immediately on first error and
+   * does not run remaining tasks. Empty tasks array resolves initialValue.
+   * @param {Array<Function>} tasks - async fns (prev) => next
+   * @param {*} [initialValue]
+   * @returns {Promise<*>} final result
+   */
+  async waterfall(tasks, initialValue) {
+    if (!Array.isArray(tasks)) throw new TypeError('waterfall: tasks must be an array');
+    let result = initialValue;
+    for (const task of tasks) {
+      result = await task(result);
+    }
+    return result;
+  }
 }
 
 module.exports = { ConcurrencyManager };
