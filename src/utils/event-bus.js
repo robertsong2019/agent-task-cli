@@ -222,6 +222,35 @@ class EventBus {
   }
 
   /**
+   * F247: waitForMatch(channel, predicate, timeoutMs) — like waitFor, but only resolves
+   * when an event arrives whose full event object satisfies predicate(event).
+   * Non-matching events are ignored (listener stays attached until a match or timeout).
+   * @param {string} channel
+   * @param {Function} predicate - (event) => boolean, receives the full event object
+   * @param {number} timeoutMs
+   * @returns {Promise<object>} The first matching event object
+   */
+  waitForMatch(channel, predicate, timeoutMs = 30000) {
+    if (typeof predicate !== 'function') {
+      return Promise.reject(new TypeError('waitForMatch: predicate must be a function'));
+    }
+    return new Promise((resolve, reject) => {
+      let unsub = null;
+      const timer = setTimeout(() => {
+        if (unsub) unsub();
+        reject(new Error(`Timeout waiting for event match: ${channel}`));
+      }, timeoutMs);
+
+      unsub = this.on(channel, (event) => {
+        if (!predicate(event)) return; // keep listening for a match
+        clearTimeout(timer);
+        unsub();
+        resolve(event);
+      });
+    });
+  }
+
+  /**
    * Get recent events from history
    * @param {object} options - Filter options
    * @param {string} options.channel - Filter by channel prefix

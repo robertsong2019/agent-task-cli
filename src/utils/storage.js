@@ -556,6 +556,51 @@ class Storage {
     return true;
   }
 
+  /** F248: partition(predicate) — split tasks into { passing: [], failing: [] } by predicate.
+   * Both arrays contain full task objects ({ id, ...task }). Empty storage → both empty. */
+  async partition(predicate) {
+    if (typeof predicate !== 'function') {
+      throw new TypeError('partition: predicate must be a function');
+    }
+    const tasks = await this.loadTasks();
+    const passing = [];
+    const failing = [];
+    for (const [id, t] of Object.entries(tasks)) {
+      const task = { id, ...t };
+      (predicate(task) ? passing : failing).push(task);
+    }
+    return { passing, failing };
+  }
+
+  /** F249: minBy(field) / maxBy(field) — task with the smallest/largest numeric value of
+   * a field (null if empty or no task has a finite numeric value for the field).
+   * Tasks missing the field or with non-finite values are ignored. */
+  async minBy(field) {
+    return this._extremeBy(field, (a, b) => a < b);
+  }
+
+  async maxBy(field) {
+    return this._extremeBy(field, (a, b) => a > b);
+  }
+
+  async _extremeBy(field, better) {
+    if (typeof field !== 'string' || field.length === 0) {
+      throw new TypeError('minBy/maxBy: field must be a non-empty string');
+    }
+    const tasks = await this.loadTasks();
+    let best = null;
+    let bestVal;
+    for (const [id, t] of Object.entries(tasks)) {
+      const v = t[field];
+      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+      if (best === null || better(v, bestVal)) {
+        best = { id, ...t };
+        bestVal = v;
+      }
+    }
+    return best;
+  }
+
   /** F241: updateWhere(predicate, updates) — bulk-update ALL tasks matching predicate (SQL UPDATE ... WHERE).
    * Returns count of updated tasks (0 if none matched). Non-matching tasks untouched. */
   async updateWhere(predicate, updates) {

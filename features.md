@@ -339,3 +339,8 @@
 - [x] ConcurrencyManager: `waterfall(tasks, initialValue?)` — sequential async chain, each task receives previous result, fail-fast on error — **F244** ✅ 2026-08-26
 - [x] Cache: `deleteMany(keys[])` — batch delete (inverse of getMany), returns count; expired entries purged but not counted — **F245** ✅ 2026-08-26
 - [x] EventBus: `onOnce(channel, handler)` — one-shot listener, auto-removed after first fire, returns unsubscribe handle — **F246** ✅ 2026-08-26
+
+## Utils (Round 64)
+- [x] EventBus: `waitForMatch(channel, predicate, timeoutMs)` — like waitFor but only resolves on events matching predicate(event); non-matching ignored, listener stays attached; rejects on timeout — **F247** ✅ 2026-08-27
+- [x] Storage: `partition(predicate)` — split tasks into `{ passing: [], failing: [] }` (full task objects with id); empty storage → both empty — **F248** ✅ 2026-08-27
+- [x] Storage: `minBy(field)` / `maxBy(field)` — task with smallest/largest finite numeric field value (null if none); non-numeric/missing fields ignored — **F249** ✅ 2026-08-27
