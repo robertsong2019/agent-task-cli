@@ -592,6 +592,30 @@ class Storage {
     return pool.slice(0, k);
   }
 
+  /** F254: updateMany(ids, updates) — bulk update: merge `updates` into each
+   * listed task that exists. Returns { updated, missing } id lists.
+   * Empty ids → both empty. */
+  async updateMany(ids, updates) {
+    if (!Array.isArray(ids)) {
+      throw new TypeError('updateMany: ids must be an array');
+    }
+    if (updates === null || typeof updates !== 'object' || Array.isArray(updates)) {
+      throw new TypeError('updateMany: updates must be a plain object');
+    }
+    const updated = [];
+    const missing = [];
+    for (const id of ids) {
+      const task = await this.getTask(id);
+      if (task) {
+        await this.saveTask(id, { ...task, ...updates });
+        updated.push(id);
+      } else {
+        missing.push(id);
+      }
+    }
+    return { updated, missing };
+  }
+
   /** F249: minBy(field) / maxBy(field) — task with the smallest/largest numeric value of
    * a field (null if empty or no task has a finite numeric value for the field).
    * Tasks missing the field or with non-finite values are ignored. */

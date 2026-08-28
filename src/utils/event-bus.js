@@ -1334,6 +1334,23 @@ class EventBus {
   }
 
   /**
+   * F253: replayAll(channel, handler) — like replayLast but replays the FULL
+   * history for that exact channel (oldest first) before subscribing to live
+   * events. Late-join backfill semantics.
+   * @param {string} channel
+   * @param {Function} handler
+   * @returns {Function} unsubscribe
+   */
+  replayAll(channel, handler) {
+    if (typeof handler !== 'function') {
+      throw new TypeError('replayAll: handler must be a function');
+    }
+    const backlog = this._history.filter((e) => e.channel === channel);
+    for (const e of backlog) handler(e);
+    return this.on(channel, handler);
+  }
+
+  /**
    * F221: emitSync(channel, data) — synchronous emit without async overhead.
    * Calls handlers directly, returns count of handlers fired.
    * Does NOT catch handler errors (unlike emit which wraps in try/catch).
