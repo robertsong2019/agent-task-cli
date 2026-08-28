@@ -164,16 +164,28 @@ class PerformanceManager {
    * Get cached value by key (without args). Returns undefined if not found or expired.
    */
   getCached(key) {
-    for (const [k, entry] of this.cache) {
-      if (k.startsWith(key + ':')) {
-        if (Date.now() - entry.timestamp < this.options.cacheTTL) {
-          return entry.data;
-        }
-        this.cache.delete(k);
-        return undefined;
+    const prefix = key + ':';
+    let candidates = this._getKeysByPrefix(prefix);
+    if (candidates.length === 0) {
+      // Index miss: entry may exist via direct cache writes that bypass the index.
+      for (const k of this.cache.keys()) {
+        if (k.startsWith(prefix)) candidates.push(k);
       }
     }
-    return undefined;
+    const now = Date.now();
+    let firstFresh;
+    for (const k of candidates) {
+      const entry = this.cache.get(k);
+      if (!entry) continue; // stale index entry, ignore
+      if (now - entry.timestamp < this.options.cacheTTL) {
+        if (firstFresh === undefined) firstFresh = k;
+      } else {
+        // Lazily purge expired entries encountered during lookup.
+        this.cache.delete(k);
+        this._removeFromPrefixIndex(k);
+      }
+    }
+    return firstFresh === undefined ? undefined : this.cache.get(firstFresh).data;
   }
 
   /**
@@ -273,6 +285,14 @@ class PerformanceManager {
    * Remove key from prefix index
    */
   _removeFromPrefixIndex(key) {
+    // Full-key self-entry (registered by _addToPrefixIndex)
+    if (this.prefixIndex.has(key)) {
+      const keys = this.prefixIndex.get(key);
+      keys.delete(key);
+      if (keys.size === 0) {
+        this.prefixIndex.delete(key);
+      }
+    }
     const parts = key.split(':');
     for (let i = 1; i < parts.length; i++) {
       const prefix = parts.slice(0, i).join(':');
@@ -282,6 +302,15 @@ class PerformanceManager {
         if (keys.size === 0) {
           this.prefixIndex.delete(prefix);
         }
+      }
+    }
+    // Base prefix with colon (registered for getCached/invalidateCache matching)
+    const basePrefix = parts[0] + ':';
+    if (this.prefixIndex.has(basePrefix)) {
+      const keys = this.prefixIndex.get(basePrefix);
+      keys.delete(key);
+      if (keys.size === 0) {
+        this.prefixIndex.delete(basePrefix);
       }
     }
   }
