@@ -344,3 +344,15 @@
 - [x] EventBus: `waitForMatch(channel, predicate, timeoutMs)` — like waitFor but only resolves on events matching predicate(event); non-matching ignored, listener stays attached; rejects on timeout — **F247** ✅ 2026-08-27
 - [x] Storage: `partition(predicate)` — split tasks into `{ passing: [], failing: [] }` (full task objects with id); empty storage → both empty — **F248** ✅ 2026-08-27
 - [x] Storage: `minBy(field)` / `maxBy(field)` — task with smallest/largest finite numeric field value (null if none); non-numeric/missing fields ignored — **F249** ✅ 2026-08-27
+
+## Utils (Round 65) + performance bugfix
+- [x] Cache: `getCached(key)` — prefix-index acceleration with linear-scan fallback for direct cache writes; returns first FRESH match (was: bailed on first expired match); lazy purge of expired candidates — ✅ 2026-08-28 (97e4602)
+- [x] Bug fix: `_removeFromPrefixIndex` now symmetric with `_addToPrefixIndex` (full-key self-entry + basePrefix+':') — fixes index leak leaving phantom keys — ✅ 2026-08-28 (97e4602)
+- [x] Cache: `incrByFloat(key, amount)` — Redis INCRBYFLOAT; missing key starts at 0; TypeError on non-finite amount/value — **F250** ✅ 2026-08-28
+- [x] Storage: `sample(n, rng?)` — n random distinct tasks (full objects with id) via partial Fisher-Yates; injectable rng for deterministic tests — **F251** ✅ 2026-08-28
+- [x] EventBus: `replayLast(channel, handler)` — late-join: subscribe + immediately replay most recent exact-channel history event — **F252** ✅ 2026-08-28
+
+## Utils (Round 66)
+- [x] EventBus: `replayAll(channel, handler)` — F252 sibling: full history replay oldest-first then live; drained channels replay nothing — **F253** ✅ 2026-08-28
+- [x] Storage: `updateMany(ids, updates)` — bulk merge-update; returns `{ updated, missing }` id lists; missing ids not created — **F254** ✅ 2026-08-28
+- [x] Cache: `getStale(key)` — soft read `{ value, expired }` without purging expired entries; no stats side effects — **F255** ✅ 2026-08-28
