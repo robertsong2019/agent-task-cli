@@ -1310,6 +1310,30 @@ class EventBus {
   }
 
   /**
+   * F252: replayLast(channel, handler) — subscribe and immediately invoke handler
+   * with the most recent historical event for that exact channel, if any.
+   * Late-join semantics: the new subscriber receives the last emitted event before
+   * live ones. Handler receives the full event object { channel, data, timestamp, id }.
+   * Returns unsubscribe function (covers both the subscription; the replay is
+   * a one-shot synchronous call made before returning).
+   * @param {string} channel
+   * @param {Function} handler
+   * @returns {Function} unsubscribe
+   */
+  replayLast(channel, handler) {
+    if (typeof handler !== 'function') {
+      throw new TypeError('replayLast: handler must be a function');
+    }
+    for (let i = this._history.length - 1; i >= 0; i--) {
+      if (this._history[i].channel === channel) {
+        handler(this._history[i]);
+        break;
+      }
+    }
+    return this.on(channel, handler);
+  }
+
+  /**
    * F221: emitSync(channel, data) — synchronous emit without async overhead.
    * Calls handlers directly, returns count of handlers fired.
    * Does NOT catch handler errors (unlike emit which wraps in try/catch).

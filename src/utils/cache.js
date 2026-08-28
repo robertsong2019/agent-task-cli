@@ -77,6 +77,32 @@ class Cache {
   }
 
   /**
+   * F250: incrByFloat(key, amount) — Redis INCRBYFLOAT semantics for float deltas.
+   * Missing key starts from 0; non-numeric or non-finite current value throws
+   * TypeError; non-finite amount throws TypeError. Returns the new value (raw
+   * float addition, no rounding). Stores with default TTL (same as incr family).
+   * @param {string} key
+   * @param {number} amount
+   * @returns {number} new value
+   */
+  incrByFloat(key, amount) {
+    if (typeof amount !== 'number' || !Number.isFinite(amount)) {
+      throw new TypeError('incrByFloat: amount must be a finite number');
+    }
+    const current = this.get(key);
+    if (current === undefined) {
+      this.set(key, amount);
+      return amount;
+    }
+    if (typeof current !== 'number' || !Number.isFinite(current)) {
+      throw new TypeError(`Cache.incrByFloat: value at '${key}' is not a finite number`);
+    }
+    const newVal = current + amount;
+    this.set(key, newVal);
+    return newVal;
+  }
+
+  /**
    * Check if a key exists in cache without affecting stats
    * @param {string} key
    * @returns {boolean}
@@ -541,6 +567,32 @@ class Cache {
   /** F76: Atomic decrement for numeric values. */
   decr(key, delta = 1) {
     return this.incr(key, -delta);
+  }
+
+  /**
+   * F250: incrByFloat(key, amount) — Redis INCRBYFLOAT semantics for float deltas.
+   * Missing key starts from 0; non-numeric or non-finite current value throws
+   * TypeError; non-finite amount throws TypeError. Returns the new value (raw
+   * float addition, no rounding). Stores with default TTL (same as incr family).
+   * @param {string} key
+   * @param {number} amount
+   * @returns {number} new value
+   */
+  incrByFloat(key, amount) {
+    if (typeof amount !== 'number' || !Number.isFinite(amount)) {
+      throw new TypeError('incrByFloat: amount must be a finite number');
+    }
+    const current = this.get(key);
+    if (current === undefined) {
+      this.set(key, amount);
+      return amount;
+    }
+    if (typeof current !== 'number' || !Number.isFinite(current)) {
+      throw new TypeError(`Cache.incrByFloat: value at '${key}' is not a finite number`);
+    }
+    const newVal = current + amount;
+    this.set(key, newVal);
+    return newVal;
   }
 
   /** F137: incrTo(key, target, delta=1) — increment towards a target ceiling, stops at target. Returns new value. */

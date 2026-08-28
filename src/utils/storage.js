@@ -572,6 +572,26 @@ class Storage {
     return { passing, failing };
   }
 
+  /** F251: sample(n, rng?) — n random distinct tasks as full objects ({ id, ...task }),
+   * in random order. rng: () => [0,1) injectable for deterministic tests
+   * (default Math.random). n <= 0 → []; n >= size → all tasks shuffled.
+   * Partial Fisher–Yates: O(k) swaps, never mutates beyond the selected prefix. */
+  async sample(n, rng = Math.random) {
+    if (typeof n !== 'number' || !Number.isFinite(n)) {
+      throw new TypeError('sample: n must be a finite number');
+    }
+    const tasks = await this.loadTasks();
+    const pool = Object.entries(tasks).map(([id, t]) => ({ id, ...t }));
+    const k = Math.max(0, Math.min(Math.floor(n), pool.length));
+    for (let i = 0; i < k; i++) {
+      const j = Math.min(pool.length - 1, i + Math.floor(rng() * (pool.length - i)));
+      const tmp = pool[i];
+      pool[i] = pool[j];
+      pool[j] = tmp;
+    }
+    return pool.slice(0, k);
+  }
+
   /** F249: minBy(field) / maxBy(field) — task with the smallest/largest numeric value of
    * a field (null if empty or no task has a finite numeric value for the field).
    * Tasks missing the field or with non-finite values are ignored. */
