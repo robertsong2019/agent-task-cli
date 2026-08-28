@@ -8,6 +8,7 @@ class PerformanceManager {
   constructor(options = {}) {
     this.logger = new Logger();
     this.cache = new Map();
+    this.prefixIndex = new Map(); // Cache prefix index for faster lookups
     this.metrics = {
       totalRequests: 0,
       cacheHits: 0,
@@ -41,6 +42,7 @@ class PerformanceManager {
       } else {
         // Expired cache entry
         this.cache.delete(cacheKey);
+        this._removeFromPrefixIndex(cacheKey);
       }
     }
     
@@ -153,6 +155,7 @@ class PerformanceManager {
       avgExecutionTime: Math.round(avgExecutionTime),
       cacheHitRate: Math.round(hitRate * 100) / 100,
       cacheSize: this.cache.size,
+      prefixIndexSize: this.prefixIndex.size,
       uptime: Date.now()
     };
   }
@@ -177,22 +180,22 @@ class PerformanceManager {
    * Remove cached entries matching key prefix
    */
   invalidateCache(key) {
-    for (const k of this.cache.keys()) {
-      if (k.startsWith(key + ':')) {
-        this.cache.delete(k);
-      }
-    }
+    const keysToDelete = this._getKeysByPrefix(key + ':');
+    keysToDelete.forEach(k => {
+      this.cache.delete(k);
+      this._removeFromPrefixIndex(k);
+    });
   }
 
   /**
    * Remove all cached entries whose key starts with prefix
    */
   invalidateCacheByPrefix(prefix) {
-    for (const k of this.cache.keys()) {
-      if (k.startsWith(prefix)) {
-        this.cache.delete(k);
-      }
-    }
+    const keysToDelete = this._getKeysByPrefix(prefix);
+    keysToDelete.forEach(k => {
+      this.cache.delete(k);
+      this._removeFromPrefixIndex(k);
+    });
   }
 
   /**
@@ -200,6 +203,7 @@ class PerformanceManager {
    */
   reset() {
     this.cache.clear();
+    this.prefixIndex.clear();
     this.metrics = {
       totalRequests: 0,
       cacheHits: 0,
@@ -225,12 +229,71 @@ class PerformanceManager {
     if (this.cache.size >= this.options.maxCacheSize) {
       const firstKey = this.cache.keys().next().value;
       this.cache.delete(firstKey);
+      this._removeFromPrefixIndex(firstKey);
     }
     
     this.cache.set(key, {
       data,
       timestamp
     });
+    
+    // Update prefix index
+    this._addToPrefixIndex(key);
+  }
+
+  /**
+   * Add key to prefix index
+   */
+  _addToPrefixIndex(key) {
+    // Add the full key as a prefix (for exact matches)
+    if (!this.prefixIndex.has(key)) {
+      this.prefixIndex.set(key, new Set());
+    }
+    this.prefixIndex.get(key).add(key);
+    
+    // Extract all possible prefixes from the key
+    const parts = key.split(':');
+    // Add all intermediate prefixes (including base prefix without trailing colon)
+    for (let i = 1; i < parts.length; i++) {
+      const prefix = parts.slice(0, i).join(':');
+      if (!this.prefixIndex.has(prefix)) {
+        this.prefixIndex.set(prefix, new Set());
+      }
+      this.prefixIndex.get(prefix).add(key);
+    }
+    // Add prefix with colon for matching getCached and invalidateCache patterns
+    const basePrefix = parts[0];
+    if (!this.prefixIndex.has(basePrefix + ':')) {
+      this.prefixIndex.set(basePrefix + ':', new Set());
+    }
+    this.prefixIndex.get(basePrefix + ':').add(key);
+  }
+
+  /**
+   * Remove key from prefix index
+   */
+  _removeFromPrefixIndex(key) {
+    const parts = key.split(':');
+    for (let i = 1; i < parts.length; i++) {
+      const prefix = parts.slice(0, i).join(':');
+      if (this.prefixIndex.has(prefix)) {
+        const keys = this.prefixIndex.get(prefix);
+        keys.delete(key);
+        if (keys.size === 0) {
+          this.prefixIndex.delete(prefix);
+        }
+      }
+    }
+  }
+
+  /**
+   * Get keys matching prefix using index
+   */
+  _getKeysByPrefix(prefix) {
+    if (this.prefixIndex.has(prefix)) {
+      return Array.from(this.prefixIndex.get(prefix));
+    }
+    return [];
   }
 
   /**
