@@ -1437,6 +1437,52 @@ class EventBus {
     this.on(channel, wrapper);
     return () => this.off(channel, wrapper);
   }
+
+  /**
+   * F258: onceAll(channels, timeout?) — Promise counterpart of onceAny:
+   * resolves with an array of events ({ channel, data, timestamp, id }) once EVERY
+   * listed channel has emitted at least once (in channels order). Auto-unsubscribes
+   * on resolve. Rejects on timeout (default 5000ms) with the list of channels that
+   * never fired.
+   * @param {string[]} channels — non-empty array of channel names
+   * @param {number} [timeout=5000]
+   * @returns {Promise<Array<{channel,data,timestamp,id}>>}
+   */
+  onceAll(channels, timeout = 5000) {
+    if (!Array.isArray(channels) || channels.length === 0) {
+      return Promise.reject(new TypeError('onceAll requires a non-empty array of channels'));
+    }
+    return new Promise((resolve, reject) => {
+      const pending = new Set(channels);
+      const collected = new Map();
+      const unsubs = [];
+      let settled = false;
+      const cleanup = () => {
+        for (const u of unsubs) u();
+        unsubs.length = 0;
+        if (timer) clearTimeout(timer);
+      };
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        const missing = channels.filter((c) => pending.has(c));
+        cleanup();
+        reject(new Error(`onceAll: timeout waiting for channels: ${missing.join(', ')}`));
+      }, timeout);
+      for (const ch of channels) {
+        unsubs.push(this.on(ch, (event) => {
+          if (settled || !pending.has(ch)) return;
+          pending.delete(ch);
+          collected.set(ch, event);
+          if (pending.size === 0) {
+            settled = true;
+            cleanup();
+            resolve(channels.map((c) => collected.get(c)));
+          }
+        }));
+      }
+    });
+  }
 }
 
 // Singleton instance

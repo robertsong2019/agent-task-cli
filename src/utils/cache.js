@@ -6,6 +6,7 @@ class Cache {
     this.maxSize = options.maxSize || 100;
     this.defaultTTL = options.defaultTTL || 3600000; // 1 hour
     this.cache = new Map();
+    this._inflight = new Map(); // F256: single-flight getOrSet promises per key
     this.stats = {
       hits: 0,
       misses: 0,
@@ -255,9 +256,21 @@ class Cache {
   async getOrSet(key, factory, ttl = this.defaultTTL) {
     const existing = this.get(key);
     if (existing !== undefined) return existing;
-    const value = typeof factory === 'function' ? await factory() : factory;
-    this.set(key, value, ttl);
-    return value;
+    // F18b (R67): single-flight — concurrent misses share ONE factory invocation
+    // (cache-stampede protection). A rejected factory clears the in-flight entry
+    // and leaves the cache untouched, so the next call retries cleanly.
+    if (this._inflight.has(key)) return this._inflight.get(key);
+    const p = (async () => {
+      try {
+        const value = typeof factory === 'function' ? await factory() : factory;
+        this.set(key, value, ttl);
+        return value;
+      } finally {
+        this._inflight.delete(key);
+      }
+    })();
+    this._inflight.set(key, p);
+    return p;
   }
 
   mget(keys) {
