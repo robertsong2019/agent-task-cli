@@ -372,10 +372,27 @@ class Storage {
     }
     return result;
   }
-  /** F113: pluck(field) — extract values for a single field across all tasks. Returns array of values (skips tasks where field is undefined). */
-  async pluck(field) {
+  /** F113b (R67): pluck(field, ids?) — extract values for a field across tasks,
+   * keeping duplicates and insertion order (distinct() dedupes; this doesn't).
+   * With ids: only the listed tasks in ids order — missing ids and tasks missing
+   * the field are skipped.
+   * @throws {TypeError} on empty/non-string field, or non-array/non-null ids */
+  async pluck(field, ids = null) {
+    if (typeof field !== 'string' || field.length === 0) {
+      throw new TypeError('pluck: field must be a non-empty string');
+    }
+    if (ids !== null && !Array.isArray(ids)) {
+      throw new TypeError('pluck: ids must be an array or null');
+    }
     const tasks = await this.loadTasks();
     const values = [];
+    if (ids) {
+      for (const id of ids) {
+        const t = tasks[id];
+        if (t && t[field] !== undefined) values.push(t[field]);
+      }
+      return values;
+    }
     for (const id in tasks) {
       if (tasks[id][field] !== undefined) {
         values.push(tasks[id][field]);
@@ -1292,38 +1309,6 @@ class Storage {
       if (tasks[id]) result.set(id, tasks[id]);
     }
     return result;
-  }
-
-  /**
-   * F257: pluck(field, ids?) — extract a field's values across tasks.
-   * Unlike distinct() (which dedupes), pluck keeps duplicates and insertion order.
-   * With ids: only the listed tasks, in ids order; missing ids and missing fields
-   * are skipped. Without ids: all tasks.
-   * @param {string} field — field name to extract
-   * @param {string[]|null} [ids] — optional task-ID whitelist
-   * @returns {Promise<Array>} extracted values
-   * @throws {TypeError} if field is not a non-empty string, or ids is not an array/null
-   */
-  async pluck(field, ids = null) {
-    if (typeof field !== 'string' || field.length === 0) {
-      throw new TypeError('pluck: field must be a non-empty string');
-    }
-    if (ids !== null && !Array.isArray(ids)) {
-      throw new TypeError('pluck: ids must be an array or null');
-    }
-    const tasks = await this.loadTasks();
-    const out = [];
-    if (ids) {
-      for (const id of ids) {
-        const t = tasks[id];
-        if (t && t[field] !== undefined) out.push(t[field]);
-      }
-      return out;
-    }
-    for (const t of Object.values(tasks)) {
-      if (t[field] !== undefined) out.push(t[field]);
-    }
-    return out;
   }
 }
 

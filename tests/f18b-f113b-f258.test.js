@@ -5,7 +5,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
 
-describe('Round 67: F18b Cache.getOrSet single-flight / F257 Storage.pluck / F258 EventBus.onceAll', () => {
+describe('Round 67: F18b getOrSet single-flight / F113b pluck ids-param / F258 onceAll', () => {
   describe('F18b: Cache.getOrSet single-flight upgrade (F18 contract preserved)', () => {
     test('returns cached value without invoking loader', async () => {
       const cache = new Cache();
@@ -78,7 +78,7 @@ describe('Round 67: F18b Cache.getOrSet single-flight / F257 Storage.pluck / F25
     });
   });
 
-  describe('F257: Storage.pluck(field, ids?)', () => {
+  describe('F113b: Storage.pluck(field, ids?) — ids-param upgrade', () => {
     let storage;
     let dir;
 
