@@ -441,17 +441,6 @@ class Storage {
     return Object.values(tasks).reverse();
   }
 
-  /** F123: sample(n) — return N random tasks (without replacement). If n > total, return all shuffled. */
-  async sample(n = 1) {
-    const tasks = await this.loadTasks();
-    const all = Object.values(tasks);
-    for (let i = all.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [all[i], all[j]] = [all[j], all[i]];
-    }
-    return all.slice(0, Math.min(n, all.length));
-  }
-
   /** F126: distinct(field) — return unique values for a field across all tasks */
   async distinct(field) {
     const tasks = await this.loadTasks();
@@ -542,17 +531,6 @@ class Storage {
   async count() {
     const tasks = await this.loadTasks();
     return Object.keys(tasks).length;
-  }
-
-  /** F142: countWhere(predicate) — count tasks matching a predicate function. */
-  async countWhere(predicate) {
-    const tasks = await this.loadTasks();
-    let count = 0;
-    for (const [id, t] of Object.entries(tasks)) {
-      const task = { id, ...t };
-      if (predicate(task)) count++;
-    }
-    return count;
   }
 
   /** F239: some(predicate) — return true if at least one task matches the predicate. */

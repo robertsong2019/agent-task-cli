@@ -24,17 +24,6 @@ class Cache {
   }
 
   /**
-   * Stop the cleanup interval and release resources.
-   */
-  destroy() {
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-      this.cleanupInterval = null;
-    }
-    this.cache.clear();
-  }
-
-  /**
    * Get a value from cache
    * @param {string} key - Cache key
    * @returns {*} - Cached value or undefined
@@ -89,21 +78,6 @@ class Cache {
     if (!entry) return undefined;
     const expired = !!(entry.expiresAt && Date.now() > entry.expiresAt);
     return { value: entry.value, expired };
-  }
-
-  /**
-   * Check if a key exists in cache without affecting stats
-   * @param {string} key
-   * @returns {boolean}
-   */
-  has(key) {
-    const entry = this.cache.get(key);
-    if (!entry) return false;
-    if (entry.expiresAt && Date.now() > entry.expiresAt) {
-      this.delete(key);
-      return false;
-    }
-    return true;
   }
 
   /**
@@ -235,20 +209,6 @@ class Cache {
   }
 
   /**
-   * Get cache keys
-   */
-  keys() {
-    return Array.from(this.cache.keys());
-  }
-
-  /**
-   * Get cache size
-   */
-  size() {
-    return this.cache.size;
-  }
-
-  /**
    * Get multiple values at once
    * @param {string[]} keys - Cache keys
    * @returns {object} Key-value map (missing keys omitted)
@@ -348,25 +308,6 @@ class Cache {
       const ttl = ttlRemaining != null ? ttlRemaining : this.defaultTTL;
       this.set(key, value, ttl);
     }
-  }
-
-  /**
-   * Refresh TTL on an existing key without changing its value.
-   * @param {string} key - Cache key
-   * @param {number} [newTTL] - New TTL in ms (defaults to this.defaultTTL)
-   * @returns {boolean} true if key existed and was refreshed
-   */
-  touch(key, newTTL) {
-    const entry = this.cache.get(key);
-    if (!entry) return false;
-    if (entry.expiresAt && Date.now() > entry.expiresAt) {
-      this.delete(key);
-      return false;
-    }
-    const ttl = newTTL != null ? newTTL : this.defaultTTL;
-    entry.expiresAt = ttl ? Date.now() + ttl : null;
-    entry.lastAccessed = Date.now();
-    return true;
   }
 
   /**
@@ -510,24 +451,6 @@ class Cache {
   }
 
   /**
-   * Rename a key, preserving its value and TTL.
-   * @param {string} oldKey
-   * @param {string} newKey
-   * @returns {boolean} true if renamed, false if oldKey not found/expired
-   */
-  rename(oldKey, newKey) {
-    const entry = this.cache.get(oldKey);
-    if (!entry) return false;
-    if (entry.expiresAt && Date.now() > entry.expiresAt) {
-      this.delete(oldKey);
-      return false;
-    }
-    this.cache.delete(oldKey);
-    this.cache.set(newKey, entry);
-    return true;
-  }
-
-  /**
    * Set only if key does not exist (NX pattern). Returns true if set, false if key existed.
    * @param {string} key
    * @param {*} value
@@ -635,13 +558,6 @@ class Cache {
     const newVal = (current || 0) + amount;
     this.set(key, newVal, ttl); // set with new TTL
     return newVal;
-  }
-
-  /** F79: Swap — set new value and return old value (undefined if key didn't exist). */
-  swap(key, value, ttl = this.defaultTTL) {
-    const old = this.get(key);
-    this.set(key, value, ttl);
-    return old;
   }
 
   /** F91: shrink(maxSize) — evict oldest non-expired entries to shrink cache to maxSize, return count of evicted entries. */
@@ -1013,7 +929,12 @@ class Cache {
    */
   swap(key, value, ttl = this.defaultTTL) {
     const entry = this.cache.get(key);
-    const oldValue = entry ? entry.value : undefined;
+    // R67 twin-purge fix: F143 was TTL-blind (raw map read returned stale values
+    // for expired keys, violating its own GETSET contract + the TTL-filtering
+    // get/has/keys/size contract). Expired → treat as missing, purge the entry.
+    const expired = !!entry && entry.expiresAt !== null && entry.expiresAt !== undefined && Date.now() > entry.expiresAt;
+    const oldValue = entry && !expired ? entry.value : undefined;
+    if (expired) this.cache.delete(key);
     this.set(key, value, ttl);
     return oldValue;
   }

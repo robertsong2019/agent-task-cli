@@ -178,4 +178,35 @@ describe('Round 67: F18b getOrSet single-flight / F113b pluck ids-param / F258 o
       await expect(bus.onceAll('not-an-array')).rejects.toThrow(TypeError);
     });
   });
+
+  describe('R67 twin purge: active-behavior pins + Cache.swap expired-key contract', () => {
+    test('swap on live key returns previous value and replaces (F143 contract)', () => {
+      const cache = new Cache();
+      cache.set('k', 'old');
+      expect(cache.swap('k', 'new')).toBe('old');
+      expect(cache.get('k')).toBe('new');
+      cache.destroy();
+    });
+
+    test('swap on expired key returns undefined (treats as missing) — TTL-blind bug fixed', async () => {
+      const cache = new Cache();
+      cache.set('k', 'old', 10);
+      await new Promise((r) => setTimeout(r, 20));
+      // no has()/get() pre-touch: swap must handle expiry itself
+      const old = cache.swap('k', 'new');
+      expect(old).toBe(undefined);
+      expect(cache.get('k')).toBe('new');
+      cache.destroy();
+    });
+
+    test('keys() and size() exclude expired entries (surviving-twin pin)', async () => {
+      const cache = new Cache();
+      cache.set('live', 1);
+      cache.set('dead', 2, 10);
+      await new Promise((r) => setTimeout(r, 20));
+      expect(cache.keys()).toEqual(['live']);
+      expect(cache.size()).toBe(1);
+      cache.destroy();
+    });
+  });
 });
