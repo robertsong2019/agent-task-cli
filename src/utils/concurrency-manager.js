@@ -370,14 +370,6 @@ class ConcurrencyManager {
   }
 
   /**
-   * Returns true if the manager is idle (no running or queued tasks).
-   * @returns {boolean}
-   */
-  isIdle() {
-    return this.activeCount === 0 && this.queue.length === 0;
-  }
-
-  /**
    * F232: wrap(fn, opts) — wrap any function with concurrency control.
    * Returns a new function that, when called, executes fn through this manager.
    * Options: { taskId, retries }

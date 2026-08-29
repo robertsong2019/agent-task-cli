@@ -164,15 +164,6 @@ class PriorityQueue {
   }
 
   /**
-   * Returns a shallow copy of all items sorted by priority.
-   * Does not modify the queue.
-   * @returns {Array}
-   */
-  toSortedArray() {
-    return this._items.map(e => e.item);
-  }
-
-  /**
    * Returns all items with a specific priority value.
    * @param {number} priority
    * @returns {Array}

@@ -278,15 +278,6 @@ class EventBus {
   }
 
   /**
-   * Get subscriber count for a channel
-   * @param {string} channel 
-   * @returns {number}
-   */
-  listenerCount(channel) {
-    return this._emitter.listenerCount(channel);
-  }
-
-  /**
    * Emit an event after a delay. Returns a cancel function.
    * @param {number} delayMs - Delay in milliseconds
    * @param {string} channel - Event channel
