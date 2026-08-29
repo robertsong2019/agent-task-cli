@@ -356,3 +356,10 @@
 - [x] EventBus: `replayAll(channel, handler)` — F252 sibling: full history replay oldest-first then live; drained channels replay nothing — **F253** ✅ 2026-08-28
 - [x] Storage: `updateMany(ids, updates)` — bulk merge-update; returns `{ updated, missing }` id lists; missing ids not created — **F254** ✅ 2026-08-28
 - [x] Cache: `getStale(key)` — soft read `{ value, expired }` without purging expired entries; no stats side effects — **F255** ✅ 2026-08-28
+
+## Utils (Round 67) + twin purge
+- [x] Cache: `getOrSet(key, factory, ttl)` single-flight upgrade — concurrent callers on a missing key share one in-flight promise (factory runs once); static-value contract preserved — **F18b** ✅ 2026-08-29 (c05513c)
+- [x] Storage: `pluck(field, ids?)` ids-whitelist upgrade — with ids: only listed tasks in ids order, missing skipped; keeps duplicates and insertion order (distinct() dedupes, pluck doesn't) — **F113b** ✅ 2026-08-29 (d8bd58b)
+- [x] EventBus: `onceAll(channels, timeout?)` — Promise resolving with collected payloads once EVERY channel has fired; timeout rejects listing missing channels and unsubscribes — **F258** ✅ 2026-08-29 (c05513c)
+- [x] Bug fix: Cache.swap TTL-blindness — returned stale values for expired keys (raw map read); now treats expired as missing + purges, matching get/has/keys/size contract — ✅ 2026-08-29 (7247329)
+- [x] Twin purge: 12 dead shadowed definitions removed across cache.js (7), storage.js (2), event-bus.js (1), priority-queue.js (1), concurrency-manager.js (1); JS classes silently shadow same-name methods (later wins, earlier dead); census certified clean sync+async — ✅ 2026-08-29 (7247329, 60c7d3a)
