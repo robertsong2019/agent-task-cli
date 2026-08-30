@@ -140,6 +140,20 @@ class StreamManager extends EventEmitter {
   }
 
   /**
+   * F260: List stream ids in creation order. Completed/errored streams are
+   * excluded unless { includeCompleted: true }.
+   */
+  listStreams(options = {}) {
+    const includeCompleted = !!(options && options.includeCompleted);
+    const ids = [];
+    for (const stream of this.streams.values()) {
+      if (!includeCompleted && stream.completed) continue;
+      ids.push(stream.id);
+    }
+    return ids;
+  }
+
+  /**
    * Get the full buffered content
    */
   getBuffer(taskId) {
@@ -159,6 +173,22 @@ class StreamManager extends EventEmitter {
   }
 
   /**
+   * F260: Remove every stream (active and completed). Returns the number of
+   * streams destroyed; emits 'stream:destroyAll' with the count only when
+   * there was at least one stream.
+   */
+  destroyAll() {
+    const count = this.streams.size;
+    if (count === 0) return 0;
+    for (const stream of this.streams.values()) {
+      stream.listeners.clear();
+    }
+    this.streams.clear();
+    this.emit('stream:destroyAll', { count });
+    return count;
+  }
+
+  /**
    * Create an async iterator for consuming stream chunks
    * Useful for piping to HTTP SSE responses
    */
@@ -167,6 +197,8 @@ class StreamManager extends EventEmitter {
     let resolve = null;
     let done = false;
 
+    // F259: subscribe() returns null for missing streams — make unsub null-safe
+    // so the finally block below cannot TypeError.
     const unsub = this.subscribe(taskId, (event) => {
       if (event.type === 'data') {
         if (resolve) {
@@ -187,6 +219,12 @@ class StreamManager extends EventEmitter {
       }
     });
 
+    // F259: missing stream — reject instead of waiting forever on a promise
+    // that no event will ever resolve.
+    if (!this.streams.has(taskId)) {
+      throw new Error(`iterate: stream '${taskId}' does not exist`);
+    }
+
     // Flush existing buffer
     const stream = this.streams.get(taskId);
     if (stream && stream.buffer) {
@@ -194,6 +232,10 @@ class StreamManager extends EventEmitter {
       yield stream.buffer;
       stream.buffer = ''; // consumed
     }
+
+    // F259: late subscriber to a completed/errored stream — no further events
+    // can fire, so terminate after the buffer flush instead of hanging.
+    if (stream && stream.completed) return;
 
     try {
       while (!done) {

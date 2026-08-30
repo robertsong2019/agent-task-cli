@@ -363,3 +363,9 @@
 - [x] EventBus: `onceAll(channels, timeout?)` — Promise resolving with collected payloads once EVERY channel has fired; timeout rejects listing missing channels and unsubscribes — **F258** ✅ 2026-08-29 (c05513c)
 - [x] Bug fix: Cache.swap TTL-blindness — returned stale values for expired keys (raw map read); now treats expired as missing + purges, matching get/has/keys/size contract — ✅ 2026-08-29 (7247329)
 - [x] Twin purge: 12 dead shadowed definitions removed across cache.js (7), storage.js (2), event-bus.js (1), priority-queue.js (1), concurrency-manager.js (1); JS classes silently shadow same-name methods (later wins, earlier dead); census certified clean sync+async — ✅ 2026-08-29 (7247329, 60c7d3a)
+
+## Utils (Round 68) — StreamManager
+- [x] Bug fix: `iterate()` late-subscriber hang — subscribing to an already-completed/errored stream awaited a promise no future event could resolve (infinite hang); now flushes the buffer then terminates cleanly — **F259** ✅ 2026-08-30
+- [x] Bug fix: `iterate()` on a missing stream now rejects `stream '<id>' does not exist` instead of hanging; unsubscribe handle made null-safe (subscribe returns null for unknown streams) — **F259** ✅ 2026-08-30
+- [x] StreamManager: `listStreams({ includeCompleted })` — stream ids in creation order; completed/errored excluded by default — **F260** ✅ 2026-08-30
+- [x] StreamManager: `destroyAll()` — bulk teardown of every stream (active + completed); returns count, emits `stream:destroyAll` only when non-empty — **F260** ✅ 2026-08-30
