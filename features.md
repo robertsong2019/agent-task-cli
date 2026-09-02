@@ -369,3 +369,7 @@
 - [x] Bug fix: `iterate()` on a missing stream now rejects `stream '<id>' does not exist` instead of hanging; unsubscribe handle made null-safe (subscribe returns null for unknown streams) — **F259** ✅ 2026-08-30
 - [x] StreamManager: `listStreams({ includeCompleted })` — stream ids in creation order; completed/errored excluded by default — **F260** ✅ 2026-08-30
 - [x] StreamManager: `destroyAll()` — bulk teardown of every stream (active + completed); returns count, emits `stream:destroyAll` only when non-empty — **F260** ✅ 2026-08-30
+
+## Utils (Round 69) — StreamManager semantics
+- [x] Contract fix: missing-stream reads unified to null — getBuffer used to return '' for a missing stream (indistinguishable from a live empty stream); now getStream / getStreamStats / subscribe / getBuffer all return null; mutations stay silent no-ops — **F261** ✅ 2026-09-02
+- [x] Type fix: `getStreamStats().throughput` now a number (chunks/s, 2dp) instead of toFixed(2) string — **F262** ✅ 2026-09-02
