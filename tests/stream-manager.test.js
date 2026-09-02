@@ -75,7 +75,7 @@ describe('StreamManager', () => {
     sm.subscribe('t1', () => {});
     sm.destroy('t1');
     expect(sm.getStream('t1')).toBeNull();
-    expect(sm.getBuffer('t1')).toBe('');
+    expect(sm.getBuffer('t1')).toBeNull(); // F261: unified missing-read contract
   });
 
   test('enforces maxBufferSize by trimming buffer', () => {

@@ -133,7 +133,9 @@ class StreamManager extends EventEmitter {
       chunkCount: stream.chunks.length,
       bufferLength: stream.buffer.length,
       duration,
-      throughput: duration > 0 ? (stream.buffer.length / (duration / 1000)).toFixed(2) : '0',
+      // F262: throughput is a number (chunks/s, 2dp) — never a string, so
+      // arithmetic consumers don't hit concatenation surprises.
+      throughput: duration > 0 ? Math.round((stream.buffer.length / (duration / 1000)) * 100) / 100 : 0,
       completed: stream.completed,
       error: stream.error
     };
@@ -154,11 +156,15 @@ class StreamManager extends EventEmitter {
   }
 
   /**
-   * Get the full buffered content
+   * Get the full buffered content.
+   * F261: returns null for a missing stream (unified missing-read contract —
+   * getStream / getStreamStats / subscribe / getBuffer all return null);
+   * a live empty stream still returns ''. Mutations on missing streams
+   * remain silent no-ops.
    */
   getBuffer(taskId) {
     const stream = this.streams.get(taskId);
-    return stream ? stream.buffer : '';
+    return stream ? stream.buffer : null;
   }
 
   /**
