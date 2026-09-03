@@ -373,3 +373,7 @@
 ## Utils (Round 69) — StreamManager semantics
 - [x] Contract fix: missing-stream reads unified to null — getBuffer used to return '' for a missing stream (indistinguishable from a live empty stream); now getStream / getStreamStats / subscribe / getBuffer all return null; mutations stay silent no-ops — **F261** ✅ 2026-09-02
 - [x] Type fix: `getStreamStats().throughput` now a number (chunks/s, 2dp) instead of toFixed(2) string — **F262** ✅ 2026-09-02
+
+## Utils (Round 70) — Redis parity + statistics siblings
+- [x] Cache: `setXX(key, value, ttl?)` — SET ... XX: set only if key exists (fresh); expired keys count as missing (purged, never overwritten); mirror of setNX — **F263** ✅ 2026-09-03
+- [x] Storage: `medianBy(field)` — median of finite numeric field values; odd→middle, even→average of two middles; null if empty/no numerics (F249 minBy/maxBy sibling) — **F264** ✅ 2026-09-03

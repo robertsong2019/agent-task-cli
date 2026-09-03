@@ -463,6 +463,15 @@ class Cache {
     return true;
   }
 
+  /** F263: SET ... XX — set only if the key already exists (fresh). Expired
+   * keys count as missing (has() purges them) and are never overwritten.
+   * Mirror of setNX. */
+  setXX(key, value, ttl = this.defaultTTL) {
+    if (!this.has(key)) return false;
+    this.set(key, value, ttl);
+    return true;
+  }
+
   /** Return count of non-expired entries. */
   get nonExpiredSize() {
     const now = Date.now();

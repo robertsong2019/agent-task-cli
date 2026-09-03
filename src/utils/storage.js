@@ -622,6 +622,25 @@ class Storage {
     return this._extremeBy(field, (a, b) => a > b);
   }
 
+  /** F264: medianBy(field) — median of finite numeric field values across tasks.
+   * Odd count → middle value; even count → average of the two middles.
+   * null if empty or no task has a finite numeric value (same guard as minBy/maxBy). */
+  async medianBy(field) {
+    if (typeof field !== 'string' || field.length === 0) {
+      throw new TypeError('medianBy: field must be a non-empty string');
+    }
+    const tasks = await this.loadTasks();
+    const vals = [];
+    for (const t of Object.values(tasks)) {
+      const v = t[field];
+      if (typeof v === 'number' && Number.isFinite(v)) vals.push(v);
+    }
+    if (vals.length === 0) return null;
+    vals.sort((a, b) => a - b);
+    const mid = Math.floor(vals.length / 2);
+    return vals.length % 2 === 1 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
+  }
+
   async _extremeBy(field, better) {
     if (typeof field !== 'string' || field.length === 0) {
       throw new TypeError('minBy/maxBy: field must be a non-empty string');
