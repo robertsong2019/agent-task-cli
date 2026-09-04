@@ -610,12 +610,39 @@ class Cache {
    * - ttl = null: makes key never expire (F97 semantics)
    * Returns false for missing or already-expired keys.
    */
-  expire(key, ttl = this.defaultTTL) {
+  /**
+   * F97: expire(key, ttl) — set TTL (ms) on an existing key.
+   * F265: options.mode adds Redis 7 EXPIRE parity —
+   *   NX: apply only if key has NO TTL (persistent)
+   *   XX: apply only if key HAS a TTL
+   *   GT: apply only if new ttl > remaining (persistent = infinite → fails)
+   *   LT: apply only if new ttl < remaining (persistent = infinite → succeeds)
+   * Returns false for missing/expired keys or when the mode condition fails.
+   * ttl = null: makes key never expire (F97 semantics); illegal with a mode.
+   */
+  expire(key, ttl = this.defaultTTL, options = {}) {
     const entry = this.cache.get(key);
     if (!entry) return false;
     if (entry.expiresAt && Date.now() > entry.expiresAt) {
       this.delete(key);
       return false;
+    }
+    const mode = options && options.mode ? String(options.mode).toUpperCase() : null;
+    if (mode !== null) {
+      if (!['NX', 'XX', 'GT', 'LT'].includes(mode)) {
+        throw new TypeError(`expire: unknown mode '${mode}' (NX|XX|GT|LT)`);
+      }
+      if (ttl === null || ttl === undefined) {
+        throw new TypeError('expire: ttl is required when a mode is set');
+      }
+      const hasTTL = entry.expiresAt !== null && entry.expiresAt !== undefined;
+      const current = hasTTL ? entry.expiresAt - Date.now() : Infinity;
+      let pass = false;
+      if (mode === 'NX') pass = !hasTTL;
+      else if (mode === 'XX') pass = hasTTL;
+      else if (mode === 'GT') pass = ttl > current;
+      else pass = ttl < current; // LT
+      if (!pass) return false;
     }
     if (ttl === null) {
       entry.expiresAt = null;

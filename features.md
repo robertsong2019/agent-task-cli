@@ -377,3 +377,7 @@
 ## Utils (Round 70) — Redis parity + statistics siblings
 - [x] Cache: `setXX(key, value, ttl?)` — SET ... XX: set only if key exists (fresh); expired keys count as missing (purged, never overwritten); mirror of setNX — **F263** ✅ 2026-09-03
 - [x] Storage: `medianBy(field)` — median of finite numeric field values; odd→middle, even→average of two middles; null if empty/no numerics (F249 minBy/maxBy sibling) — **F264** ✅ 2026-09-03
+
+## Utils (Round 71) — Redis 7 EXPIRE parity + statistics sibling
+- [x] Cache: `expire(key, ttl, { mode })` — EXPIRE NX/XX/GT/LT modes: NX only-on-persistent, XX only-on-existing-TTL, GT/LT compare against remaining (persistent = infinite → GT fails, LT succeeds); case-insensitive; unknown mode → TypeError; no-mode legacy behavior byte-identical — **F265** ✅ 2026-09-04
+- [x] Storage: `stddevBy(field)` — population standard deviation of finite numeric field values ([2,4,4,4,5,5,7,9] → 2); single value → 0; null if empty/no numerics (avg/medianBy sibling) — **F266** ✅ 2026-09-04

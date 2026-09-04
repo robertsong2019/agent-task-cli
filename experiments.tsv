@@ -52,3 +52,5 @@ cycle	date	baseline	result	status	features	notes
 2026-09-02T22:25+08:00	46fbe7f	test_count	1713→1720 (+7)	keep	Round 69 StreamManager semantics: F261 missing-stream reads unified to null (getBuffer '' was indistinguishable from live empty stream; getStream/getStreamStats/subscribe/getBuffer now all null; mutations stay silent no-ops) + F262 getStreamStats throughput numeric (toFixed(2) string → number, 2dp). Full suite 1720/1720 via pre-commit gate.
 2026-09-03T22:06+0800	R70	test_count	1720→1731 (+11)	keep
 Round 70: F263 Cache.setXX (SET XX — setNX mirror; expired=missing via has() purge, no raw-map TTL blindness like R67 swap fix) + F264 Storage.medianBy (F249 sibling: odd→middle, even→avg-of-middles, non-numeric ignored, empty→null). TDD red-first 11/11; full suite 1731/1731 via pre-commit gate.				
+2026-09-04T22:05+0800	R71	test_count	1731→1747 (+16)	keep
+Round 71: F265 Cache.expire NX/XX/GT/LT modes (Redis 7 parity; persistent=infinite for GT/LT; unknown mode TypeError) + F266 Storage.stddevBy (population stddev, avg/medianBy sibling; non-numerics ignored not NaN). TDD 11-red→16/16 green; full 1747/1747.

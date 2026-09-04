@@ -641,6 +641,25 @@ class Storage {
     return vals.length % 2 === 1 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
   }
 
+  /** F266: stddevBy(field) — population standard deviation of finite numeric field values.
+   * Values [2,4,4,4,5,5,7,9] → 2 (mean 5, variance 4). Single value → 0.
+   * null if empty or no task has a finite numeric value (same guard as medianBy). */
+  async stddevBy(field) {
+    if (typeof field !== 'string' || field.length === 0) {
+      throw new TypeError('stddevBy: field must be a non-empty string');
+    }
+    const tasks = await this.loadTasks();
+    const vals = [];
+    for (const t of Object.values(tasks)) {
+      const v = t[field];
+      if (typeof v === 'number' && Number.isFinite(v)) vals.push(v);
+    }
+    if (vals.length === 0) return null;
+    const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+    const variance = vals.reduce((a, v) => a + (v - mean) ** 2, 0) / vals.length;
+    return Math.sqrt(variance);
+  }
+
   async _extremeBy(field, better) {
     if (typeof field !== 'string' || field.length === 0) {
       throw new TypeError('minBy/maxBy: field must be a non-empty string');
