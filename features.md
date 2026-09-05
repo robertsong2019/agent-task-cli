@@ -381,3 +381,8 @@
 ## Utils (Round 71) — Redis 7 EXPIRE parity + statistics sibling
 - [x] Cache: `expire(key, ttl, { mode })` — EXPIRE NX/XX/GT/LT modes: NX only-on-persistent, XX only-on-existing-TTL, GT/LT compare against remaining (persistent = infinite → GT fails, LT succeeds); case-insensitive; unknown mode → TypeError; no-mode legacy behavior byte-identical — **F265** ✅ 2026-09-04
 - [x] Storage: `stddevBy(field)` — population standard deviation of finite numeric field values ([2,4,4,4,5,5,7,9] → 2); single value → 0; null if empty/no numerics (avg/medianBy sibling) — **F266** ✅ 2026-09-04
+
+## Utils (Round 72) — Redis string ops parity + percentile sibling
+- [x] Cache: `append(key, suffix)` — Redis APPEND: missing → fresh set; existing string → concat returning new length; existing TTL preserved; expired = missing; non-string value/suffix → TypeError — **F267** ✅ 2026-09-05
+- [x] Cache: `strlen(key)` / `getrange(key, start, end)` — Redis STRLEN (missing → 0) + GETRANGE (inclusive end, negative indices from end, clamps, start>end → '', missing → '') — **F267** ✅ 2026-09-05
+- [x] Storage: `percentileBy(field, p)` — linear-interpolation percentile (rank = p/100·(n−1) on sorted values); p50 on even n === medianBy; same non-numeric/empty guards as stats family; p ∉ [0,100] → TypeError — **F268** ✅ 2026-09-05

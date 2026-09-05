@@ -644,6 +644,32 @@ class Storage {
   /** F266: stddevBy(field) — population standard deviation of finite numeric field values.
    * Values [2,4,4,4,5,5,7,9] → 2 (mean 5, variance 4). Single value → 0.
    * null if empty or no task has a finite numeric value (same guard as medianBy). */
+  /** F268: percentileBy(field, percentile) — linear-interpolation percentile of finite
+   * numeric field values (medianBy generalization): rank = p/100 * (n-1) on the sorted
+   * values, interpolated between closest ranks. p50 on even n === medianBy.
+   * null if empty or no task has a finite numeric value (same guard as medianBy). */
+  async percentileBy(field, percentile) {
+    if (typeof field !== 'string' || field.length === 0) {
+      throw new TypeError('percentileBy: field must be a non-empty string');
+    }
+    if (!Number.isFinite(percentile) || percentile < 0 || percentile > 100) {
+      throw new TypeError('percentileBy: percentile must be a finite number in [0, 100]');
+    }
+    const tasks = await this.loadTasks();
+    const vals = [];
+    for (const t of Object.values(tasks)) {
+      const v = t[field];
+      if (typeof v === 'number' && Number.isFinite(v)) vals.push(v);
+    }
+    if (vals.length === 0) return null;
+    vals.sort((a, b) => a - b);
+    if (vals.length === 1) return vals[0];
+    const rank = (percentile / 100) * (vals.length - 1);
+    const lo = Math.floor(rank);
+    const hi = Math.ceil(rank);
+    return vals[lo] + (vals[hi] - vals[lo]) * (rank - lo);
+  }
+
   async stddevBy(field) {
     if (typeof field !== 'string' || field.length === 0) {
       throw new TypeError('stddevBy: field must be a non-empty string');

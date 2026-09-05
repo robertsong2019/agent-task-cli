@@ -988,6 +988,66 @@ class Cache {
     return remaining > 0 ? remaining : -2;
   }
 
+  /** F267: append(key, suffix) — Redis APPEND parity.
+   * Missing key → value becomes suffix (fresh set, current default TTL).
+   * Existing string → concatenated; existing TTL preserved (Redis APPEND keeps TTL).
+   * Returns new string length. Non-string value or suffix → TypeError (Redis WRONGTYPE). */
+  append(key, suffix) {
+    if (typeof suffix !== 'string') {
+      throw new TypeError('append: suffix must be a string');
+    }
+    const entry = this.cache.get(key);
+    const expired = !!entry && entry.expiresAt && Date.now() > entry.expiresAt;
+    if (expired) {
+      this.delete(key);
+      this.stats.misses++;
+    }
+    if (!entry || expired) {
+      this.set(key, suffix);
+      return suffix.length;
+    }
+    if (typeof entry.value !== 'string') {
+      throw new TypeError(`append: value at '${key}' is not a string`);
+    }
+    const merged = entry.value + suffix;
+    if (entry.expiresAt) {
+      this.setWithExpiry(key, merged, entry.expiresAt);
+    } else {
+      this.set(key, merged, 0);
+    }
+    return merged.length;
+  }
+
+  /** F267: strlen(key) — Redis STRLEN parity. Missing → 0; non-string → TypeError. */
+  strlen(key) {
+    const v = this.get(key);
+    if (v === undefined) return 0;
+    if (typeof v !== 'string') {
+      throw new TypeError(`strlen: value at '${key}' is not a string`);
+    }
+    return v.length;
+  }
+
+  /** F267: getrange(key, start, end) — Redis GETRANGE parity.
+   * Inclusive end; negative indices count from the end (-1 = last char);
+   * out-of-range clamps; start > end after normalization → ''.
+   * Missing key → ''. Non-string value or non-integer indices → TypeError. */
+  getrange(key, start, end) {
+    if (!Number.isInteger(start) || !Number.isInteger(end)) {
+      throw new TypeError('getrange: start and end must be integers');
+    }
+    const v = this.get(key);
+    if (v === undefined) return '';
+    if (typeof v !== 'string') {
+      throw new TypeError(`getrange: value at '${key}' is not a string`);
+    }
+    const len = v.length;
+    const s = start < 0 ? Math.max(len + start, 0) : Math.min(start, len);
+    const e = end < 0 ? len + end : Math.min(end, len - 1);
+    if (s > e || s >= len) return '';
+    return v.slice(s, e + 1);
+  }
+
   /**
    * F139: renameKey(oldKey, newKey) — rename a cache key preserving value and TTL.
    * Returns true if renamed, false if oldKey doesn't exist.

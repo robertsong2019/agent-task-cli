@@ -54,3 +54,5 @@ cycle	date	baseline	result	status	features	notes
 Round 70: F263 Cache.setXX (SET XX — setNX mirror; expired=missing via has() purge, no raw-map TTL blindness like R67 swap fix) + F264 Storage.medianBy (F249 sibling: odd→middle, even→avg-of-middles, non-numeric ignored, empty→null). TDD red-first 11/11; full suite 1731/1731 via pre-commit gate.				
 2026-09-04T22:05+0800	R71	test_count	1731→1747 (+16)	keep
 Round 71: F265 Cache.expire NX/XX/GT/LT modes (Redis 7 parity; persistent=infinite for GT/LT; unknown mode TypeError) + F266 Storage.stddevBy (population stddev, avg/medianBy sibling; non-numerics ignored not NaN). TDD 11-red→16/16 green; full 1747/1747.
+2026-09-05T22:20+0800	R72	test_count	1747→1767 (+20)	keep
+Round 72: F267 Cache append/strlen/getrange (Redis string ops parity; APPEND preserves TTL; expired=missing; WRONGTYPE→TypeError) + F268 Storage.percentileBy (linear interpolation rank=p/100·(n−1); p50≡medianBy on even n; family guards). TDD 17-red→20/20 green; full 1767/1767.
