@@ -1048,6 +1048,66 @@ class Cache {
     return v.slice(s, e + 1);
   }
 
+  /** F269: incrByInt(key, delta) — Redis INCRBY integer parity (sibling of F250 incrByFloat,
+   * distinct from F154 incrBy which is float-tolerant number-only).
+   * Missing/expired key → base 0. Integer deltas only (TypeError otherwise);
+   * existing value must be a JS integer or integer-representable string
+   * (leading/trailing spaces allowed, like Redis string2ll) — else TypeError
+   * (WRONGTYPE family). Result beyond ±2^53-1 → RangeError (64-bit overflow
+   * analog). TTL preserved on increment (Redis INCR keeps TTL). */
+  incrByInt(key, delta) {
+    if (!Number.isInteger(delta)) {
+      throw new TypeError('incrByInt: delta must be an integer');
+    }
+    const entry = this.cache.get(key);
+    const expired = !!entry && entry.expiresAt && Date.now() > entry.expiresAt;
+    if (expired) {
+      this.delete(key);
+      this.stats.misses++;
+    }
+    let base = 0;
+    if (entry && !expired) {
+      const v = entry.value;
+      if (typeof v === 'number') {
+        if (!Number.isInteger(v)) {
+          throw new TypeError(`incrByInt: value at '${key}' is not an integer`);
+        }
+        base = v;
+      } else if (typeof v === 'string') {
+        const s = v.trim();
+        if (!/^-?\d+$/.test(s)) {
+          throw new TypeError(`incrByInt: value at '${key}' is not an integer or out of range`);
+        }
+        base = Number(s);
+      } else {
+        throw new TypeError(`incrByInt: value at '${key}' is not an integer`);
+      }
+    }
+    if (!Number.isSafeInteger(base) || !Number.isSafeInteger(base + delta)) {
+      throw new RangeError('incrByInt: increment or decrement would overflow');
+    }
+    const result = base + delta;
+    if (entry && !expired) {
+      if (entry.expiresAt) {
+        this.setWithExpiry(key, result, entry.expiresAt);
+      } else {
+        this.set(key, result, 0);
+      }
+    } else {
+      this.set(key, result);
+    }
+    return result;
+  }
+
+  /** F269: decrByInt(key, delta) — Redis DECRBY parity. incrByInt with negated
+   * delta (delta validated as integer before negation). */
+  decrByInt(key, delta) {
+    if (!Number.isInteger(delta)) {
+      throw new TypeError('decrByInt: delta must be an integer');
+    }
+    return this.incrByInt(key, -delta);
+  }
+
   /**
    * F139: renameKey(oldKey, newKey) — rename a cache key preserving value and TTL.
    * Returns true if renamed, false if oldKey doesn't exist.

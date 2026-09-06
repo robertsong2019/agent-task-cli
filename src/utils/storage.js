@@ -670,6 +670,33 @@ class Storage {
     return vals[lo] + (vals[hi] - vals[lo]) * (rank - lo);
   }
 
+  /** F270: modeBy(field) — most frequent finite numeric field value.
+   * Tie → smallest value (deterministic). Non-numeric/missing fields ignored.
+   * null if empty or no task has a finite numeric value (same guard as medianBy). */
+  async modeBy(field) {
+    if (typeof field !== 'string' || field.length === 0) {
+      throw new TypeError('modeBy: field must be a non-empty string');
+    }
+    const tasks = await this.loadTasks();
+    const counts = new Map();
+    for (const t of Object.values(tasks)) {
+      const v = t[field];
+      if (typeof v === 'number' && Number.isFinite(v)) {
+        counts.set(v, (counts.get(v) || 0) + 1);
+      }
+    }
+    if (counts.size === 0) return null;
+    let bestVal = null;
+    let bestCount = 0;
+    for (const [v, c] of counts) {
+      if (c > bestCount || (c === bestCount && v < bestVal)) {
+        bestVal = v;
+        bestCount = c;
+      }
+    }
+    return bestVal;
+  }
+
   async stddevBy(field) {
     if (typeof field !== 'string' || field.length === 0) {
       throw new TypeError('stddevBy: field must be a non-empty string');
