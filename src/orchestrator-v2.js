@@ -23,7 +23,7 @@ class Orchestrator {
     });
     this.cache = new Cache({
       maxSize: options.cacheSize || 100,
-      defaultTTL: options.cacheTTL || 3600000 // 1 hour
+      defaultTTL: options.cacheTTL ?? 3600000 // 1 hour (F271: pass explicit 0 through, don't swallow)
     });
     
     this.patterns = {

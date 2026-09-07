@@ -4,7 +4,7 @@
 class Cache {
   constructor(options = {}) {
     this.maxSize = options.maxSize || 100;
-    this.defaultTTL = options.defaultTTL || 3600000; // 1 hour
+    this.defaultTTL = options.defaultTTL ?? 3600000; // 1 hour (F271: explicit 0 = "no default expiry"; null/undefined fall back)
     this.cache = new Map();
     this._inflight = new Map(); // F256: single-flight getOrSet promises per key
     this.stats = {
