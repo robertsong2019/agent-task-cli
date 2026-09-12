@@ -1108,6 +1108,90 @@ class Cache {
     return this.incrByInt(key, -delta);
   }
 
+  /** F272: setrange(key, offset, value) — Redis SETRANGE parity.
+   * Overwrites the string at `key` starting at `offset`; the gap between the
+   * current length and `offset` is zero-filled ('\0', Redis zero-bytes).
+   * Missing/expired key → fresh base '' written with the current default TTL
+   * (same F267 append convention); existing key keeps its TTL.
+   * Returns the new total length (UTF-16 code units, strlen-consistent).
+   * Empty value: no-op — returns current length, missing key NOT created
+   * (Redis parity). Non-string value/existing → TypeError (WRONGTYPE);
+   * non-integer offset → TypeError; negative offset or offset beyond the
+   * Redis 512MB string limit (2^29) → RangeError. */
+  setrange(key, offset, value) {
+    if (typeof value !== 'string') {
+      throw new TypeError('setrange: value must be a string');
+    }
+    if (!Number.isInteger(offset)) {
+      throw new TypeError('setrange: offset must be an integer');
+    }
+    if (offset < 0) {
+      throw new RangeError('setrange: offset out of range');
+    }
+    if (offset > 2 ** 29) {
+      throw new RangeError('setrange: offset out of range (exceeds 512MB string limit)');
+    }
+
+    const entry = this.cache.get(key);
+    const expired = !!entry && entry.expiresAt && Date.now() > entry.expiresAt;
+    if (expired) {
+      this.delete(key);
+      this.stats.misses++;
+    }
+
+    if (entry && !expired) {
+      if (typeof entry.value !== 'string') {
+        throw new TypeError(`setrange: value at '${key}' is not a string`);
+      }
+      if (value === '') {
+        return entry.value.length; // Redis: empty value never creates/modifies
+      }
+      const base = entry.value;
+      const next = base.length >= offset
+        ? base.slice(0, offset) + value + base.slice(offset + value.length)
+        : base + '\0'.repeat(offset - base.length) + value;
+      if (entry.expiresAt) {
+        this.setWithExpiry(key, next, entry.expiresAt);
+      } else {
+        this.set(key, next, 0);
+      }
+      return next.length;
+    }
+
+    // Missing (or expired-purged) key: fresh base ''. Redis does not create
+    // the key for an empty write.
+    if (value === '') return 0;
+    const next = '\0'.repeat(offset) + value;
+    this.set(key, next);
+    this._notifyWatchers(key, 'set', next);
+    return next.length;
+  }
+
+  /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)
+   * for existing keys without reading their values. Returns the count of keys
+   * that existed and were refreshed. Expired keys are purged (like get()) and
+   * not counted; TTLs are untouched. Metadata op like peek: no hit/miss stats,
+   * no watcher notifications. Accepts an array of keys.
+   * (Named touchLru, not touch: F210 touch(key, ttl) extends TTL — different
+   * axis; collision avoided per the F269 incrByInt naming lesson.) */
+  touchLru(keys) {
+    if (!Array.isArray(keys)) {
+      throw new TypeError('touch: keys must be an array');
+    }
+    let touched = 0;
+    for (const key of keys) {
+      const entry = this.cache.get(key);
+      if (!entry) continue;
+      if (entry.expiresAt && Date.now() > entry.expiresAt) {
+        this.delete(key); // purge, mirroring get()'s expired handling
+        continue;
+      }
+      entry.lastAccessed = Date.now();
+      touched++;
+    }
+    return touched;
+  }
+
   /**
    * F139: renameKey(oldKey, newKey) — rename a cache key preserving value and TTL.
    * Returns true if renamed, false if oldKey doesn't exist.
