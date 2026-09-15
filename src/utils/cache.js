@@ -1167,7 +1167,132 @@ class Cache {
     return next.length;
   }
 
-  /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)
+  // ---------- F274-F284: Redis hash family ----------
+
+  /** Internal: live hash entry for `key`, or null if missing/expired (expired
+   * entries are purged like get()). Throws TypeError (WRONGTYPE analog, same
+   * family as strlen/append/setrange) if the stored value is not a hash.
+   * A "hash" is a non-null, non-array object (plain objects set via set()
+   * qualify — JS objects ARE hashes). No stats/LRU side effects. */
+  _liveHashEntry(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return null;
+    }
+    if (
+      typeof entry.value !== 'object' ||
+      entry.value === null ||
+      Array.isArray(entry.value)
+    ) {
+      throw new TypeError(`h*: value at '${key}' is not a hash`);
+    }
+    return entry;
+  }
+
+  /** Internal: copy-on-write re-store of a hash entry, preserving its TTL
+   * (setWithExpiry for absolute expiry, set(key, v, 0) for no-expiry — same
+   * convention as append/setrange). */
+  _rewriteHash(key, entry, next) {
+    if (entry.expiresAt) {
+      this.setWithExpiry(key, next, entry.expiresAt);
+    } else {
+      this.set(key, next, 0);
+    }
+  }
+
+  /** F274: hset(key, field, value, ttl?) — Redis HSET parity.
+   * Sets `field` to `value` in the hash at `key`; creates the hash when the
+   * key is missing or expired (using `ttl`, default this.defaultTTL).
+   * Returns 1 when a new field was created, 0 when an existing field was
+   * overwritten. Existing hashes keep their TTL (Redis HSET never touches
+   * TTL). Copy-on-write: the stored object is replaced, never mutated.
+   * Non-string field → TypeError; non-hash value at key → TypeError. */
+  hset(key, field, value, ttl = this.defaultTTL) {
+    if (typeof field !== 'string') {
+      throw new TypeError('hset: field must be a string');
+    }
+    const entry = this._liveHashEntry(key);
+    if (!entry) {
+      this.set(key, { [field]: value }, ttl);
+      return 1;
+    }
+    const isNew = !Object.prototype.hasOwnProperty.call(entry.value, field);
+    this._rewriteHash(key, entry, { ...entry.value, [field]: value });
+    return isNew ? 1 : 0;
+  }
+
+  /** F275: hget(key, field) — Redis HGET parity.
+   * Returns the field value, or undefined for missing key/field (Redis nil).
+   * Non-hash value at key → TypeError. Metadata-neutral read: no stats. */
+  hget(key, field) {
+    const entry = this._liveHashEntry(key);
+    if (!entry) return undefined;
+    return entry.value[field];
+  }
+
+  /** F276: hgetall(key) — Redis HGETALL parity.
+   * Returns a shallow copy of all fields ({} for a missing key — Redis
+   * empty-list parity). Non-hash → TypeError. The copy is mutation-safe:
+   * editing the result never corrupts the stored hash. */
+  hgetall(key) {
+    const entry = this._liveHashEntry(key);
+    if (!entry) return {};
+    return { ...entry.value };
+  }
+
+  /** F277: hdel(key, ...fields) — Redis HDEL parity.
+   * Removes fields from the hash at `key`; returns how many were actually
+   * removed. Duplicate field names count once (Redis parity). When the hash
+   * becomes empty the key is deleted entirely (Redis: empty hash = key gone);
+   * a no-op delete (0 removed) leaves the key and its TTL untouched.
+   * Partial delete preserves TTL. Missing key → 0. Non-hash → TypeError;
+   * non-string field → TypeError. */
+  hdel(key, ...fields) {
+    for (const f of fields) {
+      if (typeof f !== 'string') {
+        throw new TypeError('hdel: fields must be strings');
+      }
+    }
+    const entry = this._liveHashEntry(key);
+    if (!entry) return 0;
+    const next = { ...entry.value };
+    let removed = 0;
+    for (const f of new Set(fields)) {
+      if (Object.prototype.hasOwnProperty.call(next, f)) {
+        delete next[f];
+        removed++;
+      }
+    }
+    if (removed === 0) return 0;
+    if (Object.keys(next).length === 0) {
+      this.delete(key);
+    } else {
+      this._rewriteHash(key, entry, next);
+    }
+    return removed;
+  }
+
+  /** F278: hexists(key, field) — Redis HEXISTS parity.
+   * True iff `field` exists in the hash at `key`; false for missing key.
+   * Non-hash → TypeError. */
+  hexists(key, field) {
+    const entry = this._liveHashEntry(key);
+    if (!entry) return false;
+    return Object.prototype.hasOwnProperty.call(entry.value, field);
+  }
+
+  /** F279: hlen(key) — Redis HLEN parity.
+   * Number of fields in the hash at `key`; 0 for a missing key.
+   * Non-hash → TypeError. */
+  hlen(key) {
+    const entry = this._liveHashEntry(key);
+    if (!entry) return 0;
+    return Object.keys(entry.value).length;
+  }
+
+  /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed))
    * for existing keys without reading their values. Returns the count of keys
    * that existed and were refreshed. Expired keys are purged (like get()) and
    * not counted; TTLs are untouched. Metadata op like peek: no hit/miss stats,
