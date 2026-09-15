@@ -1568,8 +1568,10 @@ class Cache {
    * If ttl provided, applies to all entries. Empty entries object returns true.
    */
   msetnx(entries, ttl) {
-    if (typeof entries !== 'object' || entries === null) {
-      throw new TypeError('msetnx: entries must be an object');
+    // F169b (R76c): reject arrays — a pair-array used to slip past the typeof
+    // check and silently land as junk key '0' (family convention: hmset F284).
+    if (typeof entries !== 'object' || entries === null || Array.isArray(entries)) {
+      throw new TypeError('msetnx: entries must be a plain object');
     }
     
     // Check if any key already exists
