@@ -1292,7 +1292,115 @@ class Cache {
     return Object.keys(entry.value).length;
   }
 
-  /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed))
+  /** F280: hkeys(key) — Redis HKEYS parity.
+   * All field names in insertion order; [] for a missing key.
+   * Returns a fresh array (mutation-safe). Non-hash → TypeError. */
+  hkeys(key) {
+    const entry = this._liveHashEntry(key);
+    if (!entry) return [];
+    return Object.keys(entry.value);
+  }
+
+  /** F281: hvals(key) — Redis HVALS parity.
+   * All values aligned with field insertion order; [] for a missing key.
+   * Returns a fresh array (mutation-safe). Non-hash → TypeError. */
+  hvals(key) {
+    const entry = this._liveHashEntry(key);
+    if (!entry) return [];
+    return Object.values(entry.value);
+  }
+
+  /** F282: hincrby(key, field, delta = 1) — Redis HINCRBY parity.
+   * Increments the integer value at `field` by `delta`. Missing key →
+   * hash created with {field: delta} (default TTL); missing field → field
+   * set to delta. Current value must be an integer or integer-representable
+   * string (string2ll analog, F269 incrByInt convention) — else TypeError.
+   * Result beyond ±(2^53-1) → RangeError (safe-integer overflow). Existing
+   * hashes keep their TTL. Returns the new value. Non-string field or
+   * non-integer delta → TypeError. */
+  hincrby(key, field, delta = 1) {
+    if (typeof field !== 'string') {
+      throw new TypeError('hincrby: field must be a string');
+    }
+    if (!Number.isInteger(delta)) {
+      throw new TypeError('hincrby: delta must be an integer');
+    }
+    const entry = this._liveHashEntry(key);
+    if (!entry) {
+      this.set(key, { [field]: delta }, this.defaultTTL);
+      return delta;
+    }
+    const hash = entry.value;
+    let base = 0;
+    if (Object.prototype.hasOwnProperty.call(hash, field)) {
+      const cur = hash[field];
+      if (typeof cur === 'number') {
+        if (!Number.isInteger(cur)) {
+          throw new TypeError(`hincrby: field '${field}' is not an integer`);
+        }
+        base = cur;
+      } else if (typeof cur === 'string' && /^-?\d+$/.test(cur.trim())) {
+        base = parseInt(cur.trim(), 10);
+      } else {
+        throw new TypeError(`hincrby: field '${field}' is not an integer`);
+      }
+    }
+    const result = base + delta;
+    if (result > Number.MAX_SAFE_INTEGER || result < -Number.MAX_SAFE_INTEGER) {
+      throw new RangeError('hincrby: increment produces value beyond ±(2^53-1)');
+    }
+    this._rewriteHash(key, entry, { ...hash, [field]: result });
+    return result;
+  }
+
+  /** F283: hmget(key, fields) — Redis HMGET parity.
+   * Values aligned with the `fields` array (mget convention); undefined
+   * slots for missing fields; missing key → all-undefined array.
+   * Non-array input, non-string member, or non-hash value → TypeError. */
+  hmget(key, fields) {
+    if (!Array.isArray(fields)) {
+      throw new TypeError('hmget: fields must be an array');
+    }
+    for (const f of fields) {
+      if (typeof f !== 'string') {
+        throw new TypeError('hmget: fields must be strings');
+      }
+    }
+    const entry = this._liveHashEntry(key);
+    if (!entry) return fields.map(() => undefined);
+    const hash = entry.value;
+    return fields.map((f) =>
+      Object.prototype.hasOwnProperty.call(hash, f) ? hash[f] : undefined
+    );
+  }
+
+  /** F284: hmset(key, obj, ttl?) — Redis HMSET parity (Redis 4+ HSET
+   * return semantics). Bulk-sets every field of plain object `obj` into the
+   * hash at `key`; returns the count of NEW fields added (overwrites don't
+   * count). Missing key → hash created with `ttl` (default defaultTTL);
+   * existing hashes keep their TTL. Empty obj → no-op returning 0, key NOT
+   * created (an empty hash cannot exist — F277 hdel emptiness parity).
+   * Null/array/non-object input or non-hash value at key → TypeError. */
+  hmset(key, obj, ttl = this.defaultTTL) {
+    if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+      throw new TypeError('hmset: obj must be a plain object');
+    }
+    const keys = Object.keys(obj);
+    if (keys.length === 0) return 0;
+    const entry = this._liveHashEntry(key);
+    if (!entry) {
+      this.set(key, { ...obj }, ttl);
+      return keys.length;
+    }
+    const next = { ...entry.value, ...obj };
+    const added = keys.filter(
+      (k) => !Object.prototype.hasOwnProperty.call(entry.value, k)
+    ).length;
+    this._rewriteHash(key, entry, next);
+    return added;
+  }
+
+  /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)))
    * for existing keys without reading their values. Returns the count of keys
    * that existed and were refreshed. Expired keys are purged (like get()) and
    * not counted; TTLs are untouched. Metadata op like peek: no hit/miss stats,
