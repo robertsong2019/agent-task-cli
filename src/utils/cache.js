@@ -1400,6 +1400,78 @@ class Cache {
     return added;
   }
 
+  /** F285: hsetnx(key, field, value, ttl?) — Redis HSETNX parity.
+ * Sets `field` only when it does NOT yet exist in the hash at `key`.
+ * Returns 1 when set (field created, hash possibly created with `ttl`,
+ * default this.defaultTTL), 0 when the field already existed — in which
+ * case this is a strict no-op: value, TTL and LRU state untouched.
+ * Falsy values (0, '', false, null) still occupy the NX slot. Non-string
+ * field → TypeError; non-hash value at key → TypeError; rejected calls
+ * create nothing. */
+  hsetnx(key, field, value, ttl = this.defaultTTL) {
+    if (typeof field !== 'string') {
+      throw new TypeError('hsetnx: field must be a string');
+    }
+    const entry = this._liveHashEntry(key);
+    if (!entry) {
+      this.set(key, { [field]: value }, ttl);
+      return 1;
+    }
+    if (Object.prototype.hasOwnProperty.call(entry.value, field)) {
+      return 0;
+    }
+    this._rewriteHash(key, entry, { ...entry.value, [field]: value });
+    return 1;
+  }
+
+  /** F286: hincrbyfloat(key, field, delta = 1) — Redis HINCRBYFLOAT parity.
+ * Increments the float value at `field` by `delta` (IEEE754 double, no
+ * decimal rounding — 0.1 + 0.2 yields 0.30000000000000004, Redis parity).
+ * Missing key → hash created with {field: delta} (default TTL); missing
+ * field → field set to delta. Current value must be a finite number or a
+ * float-representable string (strtod analog: optional sign, digits with
+ * optional fraction, optional exponent; hex/NaN/Inf strings rejected) —
+ * else TypeError. Non-number or non-finite delta → TypeError. Result
+ * beyond finite double range → RangeError with the hash unchanged.
+ * Existing hashes keep their TTL. Returns the new value. */
+  hincrbyfloat(key, field, delta = 1) {
+    if (typeof field !== 'string') {
+      throw new TypeError('hincrbyfloat: field must be a string');
+    }
+    if (typeof delta !== 'number' || !Number.isFinite(delta)) {
+      throw new TypeError('hincrbyfloat: delta must be a finite number');
+    }
+    const FLOAT_STR = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
+    const entry = this._liveHashEntry(key);
+    if (!entry) {
+      this.set(key, { [field]: delta }, this.defaultTTL);
+      return delta;
+    }
+    const hash = entry.value;
+    let base = 0;
+    if (Object.prototype.hasOwnProperty.call(hash, field)) {
+      const cur = hash[field];
+      if (typeof cur === 'number') {
+        if (!Number.isFinite(cur)) {
+          throw new TypeError(`hincrbyfloat: field '${field}' is not a float`);
+        }
+        base = cur;
+      } else if (typeof cur === 'string' && FLOAT_STR.test(cur.trim())) {
+        base = parseFloat(cur.trim());
+      } else {
+        throw new TypeError(`hincrbyfloat: field '${field}' is not a float`);
+      }
+    }
+    const result = base + delta;
+    if (!Number.isFinite(result)) {
+      throw new RangeError(
+        'hincrbyfloat: increment produces value beyond double range'
+      );
+    }
+    this._rewriteHash(key, entry, { ...hash, [field]: result });
+    return result;
+  }
+
   /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)))
    * for existing keys without reading their values. Returns the count of keys
    * that existed and were refreshed. Expired keys are purged (like get()) and
