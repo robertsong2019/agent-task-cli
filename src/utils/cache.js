@@ -1472,6 +1472,99 @@ class Cache {
     return result;
   }
 
+  /** F287: hstrlen(key, field) — Redis HSTRLEN parity.
+   * String length of the value stored at field, in UTF-16 code units (the
+   * JS analog of Redis byte-length). 0 for missing key or missing field.
+   * Numeric/boolean values are coerced via String() (hgetall display parity).
+   * Non-hash value at key → TypeError. Metadata-neutral read: no stats. */
+  hstrlen(key, field) {
+    if (typeof field !== 'string') {
+      throw new TypeError('hstrlen: field must be a string');
+    }
+    const entry = this._liveHashEntry(key);
+    if (!entry) return 0;
+    if (!Object.prototype.hasOwnProperty.call(entry.value, field)) return 0;
+    return String(entry.value[field]).length;
+  }
+
+  /** F288: hrandfield(key, [count[, withValues]]) — Redis HRANDFIELD parity.
+   * No count → one random field name (undefined on missing/empty key, Redis
+   * nil). count > 0 → distinct fields capped at hlen; count < 0 → |count|
+   * draws with repetition allowed; count 0 → []. withValues → flat RESP2
+   * shape [field, value, field, value, ...]. Missing key + count → [].
+   * Non-hash value at key → TypeError. Metadata-neutral read: no stats. */
+  hrandfield(key, count, withValues = false) {
+    if (count !== undefined && (!Number.isInteger(count))) {
+      throw new TypeError('hrandfield: count must be an integer');
+    }
+    const entry = this._liveHashEntry(key);
+    if (!entry) {
+      return count === undefined ? undefined : [];
+    }
+    const fields = Object.keys(entry.value);
+    if (count === undefined) {
+      return fields[Math.floor(Math.random() * fields.length)];
+    }
+    if (count === 0) return [];
+    let picked;
+    if (count > 0) {
+      // Fisher-Yates partial shuffle: distinct fields, capped at hlen.
+      const order = [...fields];
+      const take = Math.min(count, order.length);
+      for (let i = 0; i < take; i++) {
+        const j = i + Math.floor(Math.random() * (order.length - i));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      picked = order.slice(0, take);
+    } else {
+      // Negative count: repetition allowed, |count| independent draws.
+      picked = [];
+      for (let i = 0; i < -count; i++) {
+        picked.push(fields[Math.floor(Math.random() * fields.length)]);
+      }
+    }
+    if (!withValues) return picked;
+    const flat = [];
+    for (const f of picked) {
+      flat.push(f, entry.value[f]);
+    }
+    return flat;
+  }
+
+  /** F289: hscan(key, cursor, {match, count}) — Redis HSCAN parity.
+   * Offset-based cursor: returns [nextCursor, [field, value, ...]] flat.
+   * Round-trip pagination (cursor → 0) always yields the full (optionally
+   * MATCH-filtered) hash in field insertion order. Cursor '0' as string marks
+   * complete iteration (Redis wire shape). MATCH uses the codebase *
+   * wildcard convention (deleteByPattern). count defaults to 10 (Redis
+   * default); must be integer ≥ 1. Missing/expired key → ['0', []].
+   * Non-hash value at key → TypeError. Metadata-neutral read: no stats. */
+  hscan(key, cursor, { match, count = 10 } = {}) {
+    if (!Number.isInteger(cursor) || cursor < 0) {
+      throw new TypeError('hscan: cursor must be a non-negative integer');
+    }
+    if (!Number.isInteger(count) || count < 1) {
+      throw new TypeError('hscan: count must be an integer >= 1');
+    }
+    const entry = this._liveHashEntry(key);
+    if (!entry) return ['0', []];
+    let fields = Object.keys(entry.value);
+    if (match !== undefined) {
+      if (typeof match !== 'string') {
+        throw new TypeError('hscan: match must be a string pattern');
+      }
+      const regex = new RegExp('^' + match.split('*').map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$');
+      fields = fields.filter((f) => regex.test(f));
+    }
+    const page = fields.slice(cursor, cursor + count);
+    const nextCursor = cursor + count < fields.length ? cursor + count : 0;
+    const flat = [];
+    for (const f of page) {
+      flat.push(f, entry.value[f]);
+    }
+    return [String(nextCursor), flat];
+  }
+
   /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)))
    * for existing keys without reading their values. Returns the count of keys
    * that existed and were refreshed. Expired keys are purged (like get()) and
