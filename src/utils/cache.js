@@ -1184,7 +1184,8 @@ class Cache {
     if (
       typeof entry.value !== 'object' ||
       entry.value === null ||
-      Array.isArray(entry.value)
+      Array.isArray(entry.value) ||
+      entry.value instanceof Set // set-family keys are not hashes (F290+)
     ) {
       throw new TypeError(`h*: value at '${key}' is not a hash`);
     }
@@ -1563,6 +1564,144 @@ class Cache {
       flat.push(f, entry.value[f]);
     }
     return [String(nextCursor), flat];
+  }
+
+  // ---------- F290+: Redis set family ----------
+
+  /** Internal: live set entry for `key`, or null if missing/expired (expired
+   * entries are purged like get()). Throws TypeError (WRONGTYPE analog) if
+   * the stored value is not a JS Set — including plain objects (hashes) and
+   * strings. No stats/LRU side effects. */
+  _liveSetEntry(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return null;
+    }
+    if (!(entry.value instanceof Set)) {
+      throw new TypeError(`s*: value at '${key}' is not a set`);
+    }
+    return entry;
+  }
+
+  /** F290: sadd(key, member, ttl?) — Redis SADD parity (single member,
+   * mirroring hset's single-field signature). Adds `member` to the set at
+   * `key`; creates the set when the key is missing or expired (using `ttl`,
+   * default this.defaultTTL). Returns 1 when a new member was added, 0 when
+   * it already existed. Existing sets keep their TTL (Redis SADD never
+   * touches TTL). Copy-on-write: the stored Set is replaced, never mutated.
+   * Non-string member → TypeError; non-set value at key → TypeError.
+   * Note: Set-family keys are runtime-only values — not JSON-exportable via
+   * exportJSON/dump (members would serialize as {}). */
+  sadd(key, member, ttl = this.defaultTTL) {
+    if (typeof member !== 'string') {
+      throw new TypeError('sadd: member must be a string');
+    }
+    const entry = this._liveSetEntry(key);
+    if (!entry) {
+      this.set(key, new Set([member]), ttl);
+      return 1;
+    }
+    const isNew = !entry.value.has(member);
+    if (isNew) {
+      const next = new Set(entry.value);
+      next.add(member);
+      this._rewriteHash(key, entry, next);
+    }
+    return isNew ? 1 : 0;
+  }
+
+  /** F291: srem(key, ...members) — Redis SREM parity.
+   * Removes members from the set at `key`; returns how many were actually
+   * removed (duplicate args count once — a member leaves at most once).
+   * When the set becomes empty the key is deleted entirely (Redis: empty
+   * set = key gone); a no-op removal (0 removed) leaves the key and its TTL
+   * untouched. Partial removal preserves TTL. Missing key → 0.
+   * Non-set → TypeError; non-string member → TypeError. */
+  srem(key, ...members) {
+    for (const m of members) {
+      if (typeof m !== 'string') {
+        throw new TypeError('srem: members must be strings');
+      }
+    }
+    const entry = this._liveSetEntry(key);
+    if (!entry) return 0;
+    let removed = 0;
+    const next = new Set(entry.value);
+    for (const m of members) {
+      if (next.delete(m)) removed++;
+    }
+    if (removed === 0) return 0;
+    if (next.size === 0) {
+      this.delete(key);
+    } else {
+      this._rewriteHash(key, entry, next);
+    }
+    return removed;
+  }
+
+  /** F292: smembers(key) — Redis SMEMBERS parity.
+   * All members in insertion order; [] for a missing key. Returns a fresh
+   * array (mutation-safe). Non-set → TypeError. */
+  smembers(key) {
+    const entry = this._liveSetEntry(key);
+    if (!entry) return [];
+    return [...entry.value];
+  }
+
+  /** F293: sismember(key, member) — Redis SISMEMBER parity (boolean shape,
+   * matching hexists). True iff `member` is in the set; false for missing
+   * key/absent member. Non-string member → false (writes reject non-strings,
+   * so a non-string can never be a member). Non-set → TypeError. */
+  sismember(key, member) {
+    const entry = this._liveSetEntry(key);
+    if (!entry) return false;
+    return typeof member === 'string' && entry.value.has(member);
+  }
+
+  /** F294: scard(key) — Redis SCARD parity.
+   * Number of members in the set at `key`; 0 for a missing key.
+   * Non-set → TypeError. */
+  scard(key) {
+    const entry = this._liveSetEntry(key);
+    if (!entry) return 0;
+    return entry.value.size;
+  }
+
+  /** F295: smove(source, destination, member) — Redis SMOVE parity.
+   * Moves `member` from the set at `source` to the set at `destination`.
+   * Returns 1 on success; 0 when `member` is not in `source` (or `source` is
+   * missing) — in that case `destination` is never created or modified.
+   * On success: `source` emptied → key deleted (Redis parity); `destination`
+   * created with defaultTTL when missing; existing `destination` keeps its
+   * TTL. source === destination with member present → 1 (no-op move).
+   * Non-set value at either key → TypeError; non-string member → TypeError. */
+  smove(source, destination, member) {
+    if (typeof member !== 'string') {
+      throw new TypeError('smove: member must be a string');
+    }
+    const srcEntry = this._liveSetEntry(source);
+    const dstEntry = this._liveSetEntry(destination);
+    if (!srcEntry || !srcEntry.value.has(member)) return 0;
+    if (destination === source) return 1; // no-op move: member stays, key untouched
+
+    const srcNext = new Set(srcEntry.value);
+    srcNext.delete(member);
+    if (srcNext.size === 0) {
+      this.delete(source);
+    } else {
+      this._rewriteHash(source, srcEntry, srcNext);
+    }
+
+    if (dstEntry) {
+      const dstNext = new Set(dstEntry.value);
+      dstNext.add(member);
+      this._rewriteHash(destination, dstEntry, dstNext);
+    } else {
+      this.set(destination, new Set([member]), this.defaultTTL);
+    }
+    return 1;
   }
 
   /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)))
