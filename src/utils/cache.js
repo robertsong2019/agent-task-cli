@@ -1704,6 +1704,80 @@ class Cache {
     return 1;
   }
 
+  /** Internal: read-only live set views for `keys` (arity-checked).
+   * Each key resolves via _liveSetEntry: expired keys are purged and read
+   * as empty, non-set values throw the WRONGTYPE-analog TypeError. */
+  _setViewsFor(keys, op) {
+    if (keys.length === 0) {
+      throw new TypeError(`${op}: at least one key is required`);
+    }
+    return keys.map((k) => {
+      const entry = this._liveSetEntry(k);
+      return entry ? entry.value : null; // null = missing/expired → empty set
+    });
+  }
+
+  /** F296: sinter(...keys) — Redis SINTER parity.
+   * Members present in every listed set, in the first key's insertion
+   * order. Missing/expired keys read as empty sets (so any missing key →
+   * empty result). Read-only: no stats/LRU side effects beyond the
+   * expired-purge in _liveSetEntry; returns a fresh array.
+   * Non-set value at any key → TypeError; zero keys → TypeError
+   * (Redis arity error analog). */
+  sinter(...keys) {
+    const views = this._setViewsFor(keys, 'sinter');
+    const first = views[0];
+    if (!first) return [];
+    const rest = views.slice(1);
+    const out = [];
+    for (const member of first) {
+      if (rest.every((s) => s === null ? false : s.has(member))) out.push(member);
+    }
+    return out;
+  }
+
+  /** F297: sunion(...keys) — Redis SUNION parity.
+   * All unique members across the listed sets in first-seen order (earlier
+   * keys' insertion order wins). Missing/expired keys contribute nothing;
+   * all missing → []. Read-only; fresh array; non-set → TypeError;
+   * zero keys → TypeError. */
+  sunion(...keys) {
+    const views = this._setViewsFor(keys, 'sunion');
+    const seen = new Set();
+    const out = [];
+    for (const view of views) {
+      if (!view) continue;
+      for (const member of view) {
+        if (!seen.has(member)) {
+          seen.add(member);
+          out.push(member);
+        }
+      }
+    }
+    return out;
+  }
+
+  /** F298: sdiff(key, ...keys) — Redis SDIFF parity.
+   * Members of the first set not present in any of the others, in the
+   * first set's insertion order. Missing/expired keys read as empty sets:
+   * missing first key → [], missing others contribute nothing. Read-only
+   * (unlike srem, an emptied result never deletes the key). Fresh array;
+   * non-set → TypeError; zero keys → TypeError. */
+  sdiff(key, ...keys) {
+    if (key === undefined) {
+      throw new TypeError('sdiff: at least one key is required');
+    }
+    const views = this._setViewsFor([key, ...keys], 'sdiff');
+    const first = views[0];
+    if (!first) return [];
+    const rest = views.slice(1);
+    const out = [];
+    for (const member of first) {
+      if (rest.every((s) => (s === null ? true : !s.has(member)))) out.push(member);
+    }
+    return out;
+  }
+
   /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)))
    * for existing keys without reading their values. Returns the count of keys
    * that existed and were refreshed. Expired keys are purged (like get()) and
