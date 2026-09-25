@@ -1778,6 +1778,137 @@ class Cache {
     return out;
   }
 
+  /** Internal: write a *store result into `destination` (Redis empty-result
+   * parity: an empty result deletes the destination key; a non-empty result
+   * overwrites whatever was there — any type — with a fresh Set at
+   * defaultTTL, mirroring Redis's SET-semantics TTL reset). Returns the
+   * result size for the S*STORE return value. */
+  _setStoreResult(destination, members) {
+    if (members.length === 0) {
+      this.delete(destination);
+    } else {
+      this.set(destination, new Set(members), this.defaultTTL);
+    }
+    return members.length;
+  }
+
+  /** Internal: uniform random index into a pool of `len` items. The rng
+   * contract is Math.random's ([0, 1)); a degenerate rng() === 1 is clamped
+   * by % len so an out-of-range pick is structurally impossible. */
+  _pickIndex(len, rng) {
+    return Math.floor(rng() * len) % len;
+  }
+
+  /** F299: sinterstore(destination, ...keys) — Redis SINTERSTORE parity.
+   * Computes sinter(...keys) and stores the result at `destination`,
+   * overwriting any pre-existing value (any type — Redis *STORE treats
+   * destination as SET semantics) with a fresh Set at defaultTTL. Empty
+   * result → destination key deleted (Redis parity). Returns the result
+   * size. Compute-then-store: destination may alias a source key. Source
+   * semantics (missing → empty, non-set → TypeError, zero keys →
+   * TypeError) inherited from sinter/_setViewsFor. */
+  sinterstore(destination, ...keys) {
+    if (typeof destination !== 'string') {
+      throw new TypeError('sinterstore: destination key must be a string');
+    }
+    return this._setStoreResult(destination, this.sinter(...keys));
+  }
+
+  /** F300: sunionstore(destination, ...keys) — Redis SUNIONSTORE parity.
+   * Same store semantics as sinterstore (overwrite / empty → delete /
+   * defaultTTL / alias-safe); returns the union size. */
+  sunionstore(destination, ...keys) {
+    if (typeof destination !== 'string') {
+      throw new TypeError('sunionstore: destination key must be a string');
+    }
+    return this._setStoreResult(destination, this.sunion(...keys));
+  }
+
+  /** F301: sdiffstore(destination, key, ...keys) — Redis SDIFFSTORE parity.
+   * Same store semantics as sinterstore; returns the difference size.
+   * Zero keys → TypeError (first source key mandatory, like sdiff). */
+  sdiffstore(destination, key, ...keys) {
+    if (typeof destination !== 'string') {
+      throw new TypeError('sdiffstore: destination key must be a string');
+    }
+    return this._setStoreResult(destination, this.sdiff(key, ...keys));
+  }
+
+  /** F302: spop(key, count?, rng = Math.random) — Redis SPOP parity.
+   * Removes and returns random members. Without count: one member or null
+   * for a missing/empty key. With a non-negative integer count: an array
+   * of min(count, size) distinct members (missing key → []). Popping the
+   * set empty deletes the key (Redis parity); a partial pop preserves the
+   * key's TTL (copy-on-write, like srem). count = 0 → [] (no-op). Negative
+   * or non-integer count → TypeError. RNG hook: trailing `rng` parameter
+   * (default Math.random) so tests can pin selection — see module notes. */
+  spop(key, count, rng = Math.random) {
+    const entry = this._liveSetEntry(key);
+    if (!entry) return count === undefined ? null : [];
+    if (count === undefined) {
+      const member = [...entry.value][this._pickIndex(entry.value.size, rng)];
+      this._spopMembers(key, entry, new Set([member]));
+      return member;
+    }
+    if (!Number.isInteger(count) || count < 0) {
+      throw new TypeError('spop: count must be a non-negative integer');
+    }
+    if (count === 0) return [];
+    const pool = [...entry.value];
+    const picked = [];
+    for (let i = 0; i < count && pool.length > 0; i++) {
+      picked.push(pool.splice(this._pickIndex(pool.length, rng), 1)[0]);
+    }
+    this._spopMembers(key, entry, new Set(picked));
+    return picked;
+  }
+
+  /** Internal: copy-on-write removal of `picked` members for spop; the set
+   * becoming empty deletes the key, a partial pop preserves TTL. */
+  _spopMembers(key, entry, picked) {
+    const next = new Set(entry.value);
+    for (const m of picked) next.delete(m);
+    if (next.size === 0) {
+      this.delete(key);
+    } else {
+      this._rewriteHash(key, entry, next);
+    }
+  }
+
+  /** F303: srandmember(key, count?, rng = Math.random) — Redis SRANDMEMBER
+   * parity. Read-only random sampling. Without count: one member or null
+   * (missing key). count > 0: up to count distinct members (never repeats,
+   * capped at set size). count < 0: exactly |count| picks with replacement
+   * — repeats allowed and may exceed set size (Redis semantics). count = 0
+   * → []. No key mutation, no stats side effects. Non-integer count →
+   * TypeError. RNG hook: same trailing-`rng` convention as spop. */
+  srandmember(key, count, rng = Math.random) {
+    const entry = this._liveSetEntry(key);
+    if (count === undefined) {
+      if (!entry) return null;
+      const members = [...entry.value];
+      return members[this._pickIndex(members.length, rng)];
+    }
+    if (!Number.isInteger(count)) {
+      throw new TypeError('srandmember: count must be an integer');
+    }
+    if (count === 0 || !entry) return []; // -0 === 0: falls through naturally
+    if (count > 0) {
+      const pool = [...entry.value];
+      const out = [];
+      for (let i = 0; i < count && pool.length > 0; i++) {
+        out.push(pool.splice(this._pickIndex(pool.length, rng), 1)[0]);
+      }
+      return out;
+    }
+    const members = [...entry.value];
+    const out = [];
+    for (let i = 0; i < -count; i++) {
+      out.push(members[this._pickIndex(members.length, rng)]);
+    }
+    return out;
+  }
+
   /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)))
    * for existing keys without reading their values. Returns the count of keys
    * that existed and were refreshed. Expired keys are purged (like get()) and
