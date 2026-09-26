@@ -1909,6 +1909,155 @@ class Cache {
     return out;
   }
 
+  /** Internal: live (non-expired) list entry for the l* family; mirrors
+   * _liveSetEntry — expired keys are purged on touch, non-Array values
+   * throw ("not a list"). */
+  _liveListEntry(key) {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    if (entry.expiresAt && Date.now() > entry.expiresAt) {
+      this.delete(key);
+      return null;
+    }
+    if (!Array.isArray(entry.value)) {
+      throw new TypeError(`l*: value at '${key}' is not a list`);
+    }
+    return entry;
+  }
+
+  /** Internal: shared argument validation for list push — at least one
+   * value, all strings. Checked before any mutation so a rejected push
+   * leaves the key untouched. */
+  _assertListValues(op, values) {
+    if (values.length === 0) {
+      throw new TypeError(`${op}: at least one value is required`);
+    }
+    for (const v of values) {
+      if (typeof v !== 'string') {
+        throw new TypeError(`${op}: values must be strings`);
+      }
+    }
+  }
+
+  /** F304: lpush(key, ...values) — Redis LPUSH parity. Prepends each value
+   * to the head in argument order (LPUSH k a b c → [c, b, a]); returns the
+   * new length. Creates the list with defaultTTL when the key is missing or
+   * expired; existing lists keep their TTL (Redis LPUSH never touches TTL).
+   * Copy-on-write: the stored Array is replaced, never mutated. Empty values
+   * call → TypeError; non-string value → TypeError; non-list value at key
+   * → TypeError. Note: like Set-family keys, list keys are runtime-only
+   * values — not JSON-exportable via exportJSON/dump. */
+  lpush(key, ...values) {
+    this._assertListValues('lpush', values);
+    const entry = this._liveListEntry(key);
+    if (!entry) {
+      this.set(key, values.slice().reverse(), this.defaultTTL);
+      return values.length;
+    }
+    const next = values.slice().reverse().concat(entry.value);
+    this._rewriteHash(key, entry, next);
+    return next.length;
+  }
+
+  /** F305: rpush(key, ...values) — Redis RPUSH parity. Appends each value
+   * in argument order to the tail; returns the new length. Same creation,
+   * TTL, copy-on-write and type-error contracts as lpush. */
+  rpush(key, ...values) {
+    this._assertListValues('rpush', values);
+    const entry = this._liveListEntry(key);
+    if (!entry) {
+      this.set(key, values.slice(), this.defaultTTL);
+      return values.length;
+    }
+    const next = entry.value.concat(values);
+    this._rewriteHash(key, entry, next);
+    return next.length;
+  }
+
+  /** F306: llen(key) — Redis LLEN parity. Number of elements in the list at
+   * `key`; 0 for a missing key. Non-list → TypeError. */
+  llen(key) {
+    const entry = this._liveListEntry(key);
+    if (!entry) return 0;
+    return entry.value.length;
+  }
+
+  /** F307: lrange(key, start, stop) — Redis LRANGE parity. Returns elements
+   * at indices [start, stop] inclusive; negative indices count from the end
+   * (-1 = last). Out-of-range bounds clamp Redis-style (no error); an empty
+   * selection or missing key → []. Returns a fresh array (mutation-safe).
+   * Non-integer start/stop → TypeError; non-list → TypeError. */
+  lrange(key, start, stop) {
+    if (!Number.isInteger(start) || !Number.isInteger(stop)) {
+      throw new TypeError('lrange: start and stop must be integers');
+    }
+    const entry = this._liveListEntry(key);
+    if (!entry) return [];
+    const len = entry.value.length;
+    const s = start < 0 ? Math.max(len + start, 0) : start;
+    const e = stop < 0 ? len + stop : Math.min(stop, len - 1);
+    if (s > e || s >= len) return [];
+    return entry.value.slice(s, e + 1);
+  }
+
+  /** F308: lpop(key, count?) — Redis LPOP parity. Without count: removes
+   * and returns the head element (null for a missing key). With a
+   * non-negative integer count (Redis 6.2+): an array of popped heads in
+   * list order, capped at length (missing key → []). Popping the list empty
+   * deletes the key (Redis: empty list = key gone); a partial pop preserves
+   * the key's TTL (copy-on-write, like srem). count = 0 → [] no-op. Negative
+   * or non-integer count → TypeError; non-list → TypeError. */
+  lpop(key, count) {
+    const entry = this._liveListEntry(key);
+    if (!entry) return count === undefined ? null : [];
+    if (count === undefined) {
+      const head = entry.value[0];
+      this._popList(key, entry, entry.value.slice(1));
+      return head;
+    }
+    if (!Number.isInteger(count) || count < 0) {
+      throw new TypeError('lpop: count must be a non-negative integer');
+    }
+    if (count === 0) return [];
+    const popped = entry.value.slice(0, count);
+    this._popList(key, entry, entry.value.slice(count));
+    return popped;
+  }
+
+  /** F309: rpop(key, count?) — Redis RPOP parity. Tail-side mirror of lpop:
+   * without count returns the tail element (null when missing); with count,
+   * pops from the tail — returned order is [tail, ...] per Redis (RPOP k 2
+   * on [a, b, c] → ['c', 'b']). Same TTL/deletion/error contracts as lpop. */
+  rpop(key, count) {
+    const entry = this._liveListEntry(key);
+    if (!entry) return count === undefined ? null : [];
+    if (count === undefined) {
+      const tail = entry.value[entry.value.length - 1];
+      this._popList(key, entry, entry.value.slice(0, -1));
+      return tail;
+    }
+    if (!Number.isInteger(count) || count < 0) {
+      throw new TypeError('rpop: count must be a non-negative integer');
+    }
+    if (count === 0) return [];
+    const len = entry.value.length;
+    const n = Math.min(count, len);
+    const popped = entry.value.slice(len - n).reverse();
+    this._popList(key, entry, entry.value.slice(0, len - n));
+    return popped;
+  }
+
+  /** Internal: commit a list pop — the list becoming empty deletes the key
+   * (Redis parity: empty list = key gone), a partial pop preserves TTL via
+   * copy-on-write rewrite. */
+  _popList(key, entry, rest) {
+    if (rest.length === 0) {
+      this.delete(key);
+    } else {
+      this._rewriteHash(key, entry, rest);
+    }
+  }
+
   /** F273: touchLru(keys) — Redis TOUCH parity: refresh LRU recency (lastAccessed)))
    * for existing keys without reading their values. Returns the count of keys
    * that existed and were refreshed. Expired keys are purged (like get()) and
